@@ -1,0 +1,114 @@
+﻿@model List<Portal.Models.Role>
+
+@{
+    ViewBag.Title = "Роли";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@*@using (Html.BeginForm())
+{*@
+@* @Html.ActionLink("Добавить", "CreateRole", null)*@
+<div style="margin-top:25px">
+    <a asp-action="CreateRole" class="my_btn my_btn_success">Добавить пользователя</a>
+
+    <br />
+
+    <div style="height:100%; width:2000 px; overflow-x: auto;margin:auto;margin-top:25px">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Наименование роли</th>
+                    <th>Все маркеты</th>
+
+                    <th>Создать кассира</th>
+                    <th>Изменить кассира</th>
+                    <th>Удалить кассира</th>
+
+                    <th>Создать логотип</th>
+                    <th>Изменить логотип</th>
+                    <th>Удалить логотип</th>
+
+                    <th>Создать настройки</th>
+                    <th>Изменить настройки</th>
+                    <th>Удалить настройки</th>
+
+                    <th>Создать клавиатуры</th>
+                    <th>Изменить клавиатуры</th>
+                    <th>Удалить клавиатуры</th>
+
+                    <th>Админ пользователей</th>
+                    @*<th>Пользователь весов</th>*@
+                    <th>Весы</th>
+                    <th>POS</th>
+
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="Search clickable-row" data-href="@Url.Action("EditRole", "Home", new { id = item.ID })">
+                        <td>
+                            @Html.DisplayFor(m => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.AllMarkets)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.CreateCashiers)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.EditCashiers)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.DeleteCashiers)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.CreateLogo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.EditLogo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.DeleteLogo)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.CreateSettings)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.EditSettings)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.DeleteSettings)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.CreateKeyboard)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.EditKeyboard)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.DeleteKeyboard)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.AdminForScale)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.Scales)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.POSs)
+                        </td>
+                        <td>
+                            @Html.ActionLink(" ", "DeleteRole", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @*}*@
+</div>
+
+

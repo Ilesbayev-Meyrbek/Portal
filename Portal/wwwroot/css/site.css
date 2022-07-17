@@ -1,0 +1,680 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+/*    padding-top: 50px;*/
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 140px;
+    padding-right: 140px;
+}
+
+/* Override the default bootstrap behavibodyContentor where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 1btnPosition00% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+
+/* Set styles for TABLEs*/
+
+table {
+    width: 100%;
+    /*height: 400px*/;
+    border-collapse: collapse;
+    /*overflow: auto;*/
+    /*box-shadow: 0 0 20px rgba(0, 0, 0, 1);*/
+    border-radius: 10px;
+    background-color: #F1F3F4
+}
+
+th, td {
+    padding: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: black;
+}
+
+th {
+    text-align: left;
+}
+
+th {
+    background-color: #D1D5DE;
+}
+/*===========================================================*/
+/*====================== Keyboards ===============================*/
+
+.btn_keyboard {
+    width: 45px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+}
+
+.btn_keyboard1 {
+    width: 55px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+}
+
+.btn_keyboard2 {
+    width: 105px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+}
+
+.keyboard_div1 {
+    clear: left;
+    min-height: 50px;
+}
+
+.keyboard_div2 {
+    width: 80px;
+    min-height: 150px;
+    float: left;
+}
+
+.keyboard_div3 {
+    width: 220px;
+    min-height: 150px;
+    float: left;
+}
+
+.keyboard_div_over {
+    width: 190px;
+    min-height: 30px;
+    margin-left: 300px;
+}
+
+.keyboard_div4 {
+    width: 175px;
+    min-height: 30px;
+    margin-left: 15px;
+    float: left;
+}
+
+.keyboard_div5 {
+    width: 190px;
+    min-height: 30px;
+    float: left;
+}
+
+.keyboard_div6 {
+    width: 310px;
+    margin-left: 490px;
+    margin-top: -30px;
+}
+
+/*--------------------- Navigation --------------------------------------*/
+
+/***************************************************************************/
+
+.block-left {
+    width: 50%;
+    height: 100%;
+    float: left;
+}
+
+.block-right {
+    width: 50%;
+    height: 100%;
+}
+
+.block-center {
+    width: 33%;
+    overflow: auto;
+}
+
+#left {
+    position: absolute;
+    left: 0;
+    top: 60px;
+    width: 80%;
+}
+
+#right {
+    position: absolute;
+    right: 0;
+    top: 60px;
+    width: 20%;
+    border-left: 6px solid green;
+}
+
+/***************************************************************************/
+.page-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.left-panel-wrapper {
+    width: 50%;
+}
+
+.right-panel-wrapper {
+    width: 50%;
+    /*    border: 3px;
+    border-style:solid;
+    border-radius:3px;*/
+}
+
+/*.content-wrapper {*/
+/*width: 250px;*/
+/*width: calc(100% - 66%);*/
+/*padding: 0 30px;*/
+/*}*/
+
+/***************************************************************************/
+.btn_position_save-cancel {
+    margin-left: 80%;
+}
+
+.textbox-visible {
+    display: none;
+}
+
+/***************************************************************************/
+
+table {
+    width: 100%;
+    margin: 0px 0px 0px 0px;
+    /*table-layout: fixed;*/
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+
+/***************************************************************************/
+
+.btn-group-key button {
+    background-color: #4CAF50; /* Green background */
+    border: 1px solid green; /* Green border */
+    color: white; /* White text */
+    margin-left: 10px;
+    margin-top: 10px;
+    width: 60px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+
+.btn-group-key-vert button {
+    background-color: #4CAF50; /* Green background */
+    border: 1px solid green; /* Green border */
+    color: white; /* White text */
+    margin-top: 10px;
+    width: 60px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+.button-key {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 5px;
+    margin-top: 10px;
+    width: 60px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+
+/*///////////////////////////////////////////////////////////////////////*/
+
+
+.keyboard_div1 {
+    clear: left;
+    min-height: 50px;
+}
+
+.keyboard_div2 {
+    width: 75px;
+    min-height: 150px;
+    float: left;
+}
+
+.keyboard_div3 {
+    width: 240px;
+    min-height: 150px;
+    float: left;
+}
+
+.keyboard_div_over {
+    width: 220px;
+    min-height: 30px;
+    margin-left: 310px;
+}
+
+.keyboard_div4 {
+    width: 175px;
+    min-height: 30px;
+    margin-left: 20px;
+    float: left;
+}
+
+.keyboard_div5 {
+    width: 220px;
+    min-height: 30px;
+    float: left;
+    margin-top: -220px;
+}
+
+.keyboard_div6 {
+    width: 350px;
+    margin-left: 540px;
+    margin-top: -30px;
+}
+
+.btn_keyboard {
+    width: 50px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+    font-size: 10px;
+    text-align: left;
+}
+
+.btn_keyboard1 {
+    width: 60px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+    font-size: 10px;
+    text-align: left;
+}
+
+.btn_keyboard2 {
+    width: 135px;
+    height: 45px;
+    margin: 5px 5px 5px 5px;
+    font-size: 10px;
+    text-align: left;
+}
+
+/* ================================ The Modal (background) ======================================== */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 370px;
+}
+
+/* The Close Button */
+.close {
+    /*color: black;
+    float: right;
+    font-size: 28px;*/
+    /* font-weight: bold;*/
+
+    color: #000000;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+/* ================================ Fieldset ======================================== */
+
+fieldset {
+    background-color: #eeeeee;
+}
+
+legend {
+    background-color: gray;
+    color: white;
+    padding: 5px 10px;
+}
+
+input {
+    margin: 5px;
+}
+
+
+#container_b {
+    width: 900px; /* Ширина макета */
+    margin: 0 auto; /* Выравнивание по центру */
+}
+
+#nav_b {
+    width: 33%; /* Ширина левой колонки */
+    float: left;
+}
+
+#aside_b {
+    width: 33%; /* Ширина правой колонки */
+    float: right;
+}
+
+#content_b {
+    margin: 0 35% 0 35%; /* Отступ на ширину левой и правой колонки*/
+}
+
+/*==============================================================================*/
+/*
+html, body {
+    min-height: 100%;
+}
+
+body, p {
+    padding: 0;
+    margin: 0;
+    font-family: Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 24px;
+    color: #666;
+}
+*/
+.main-block {
+    display: flex;
+    justify-content: left;
+    align-items: center;
+}
+
+form {
+    width: 100%;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 2px 5px #ccc;
+}
+
+h1 {
+    font-weight: 400;
+    line-height: 28px;
+}
+
+hr {
+    margin: 20px 0;
+}
+
+.personal-details, .question-block, .statements-block {
+    padding-bottom: 20px;
+}
+
+/*.personal-details > div {
+        display: flex;
+        flex-direction: column;
+    }*/
+
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 12px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+}
+
+.button2 {
+    background-color: #008CBA;
+    color: black;
+    border: 2px solid #008CBA;
+}
+
+/*.button2:hover {
+        background-color: #008CBA;
+        color: white;
+    }*/
+.buttonRightCancel {
+    width: 100px;
+    height: 35px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background: #095484;
+    font-size: 12px;
+    color: #fff;
+    cursor: pointer;
+    /*margin-left: 0%;*/
+}
+
+.buttonRightOK {
+    width: 100px;
+    height: 35px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background: #095484;
+    font-size: 12px;
+    color: #fff;
+    cursor: pointer;
+}
+
+/*------------------------------------------------------------------------*/
+
+.tile {
+    width: 300px;
+    height: 100px;
+    text-align: center;
+}
+
+.searchboxPosition {
+    margin-top: 15px;
+    right: 8%;
+    position: fixed;
+}
+
+.bodyContent {
+    height: 200%;
+    overflow-x: auto;
+}
+
+.btnPosition {
+    position: absolute; /* Фиксированное положение */
+    right: 235px; /* Расстояние от правого края окна браузера */
+   /* bottom: 20%;*/ /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.btnPositionCancel {
+    position: absolute; /* Фиксированное положение */
+    right: 150px; /* Расстояние от правого края окна браузера */
+    /*bottom: 20%;*/ /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.modalBtnPosition {
+    position: absolute; /* Фиксированное положение */
+    right: 115px; /* Расстояние от правого края окна браузера */
+    bottom: 10%; /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.modalBtnPositionCancel {
+    position: absolute; /* Фиксированное положение */
+    right: 30px; /* Расстояние от правого края окна браузера */
+    bottom: 10%; /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.btnPositionSaveJson {
+    position: fixed; /* Фиксированное положение */
+    right: 255px; /* Расстояние от правого края окна браузера */
+    bottom: 15%; /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.btnPositionCancelJson {
+    position: fixed; /* Фиксированное положение */
+    right: 170px; /* Расстояние от правого края окна браузера */
+    bottom: 15%; /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+.btnPositionJson {
+    position: fixed; /* Фиксированное положение */
+    right: 170px; /* Расстояние от правого края окна браузера */
+    bottom: 15%; /* Расстояние сверху */
+    padding: 10px; /* Поля вокруг текста */
+}
+
+/*==============================================================================================*/
+
+#upleft {
+    width: 400px;
+    height: 200px;
+    float: left;
+}
+
+#upright {
+    width: 400px;
+    height: 200px;
+    float: left
+}
+
+#upleftJSON {
+    width: 400px;
+    height: 600px;
+    float: left;
+}
+
+#uprightJSON {
+    width: 400px;
+    height: 600px;
+    float: left
+}
+
+/*==============================================================================================*/
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/*body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-size: 16px;
+    font-weight: 0;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+}*/
+
+.tabs {
+    font-size: 0;
+    max-width: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+    .tabs > input[type="radio"] {
+        display: none;
+    }
+
+    .tabs > div {
+        /* скрыть контент по умолчанию */
+        display: none;
+        border: 1px solid #e0e0e0;
+        padding: 10px 15px;
+        font-size: 16px;
+    }
+
+/* отобразить контент, связанный с вабранной радиокнопкой (input type="radio") */
+#tab-btn-1:checked ~ #content-1,
+#tab-btn-2:checked ~ #content-2,
+#tab-btn-3:checked ~ #content-3,
+#tab-btn-4:checked ~ #content-4,
+#tab-btn-5:checked ~ #content-5 {
+    display: block;
+    height: 600px;
+}
+
+.tabs > label {
+    display: inline-block;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    padding: 2px 8px;
+    font-size: 16px;
+    line-height: 1.5;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+}
+
+    .tabs > label:not(:first-of-type) {
+        border-left: none;
+    }
+
+.tabs > input[type="radio"]:checked + label {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+}
+
+/*==============================================================================================*/
+
+.btn-color {
+    background-color: #DCDCDC;
+}
+
+/*==============================================================================================*/
+
+input[type="checkbox"][readonly] {
+    pointer-events: none;
+}
+
+/*==============================================================================================*/

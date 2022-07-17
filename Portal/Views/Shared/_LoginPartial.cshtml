@@ -1,0 +1,25 @@
+﻿@using System.Security.Principal
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="mynav_dropdownMenu">
+        <button class="mynav_dropbtnMenu">
+            <span class="navbar-text">@User.Identity?.Name</span>
+            <i class="fa fa-caret-down"></i>
+        </button>
+        <div class="mynav_dropdownMenu-content">
+                <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Выход</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="mynav_dropdownMenu">
+        <button class="mynav_dropbtnMenu">
+            <a class="nav-link" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Войти</a>
+        </button>
+    </div>
+}
+
+
+

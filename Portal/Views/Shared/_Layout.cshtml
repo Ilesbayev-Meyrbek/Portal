@@ -1,0 +1,92 @@
+﻿@using Azure.Core
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Portal</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Portal.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <style>
+       
+    </style>
+</head>
+<body>
+    <header>
+
+        <div class="mynav_navbarMenu">
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="mynav_dropdownMenu">
+                    <button class="mynav_dropbtnMenu">
+                        POS
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="mynav_dropdownMenu-content">
+                        <a href="#">Логотипы</a>
+                        <a href="#">Кассиры</a>
+                        <a href="#">Клавиатура</a>
+                        <a href="#">POS статусы</a>
+                    </div>
+                </div>
+
+                <div class="mynav_dropdownMenu">
+                    <button class="mynav_dropbtnMenu">
+                        Весы
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="mynav_dropdownMenu-content">
+                        <a href="#">Статусы весов</a>
+                    </div>
+                </div>
+
+                <div class="mynav_dropdownMenu">
+                    <button class="mynav_dropbtnMenu">
+                        Отчеты
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="mynav_dropdownMenu-content">
+                        @Html.ActionLink(" Отчет", "Reports", "Home")
+                    </div>
+                </div>
+
+                <div class="mynav_dropdownMenu">
+                    <button class="mynav_dropbtnMenu">
+                        Пользователи
+                        <i class="fa fa-caret-down"></i>
+                    </button>
+                    <div class="mynav_dropdownMenu-content">
+                        @Html.ActionLink(" Роли", "Roles", "Home")
+                        @Html.ActionLink(" Пользователи", "Users", "Home")
+                    </div>
+                </div>
+            }
+
+            <partial name="_LoginPartial" />
+
+        </div>
+
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2022 - Portal - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
