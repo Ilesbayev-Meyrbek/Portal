@@ -75,6 +75,8 @@
     color: white; /* Add a text color */
     padding: 14px 28px; /* Add some padding */
     cursor: pointer; /* Add a pointer cursor on mouse-over */
+    width: 115px;
+    height: 50px;
 }
 
 .my_btn_success {
@@ -83,6 +85,7 @@
 /* Green */
     .my_btn_success:hover {
         background-color: #46a049;
+        color: white;
     }
 
 .my_btn_danger {
@@ -91,6 +94,7 @@
     /* Red */
     .my_btn_danger:hover {
         background: #da190b;
+        color:white;
     }
 
 a {

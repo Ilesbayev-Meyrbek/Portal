@@ -126,17 +126,17 @@
             </div>
         </div>
 
-        <div class="form-actions no-color">
-            <p>
-                <div class="btnPosition">
-                    <input type="submit" value="Изменить" class="my_btn my_btn_success" />
-                </div>
+    <div class="form-actions no-color">
+        <p>
+            <div class="btnPosition">
+                <input type="submit" value="Изменить" class="my_btn my_btn_success" />
+            </div>
 
-                <div class="btnPositionCancel">
-                    @Html.ActionLink("Отмена", "Roles", null)
-                </div>
-            </p>
-        </div>
+            <div class="btnPositionCancel">
+                @Html.ActionLink("Отмена","Roles","Home",null, new { @class="my_btn my_btn_danger"})
+            </div>
+        </p>
+    </div>
 
     </form>
 }
