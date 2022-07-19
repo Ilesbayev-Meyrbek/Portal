@@ -1,0 +1,169 @@
+﻿@model Portal.Models.Role
+
+@{
+    ViewBag.Title = "Удаление роли";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    bool _allMarkets = @Model.AllMarkets;
+    
+    bool _createCashiers = @Model.CreateCashiers;
+    bool _editCashiers = @Model.EditCashiers;
+    bool _deleteCashiers = @Model.DeleteCashiers;
+    
+    bool _createKeyboard = @Model.CreateKeyboard;
+    bool _editKeyboard = @Model.EditKeyboard;
+    bool _deleteKeyboard = @Model.DeleteKeyboard;
+    
+    bool _createLogo = @Model.CreateLogo;
+    bool _editLogo = @Model.EditLogo;
+    bool _deleteLogo = @Model.DeleteLogo;
+    
+    bool _createSettings = @Model.CreateSettings;
+    bool _editSettings = @Model.EditSettings;
+    bool _deleteSettings = @Model.DeleteSettings;
+    
+    bool _adminForScale = @Model.AdminForScale;
+    bool _scales = @Model.Scales;
+    bool _pOSs = @Model.POSs;
+}
+
+<h2>Удаление роли</h2>
+<h3>Вы уверены, что хотите удалить?</h3>
+
+@using (Html.BeginForm())
+{
+    <div class="form-group">
+        @Html.LabelFor(model => model.Name, "Наименование роли", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            <input disabled type="text" value="@Model.Name" class="form-control">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="row">
+
+            <div class="col-lg-6 col-md-6" style="width: 50%">
+
+                <div class="col-md-10">
+                    <input type="checkbox" id="AllMarketsID" name="AllMarkets">
+                    <label for="AllMarketsID" style="width:400px"> Все маркеты</label>
+                </div>
+
+                <div class="col-md-10">
+                </div>
+
+                <div class="col-md-10">
+                </div>
+
+                <hr />
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.CreateCashiers)
+                    @Html.LabelFor(model => model.CreateCashiers, "Создать кассира", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.EditCashiers)
+                    @Html.LabelFor(model => model.EditCashiers, "Изменить кассира", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.DeleteCashiers)
+                    @Html.LabelFor(model => model.DeleteCashiers, "Удалить кассира", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+                <hr />
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.CreateKeyboard)
+                    @Html.LabelFor(model => model.CreateKeyboard, "Создать клавиатуру", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.EditKeyboard)
+                    @Html.LabelFor(model => model.EditKeyboard, "Изменить клавиатуру", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.DeleteKeyboard)
+                    @Html.LabelFor(model => model.DeleteKeyboard, "Удалить клавиатуру", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                </div>
+
+            </div>
+
+            <div class="col-lg-6 col-md-6" style="width: 50%; ">
+                <div class="right-panel">
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.CreateLogo)
+                        @Html.LabelFor(model => model.CreateLogo, "Создать логотип", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.EditLogo)
+                        @Html.LabelFor(model => model.EditLogo, "Изменить логотип", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.DeleteLogo)
+                        @Html.LabelFor(model => model.DeleteLogo, "Удалить логотип", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <hr />
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.CreateSettings)
+                        @Html.LabelFor(model => model.CreateSettings, "Создать настройки", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.EditSettings)
+                        @Html.LabelFor(model => model.EditSettings, "Изменить настройки", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.DeleteSettings)
+                        @Html.LabelFor(model => model.DeleteSettings, "Удалить настройки", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <hr />
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.AdminForScale)
+                        @Html.LabelFor(model => model.AdminForScale, "Админ пользователей Весов", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.Scales)
+                        @Html.LabelFor(model => model.Scales, "Весы", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.POSs)
+                        @Html.LabelFor(model => model.POSs, "POS", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="form-actions no-color">
+        <p>
+            <div class="btnPosition">
+                <input type="submit" value="Удалить" class="my_btn my_btn_success" />
+            </div>
+
+            <div class="btnPositionCancel">
+                @Html.ActionLink("Отмена", "Roles", null)
+            </div>
+        </p>
+    </div>
+}
+
+<script>
+
+    window.onload = function() {
+        document.getElementById("AllMarketsID").checked = @_allMarkets;
+    }
+
+
+</script>

@@ -106,7 +106,29 @@ namespace Portal.Controllers
             return View(role);
         }
 
+        [HttpGet]
+        [ActionName("DeleteRole")]
+        public async Task<IActionResult> ConfirmDeleteRole(int? id)
+        {
+            if (id != null)
+            {
+                Role role = new Portal.DB.DB(_ctx, _sctx).GetRoleForDelete(id);
+                if (role != null)
+                    return View(role);
+            }
+            return NotFound();
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole(int? id)
+        {
+            if (id != null)
+            {
+                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteRole(id);
+                return RedirectToAction("Roles");
+            }
+            return NotFound();
+        }
 
 
 

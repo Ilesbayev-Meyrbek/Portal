@@ -94,7 +94,7 @@ namespace Portal.DB
             {
                 Role role = _ctx.Roles.Find(id);
                 _ctx.Roles.Remove(role);
-                _ctx.SaveChangesAsync();
+                _ctx.SaveChanges();
 
                 return true;
             }
