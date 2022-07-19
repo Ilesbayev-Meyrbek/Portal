@@ -1,24 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj": {}
+    "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj": {}
   },
   "projects": {
-    "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj": {
+    "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj",
+        "projectUniqueName": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
         "projectName": "Portal",
-        "projectPath": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj",
-        "packagesPath": "C:\\Users\\HP-ProBook\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\obj\\",
+        "projectPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
+        "packagesPath": "C:\\Users\\m.ilesbaev\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\HP-ProBook\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\m.ilesbaev\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [

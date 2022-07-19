@@ -63,8 +63,8 @@ namespace Portal.DB
         {
             try
             {
-                _ctx.Entry(role).State = EntityState.Modified;
-                _ctx.SaveChangesAsync();
+                _ctx.Roles.Update(role);
+                _ctx.SaveChanges();
 
                 return true;
             }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Portal.DB;
 using Portal.Models;
 using System.Diagnostics;
+using System.Net;
 
 namespace Portal.Controllers
 {
@@ -71,6 +72,42 @@ namespace Portal.Controllers
 
             return View(role);
         }
+
+        public async Task<ActionResult> EditRole(int? id)
+        {
+            if (id != null)
+            {
+                var role = new Portal.DB.DB(_ctx, _sctx).GetRoleForEdit(id);
+
+                if (role != null)
+                    return View(role);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> EditRole(Role role)
+        {
+            if (ModelState.IsValid)
+            {
+                var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditRole(role);
+
+                if (isEdited)
+                {
+                    return RedirectToAction("Roles");
+                }
+                else
+                {
+                    return View(role);
+                }
+            }
+
+            return View(role);
+        }
+
+
+
 
 
         #endregion
