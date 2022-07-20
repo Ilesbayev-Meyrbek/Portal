@@ -6,6 +6,7 @@ namespace Portal.Models
     [Table("Users")]
     public class User
     {
+        [Key]
         public int ID { get; set; }
 
         [Display(Name = "Маркет")]
@@ -20,6 +21,7 @@ namespace Portal.Models
         public string Login { get; set; }
 
         public int RoleID { get; set; }
-        public Role Role { get; set; }
+
+        public Role? Role { get; set; }
     }
 }

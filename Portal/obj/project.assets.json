@@ -1867,6 +1867,40 @@
           "lib/netstandard1.3/Newtonsoft.Json.Bson.dll": {}
         }
       },
+      "NLog/5.0.1": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/NLog.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NLog.dll": {}
+        }
+      },
+      "NLog.Database/5.0.1": {
+        "type": "package",
+        "dependencies": {
+          "NLog": "5.0.1"
+        },
+        "compile": {
+          "lib/netstandard2.0/NLog.Database.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NLog.Database.dll": {}
+        }
+      },
+      "NLog.WindowsIdentity/5.0.0": {
+        "type": "package",
+        "dependencies": {
+          "NLog": "5.0.0",
+          "System.Security.Principal.Windows": "4.5.0"
+        },
+        "compile": {
+          "lib/netstandard2.0/NLog.WindowsIdentity.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/NLog.WindowsIdentity.dll": {}
+        }
+      },
       "NuGet.Common/6.2.1": {
         "type": "package",
         "dependencies": {
@@ -6403,6 +6437,76 @@
         "lib/netstandard1.3/Newtonsoft.Json.Bson.xml",
         "newtonsoft.json.bson.1.0.1.nupkg.sha512",
         "newtonsoft.json.bson.nuspec"
+      ]
+    },
+    "NLog/5.0.1": {
+      "sha512": "lNErNEPzYiZtUAlgvXpSRxUIPLIDHTLA8pKxkDDV//DCqzwp98FitFemOEmJjIuPvk3GC3ytrQMXsy7P9RTPIw==",
+      "type": "package",
+      "path": "nlog/5.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "N.png",
+        "lib/net35/NLog.dll",
+        "lib/net35/NLog.xml",
+        "lib/net45/NLog.dll",
+        "lib/net45/NLog.xml",
+        "lib/net46/NLog.dll",
+        "lib/net46/NLog.xml",
+        "lib/netstandard1.3/NLog.dll",
+        "lib/netstandard1.3/NLog.xml",
+        "lib/netstandard1.5/NLog.dll",
+        "lib/netstandard1.5/NLog.xml",
+        "lib/netstandard2.0/NLog.dll",
+        "lib/netstandard2.0/NLog.xml",
+        "nlog.5.0.1.nupkg.sha512",
+        "nlog.nuspec"
+      ]
+    },
+    "NLog.Database/5.0.1": {
+      "sha512": "AelsKAqtQYaRvGuJzhqfJYM3pp1OlT2fvtCpWEblUMUfsKVk5hkXrlNOrgA4HSAgoM1XMC3XrzgzS40yBdcGlw==",
+      "type": "package",
+      "path": "nlog.database/5.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "N.png",
+        "lib/net35/NLog.Database.dll",
+        "lib/net35/NLog.Database.xml",
+        "lib/net45/NLog.Database.dll",
+        "lib/net45/NLog.Database.xml",
+        "lib/net46/NLog.Database.dll",
+        "lib/net46/NLog.Database.xml",
+        "lib/netstandard1.3/NLog.Database.dll",
+        "lib/netstandard1.3/NLog.Database.xml",
+        "lib/netstandard1.5/NLog.Database.dll",
+        "lib/netstandard1.5/NLog.Database.xml",
+        "lib/netstandard2.0/NLog.Database.dll",
+        "lib/netstandard2.0/NLog.Database.xml",
+        "nlog.database.5.0.1.nupkg.sha512",
+        "nlog.database.nuspec"
+      ]
+    },
+    "NLog.WindowsIdentity/5.0.0": {
+      "sha512": "VAYqtJF1GBLnhIzxJI8g5NTjHhLECoVTO0V7gc2TL1Ef03927xwArcvsMgRAPzNlDBbDby1mOYpJ1n5U5dTMdg==",
+      "type": "package",
+      "path": "nlog.windowsidentity/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "N.png",
+        "lib/net35/NLog.WindowsIdentity.dll",
+        "lib/net35/NLog.WindowsIdentity.xml",
+        "lib/net45/NLog.WindowsIdentity.dll",
+        "lib/net45/NLog.WindowsIdentity.xml",
+        "lib/net46/NLog.WindowsIdentity.dll",
+        "lib/net46/NLog.WindowsIdentity.xml",
+        "lib/netstandard1.5/NLog.WindowsIdentity.dll",
+        "lib/netstandard1.5/NLog.WindowsIdentity.xml",
+        "lib/netstandard2.0/NLog.WindowsIdentity.dll",
+        "lib/netstandard2.0/NLog.WindowsIdentity.xml",
+        "nlog.windowsidentity.5.0.0.nupkg.sha512",
+        "nlog.windowsidentity.nuspec"
       ]
     },
     "NuGet.Common/6.2.1": {
@@ -11029,28 +11133,30 @@
       "Microsoft.Identity.Web >= 1.25.1",
       "Microsoft.Identity.Web.MicrosoftGraph >= 1.25.1",
       "Microsoft.Identity.Web.UI >= 1.25.1",
-      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 6.0.7"
+      "Microsoft.VisualStudio.Web.CodeGeneration.Design >= 6.0.7",
+      "NLog >= 5.0.1",
+      "NLog.Database >= 5.0.1",
+      "NLog.WindowsIdentity >= 5.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\HP-ProBook\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\m.ilesbaev\\.nuget\\packages\\": {},
+    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj",
+      "projectUniqueName": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
       "projectName": "Portal",
-      "projectPath": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\Portal.csproj",
-      "packagesPath": "C:\\Users\\HP-ProBook\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\obj\\",
+      "projectPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
+      "packagesPath": "C:\\Users\\m.ilesbaev\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
       ],
       "configFilePaths": [
-        "C:\\Users\\HP-ProBook\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\m.ilesbaev\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -11129,6 +11235,18 @@
           "Microsoft.VisualStudio.Web.CodeGeneration.Design": {
             "target": "Package",
             "version": "[6.0.7, )"
+          },
+          "NLog": {
+            "target": "Package",
+            "version": "[5.0.1, )"
+          },
+          "NLog.Database": {
+            "target": "Package",
+            "version": "[5.0.1, )"
+          },
+          "NLog.WindowsIdentity": {
+            "target": "Package",
+            "version": "[5.0.0, )"
           }
         },
         "imports": [

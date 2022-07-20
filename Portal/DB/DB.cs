@@ -14,7 +14,135 @@ namespace Portal.DB
             this._sctx = sctx;
         }
 
+        public string GetUserMarketID(string user)
+        {
+            string userMID = String.Empty;
+
+            string mID = GetMarketForUser(user);
+
+            if (!string.IsNullOrEmpty(mID))
+                userMID = mID;
+            else
+            {
+                Admin adm = GetAdmin(user);
+
+                if (adm != null)
+                    userMID = "OFCE";
+            }
+
+            return userMID;
+        }
+
+        public string GetMarketForUser(string user)
+        {
+            try
+            {
+                var userMarketID = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                if (userMarketID != null)
+                    return userMarketID.MarketID;
+                else
+                    return null;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public Admin GetAdmin(string user)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+
+                return admin;
+
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public Role GetUserRole(string user)
+        {
+            try
+            {
+                var adm = GetAdmin(user);
+
+                if (adm == null)
+                {
+                    var roleID = _ctx.Users.Where(w => w.Login == user).ToList()[0].RoleID;
+                    Role role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+
+                    return role;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public List<MarketsName> GetMarkets()
+        {
+            try
+            {
+                List<MarketsName> markets = _ctx.Markets.ToList();
+
+                return markets;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return new List<MarketsName>();
+            }
+        }
+
+        public MarketsName GetMarkets(string id)
+        {
+            try
+            {
+                MarketsName markets = _ctx.Markets.Where(w => w.MarketID == id).FirstOrDefault();
+
+                return markets;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+
+                return new MarketsName();
+            }
+        }
+
+
+
         /**************************************** Role ************************************************/
+
+        #region Roles
 
         public List<Role> GetRoles()
         {
@@ -103,5 +231,142 @@ namespace Portal.DB
                 return false;
             }
         }
+
+        #endregion
+
+        #region Users
+
+        public List<User> GetUsers(string user)
+        {
+            try
+            {
+                var admin = GetAdmin(user);
+
+                List<User> usersLst = new List<User>();
+
+                if (admin != null)
+                {
+                    usersLst = _ctx.Users.OrderByDescending(d => d.ID).ToList();
+
+                    for (int i = 0; i < usersLst.Count; i++)
+                    {
+                        int roleID = usersLst[i].RoleID;
+                        var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+
+                        usersLst[i].Role = role;
+                    }
+                }
+                else if (admin == null)
+                {
+                    var _userRole = GetUserRole(user);
+
+                    if (_userRole.AdminForScale)
+                    {
+                        var rSA = _ctx.Roles.Where(w => w.AdminForScale || w.Scales || w.POSs).ToList();
+
+                        if (rSA != null)
+                        {
+                            for (int i = 0; i < rSA.Count; i++)
+                            {
+                                var rID = rSA[i].ID;
+                                var scaleUsers = _ctx.Users.Where(w => w.RoleID == rID).ToList();
+                                usersLst.AddRange(scaleUsers);
+                            }
+
+                            usersLst = usersLst.GroupBy(g => g.ID).Select(s => s.First()).ToList();
+                        }
+                    }
+                }
+
+                return usersLst;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public bool SaveNewUser(User user)
+        {
+            try
+            {
+                _ctx.Users.Add(user);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return false;
+            }
+        }
+
+        public User GetUser(int? id)
+        {
+            try
+            {
+                User user = _ctx.Users.Find(id);
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public bool SaveEditUser(User user)
+        {
+            try
+            {
+                _ctx.Entry(user).State = EntityState.Modified;
+                _ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return false;
+            }
+        }
+
+        public bool DeleteUser(int? id)
+        {
+            try
+            {
+                User user = _ctx.Users.Find(id);
+                _ctx.Users.Remove(user);
+                _ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return false;
+            }
+        }
+
+        #endregion
+
     }
 }

@@ -18,7 +18,10 @@
           "Microsoft.Identity.Web": "1.25.1",
           "Microsoft.Identity.Web.MicrosoftGraph": "1.25.1",
           "Microsoft.Identity.Web.UI": "1.25.1",
-          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "6.0.7"
+          "Microsoft.VisualStudio.Web.CodeGeneration.Design": "6.0.7",
+          "NLog": "5.0.1",
+          "NLog.Database": "5.0.1",
+          "NLog.WindowsIdentity": "5.0.0"
         },
         "runtime": {
           "Portal.dll": {}
@@ -1615,6 +1618,37 @@
           "lib/netstandard1.3/Newtonsoft.Json.Bson.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.1.20722"
+          }
+        }
+      },
+      "NLog/5.0.1": {
+        "runtime": {
+          "lib/netstandard2.0/NLog.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.1.1159"
+          }
+        }
+      },
+      "NLog.Database/5.0.1": {
+        "dependencies": {
+          "NLog": "5.0.1"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NLog.Database.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.1.1159"
+          }
+        }
+      },
+      "NLog.WindowsIdentity/5.0.0": {
+        "dependencies": {
+          "NLog": "5.0.1",
+          "System.Security.Principal.Windows": "5.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NLog.WindowsIdentity.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.1032"
           }
         }
       },
@@ -3309,6 +3343,27 @@
       "sha512": "sha512-5PYT/IqQ+UK31AmZiSS102R6EsTo+LGTSI8bp7WAUqDKaF4wHXD8U9u4WxTI1vc64tYi++8p3dk3WWNqPFgldw==",
       "path": "newtonsoft.json.bson/1.0.1",
       "hashPath": "newtonsoft.json.bson.1.0.1.nupkg.sha512"
+    },
+    "NLog/5.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lNErNEPzYiZtUAlgvXpSRxUIPLIDHTLA8pKxkDDV//DCqzwp98FitFemOEmJjIuPvk3GC3ytrQMXsy7P9RTPIw==",
+      "path": "nlog/5.0.1",
+      "hashPath": "nlog.5.0.1.nupkg.sha512"
+    },
+    "NLog.Database/5.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AelsKAqtQYaRvGuJzhqfJYM3pp1OlT2fvtCpWEblUMUfsKVk5hkXrlNOrgA4HSAgoM1XMC3XrzgzS40yBdcGlw==",
+      "path": "nlog.database/5.0.1",
+      "hashPath": "nlog.database.5.0.1.nupkg.sha512"
+    },
+    "NLog.WindowsIdentity/5.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-VAYqtJF1GBLnhIzxJI8g5NTjHhLECoVTO0V7gc2TL1Ef03927xwArcvsMgRAPzNlDBbDby1mOYpJ1n5U5dTMdg==",
+      "path": "nlog.windowsidentity/5.0.0",
+      "hashPath": "nlog.windowsidentity.5.0.0.nupkg.sha512"
     },
     "NuGet.Common/6.2.1": {
       "type": "package",

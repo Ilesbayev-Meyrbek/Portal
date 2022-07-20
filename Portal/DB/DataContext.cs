@@ -5,6 +5,25 @@ namespace Portal.DB
 {
     public class DataContext : DbContext
     {
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<MarketsName> Markets { get; set; }
+        public DbSet<Cashier> Cashiers { get; set; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         public DbSet<Role> Roles { get; set; }
 
 
