@@ -138,7 +138,46 @@ namespace Portal.DB
             }
         }
 
+        public List<MarketsName> GetMarketsForPrivileges(string user)
+        {
+            try
+            {
+                List<MarketsName> markets = new List<MarketsName>();
 
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                if (admin != null)
+                {
+                    markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+                    var market = users.MarketID;
+
+                    if (role.AllMarkets)
+                    {
+                        markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
+
+                return markets;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
 
         /**************************************** Role ************************************************/
 
@@ -331,8 +370,8 @@ namespace Portal.DB
         {
             try
             {
-                _ctx.Entry(user).State = EntityState.Modified;
-                _ctx.SaveChangesAsync();
+                _ctx.Users.Update(user);
+                _ctx.SaveChanges();
 
                 return true;
             }
@@ -353,6 +392,126 @@ namespace Portal.DB
                 User user = _ctx.Users.Find(id);
                 _ctx.Users.Remove(user);
                 _ctx.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Cashiers
+
+        public CashierView GetCashiers(string user, string marketID)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                CashierView cashierView = new CashierView();
+
+                if (admin != null)
+                {
+                    if (string.IsNullOrEmpty(marketID))
+                        marketID = _ctx.Markets.ToList()[0].MarketID;
+
+                    cashierView.Cashiers = _ctx.Cashiers.ToList();//Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    cashierView.IsAdmin = true;
+                    cashierView.UserRole = null;
+                    cashierView.Markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+                    var market = users.MarketID;
+
+                    if (role.AllMarkets)
+                    {
+                        cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        cashierView.IsAdmin = false;
+                        cashierView.UserRole = role;
+                        cashierView.Markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
+                        cashierView.IsAdmin = false;
+                        cashierView.UserRole = role;
+                        cashierView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
+
+                return cashierView;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public Cashier GetCashier(string id, string market)
+        {
+            try
+            {
+                var checkCashierID = _ctx.Cashiers.Where(w => w.ID == id && w.MarketID == market).FirstOrDefault();
+
+                return checkCashierID;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public bool SaveNewCashier(string market, Cashier cashier)
+        {
+            try
+            {
+                cashier.MarketID = market;
+                _ctx.Cashiers.Add(cashier);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return false;
+            }
+        }
+
+        public bool EditCashier(Cashier _cashier)
+        {
+            try
+            {
+                _cashier.DateBegin = DateTime.Now;
+                _cashier.DateEnd = DateTime.Now;
+                _cashier.IsSavedToMarket = "0";
+                _cashier.Password = "";
+                _cashier.TabelNumber = "";
+
+                _ctx.Update(_cashier);
+                _ctx.SaveChanges();
 
                 return true;
             }

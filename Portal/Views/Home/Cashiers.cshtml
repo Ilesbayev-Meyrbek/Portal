@@ -1,0 +1,101 @@
+﻿@model Portal.Models.CashierView
+@{
+    ViewBag.Title = "Кассиры";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="margin-top:25px">
+
+    <a asp-action="CreateCashier" class="my_btn my_btn_success">Добавить кассира</a>
+
+    <br />
+
+    <div style="height:100%; width:1500px; overflow-x: auto;margin:auto;margin-top:25px">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Код магазина</th>
+                    <th>Кассир</th>
+                    <th>Пароль</th>
+                    <th style="width:120px">Администратор</th>
+                    <th style="width:140px">Скидки</th>
+                    <th style="width:140px">Статус</th>
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model.Cashiers)
+                {
+                    string status = string.Empty;
+
+                    if (item.IsSaved)
+                    {
+                        status = "Загружено";
+                    }
+                    else
+                    {
+                        status = "Обновлено";
+                    }
+
+                    if (Model.IsAdmin || Model.UserRole.EditCashiers)
+                    {
+                        <tr class="Search clickable-row" data-href="@Url.Action("EditCashier", "Home", new { ID = item.ID, CashierName = item.CashierName, MarketID = item.MarketID })">
+
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MarketID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CashierName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.IsAdmin)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.IsDiscounter)
+                            </td>
+                            <td>
+                                @status
+                            </td>
+                            @*                      <td>
+                    @if (Model.IsAdmin || Model.UserRole.DeleteCashier)
+                    {
+                    @Html.ActionLink("Удалить", "DeleteCashier", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                    }
+                    </td>*@
+                        </tr>
+                    }
+                    else if (!Model.UserRole.EditCashiers)
+                    {
+                        <tr class="Search">
+
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MarketID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.CashierName)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.IsAdmin)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.IsDiscounter)
+                            </td>
+                            <td>
+                                @status
+                            </td>
+
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
