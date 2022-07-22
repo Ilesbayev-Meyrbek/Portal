@@ -790,8 +790,112 @@ namespace Portal.Controllers
             return true;
         }
 
+        public ActionResult EditCashier(string id, string cashierName, string marketID)
+        {
+            Cashier cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID);
+            //db.Cashiers.Where(w => w.ID == id && w.CashierName == cashierName && w.MarketID == marketID).FirstOrDefault();//await db.Cashiers.FindAsync(id);
 
+            if (cashier == null)
+                return NotFound();
 
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+
+            return View(cashier);
+        }
+
+        // POST: Cashiers/EditCashier
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> EditCashier(Cashier cashier, string cashierID, string idPre, string namePre)
+        {
+            List<MarketsName> markets;
+
+            if (ModelState.IsValid)
+            {
+                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                {
+                    try
+                    {
+                        new Portal.DB.DB(_ctx, _sctx).EditCashier(cashier);
+
+                        //var checkCashierID = new DB(db).GetCashier(cashier.ID, cashier.MarketID);
+
+                        //if(checkCashierID == null)
+                        //{
+                        //    Cashier _cashier = new Cashier();
+                        //    _cashier.ID = cashier.ID;
+                        //    _cashier.CashierName = cashier.CashierName;
+                        //    _cashier.Password = "";
+                        //    _cashier.IsAdmin = cashier.IsAdmin;
+                        //    _cashier.IsDiscounter = cashier.IsDiscounter;
+                        //    _cashier.TabelNumber = string.Empty;
+                        //    _cashier.DateBegin = DateTime.Now;
+                        //    _cashier.DateEnd = DateTime.Now;
+                        //    _cashier.IsGoodDisco = false;
+                        //    _cashier.IsInvoicer = false;
+                        //    _cashier.IsSaved = false;
+                        //    _cashier.IsSavedToPOS = 0;
+                        //    _cashier.IsSavedToMarket = "0";
+                        //    _cashier.MarketID = cashier.MarketID;
+
+                        //    db.Cashiers.Add(_cashier);
+                        //    await db.SaveChangesAsync();
+                        //}
+
+                        return RedirectToAction("Cashiers");
+                    }
+                    catch (Exception)
+                    {
+                        ///return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                    }
+                }
+                else
+                {
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    ViewBag.Markets = markets;
+                    ViewBag.MarketsCount = markets.Count;
+
+                    TempData["msg"] = "<script>alert('Длина пароля должно быть не меньше 6 и не больше 25 символов!');</script>";
+                    return View(cashier);
+                }
+            }
+
+            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+
+            return View(cashier);
+        }
+
+        [HttpGet]
+        [ActionName("DeleteCashier")]
+        public async Task<IActionResult> ConfirmDeleteCashier(int? id)
+        {
+            if (id != null)
+            {
+                User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id);
+
+                ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID).Name;
+
+                if (user != null)
+                    return View(user);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteCashier(int? id)
+        {
+            if (id != null)
+            {
+                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteUser(id);
+                return RedirectToAction("Cashiers");
+            }
+            return NotFound();
+        }
 
 
 

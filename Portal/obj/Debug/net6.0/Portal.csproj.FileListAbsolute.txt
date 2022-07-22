@@ -642,3 +642,7 @@ C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\nlog.config
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.dll
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.Database.dll
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.WindowsIdentity.dll
+C:\Users\HP-ProBook\Desktop\Portal\Portal\bin\Debug\net6.0\nlog.config
+C:\Users\HP-ProBook\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.dll
+C:\Users\HP-ProBook\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.Database.dll
+C:\Users\HP-ProBook\Desktop\Portal\Portal\bin\Debug\net6.0\NLog.WindowsIdentity.dll

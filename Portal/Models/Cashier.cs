@@ -36,7 +36,7 @@ namespace Portal.Models
 
         [Display(Name = "Маркет")]
         //[Key]
-        [Column(Order = 1)]
+        //[Column(Order = 1)]
         public string MarketID { get; set; }
     }
 }
