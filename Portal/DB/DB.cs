@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Portal.Classes;
 using Portal.Models;
 
 namespace Portal.DB
@@ -521,6 +522,106 @@ namespace Portal.DB
                 //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
                 //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
                 //#endregion
+                return false;
+            }
+        }
+
+        #endregion
+
+        #region Keyboards
+
+        public KeyboardView GetKeyboards(string user, string marketID)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                KeyboardView keyboardView = new KeyboardView();
+
+                if (admin != null)
+                {
+                    if (string.IsNullOrEmpty(marketID))
+                        marketID = _ctx.Markets.ToList()[0].MarketID;
+
+                    keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    keyboardView.IsAdmin = true;
+                    keyboardView.UserRole = null;
+                    keyboardView.Markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+
+                    if (role.AllMarkets)
+                    {
+                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        keyboardView.IsAdmin = false;
+                        keyboardView.UserRole = role;
+                        keyboardView.Markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        var market = users.MarketID;
+                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        keyboardView.IsAdmin = false;
+                        keyboardView.UserRole = role;
+                        keyboardView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
+
+                //Log.WriteCashierLog(keyboardView.Keyboards);
+
+                return keyboardView;
+            }
+            catch (Exception ex)
+            {
+                //Log.WriteErrorLog(ex.ToString());
+                return null;
+            }
+        }
+
+        public List<SettingsKey> GetKeys()
+        {
+            try
+            {
+                var keys = _ctx.SettingsKeys.ToList();
+
+                return keys;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public List<SettingsKey> GetKeyCode(string _value)
+        {
+            try
+            {
+                var keyCode = _ctx.SettingsKeys.Where(w => w.Value == _value).ToList();
+
+                return keyCode;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public bool SaveNewKeyboard(string market, Keyboard keyboard)
+        {
+            try
+            {
+                keyboard.MarketID = market;
+                _ctx.Keyboards.Add(keyboard);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
                 return false;
             }
         }

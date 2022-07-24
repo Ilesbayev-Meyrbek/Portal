@@ -9,7 +9,8 @@ namespace Portal.DB
         public DbSet<User> Users { get; set; }
         public DbSet<MarketsName> Markets { get; set; }
         public DbSet<Cashier> Cashiers { get; set; }
-
+        public DbSet<Keyboard> Keyboards { get; set; }
+        public DbSet<SettingsKey> SettingsKeys { get; set; }
 
 
 

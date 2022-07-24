@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "wR/xopaw0w9XPayVWRk30IgwQVoGbonAvxEnhlqyCno=",
+  "Hash": "EK3LY/VCQcegNwvHoek4BodW54MmpXFNgDe/4xEkjsY=",
   "Source": "Portal",
   "BasePath": "_content/Portal",
   "Mode": "Default",
@@ -100,6 +100,23 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\wwwroot\\js\\setButtonValue.js",
+      "SourceId": "Portal",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\wwwroot\\",
+      "BasePath": "_content/Portal",
+      "RelativePath": "js/setButtonValue.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\js\\setButtonValue.js"
     },
     {
       "Identity": "C:\\Users\\HP-ProBook\\Desktop\\Portal\\Portal\\wwwroot\\js\\site.js",
