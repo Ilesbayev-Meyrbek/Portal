@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Portal.Models
@@ -8,17 +7,18 @@ namespace Portal.Models
     public class MarketsName
     {
         [Key]
+
         public string MarketID { get; set; }
         public string Name { get; set; }
         public string POS { get; set; }
         public string POSVersion { get; set; }
         public bool FilesLoaded { get; set; }
 
-        public ICollection<Cashier> Cashiers { get; set; }
+        //public ICollection<Cashier> Cashiers { get; set; }
 
-        public MarketsName()
-        {
-            Cashiers = new List<Cashier>();
-        }
+        //public MarketsName()
+        //{
+        //    Cashiers = new List<Cashier>();
+        //}
     }
 }

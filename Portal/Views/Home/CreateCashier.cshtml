@@ -8,7 +8,7 @@
 @using (Html.BeginForm())
 {
     <form asp-action="CreateCashier" asp-controller="Home">
-
+        
         <div id="upleft">
             <div class="form-group">
                 @Html.LabelFor(model => model.CashierName, "ФИО Кассира", htmlAttributes: new { @class = "control-label col-md-2" })
@@ -71,3 +71,13 @@
 
     </form>
 }
+
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function() {
+        $("#submit").click(function() {
+            document.forms[0].submit();
+            return false;
+        });
+    });
+</script>

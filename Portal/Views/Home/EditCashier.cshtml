@@ -9,49 +9,52 @@
 {
     <form asp-action="EditCashier" asp-controller="Home" asp-route-id="@Model.ID">
 
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.ID)
-        @Html.HiddenFor(model => model.MarketID)
+        <div class="bodyContent" style="height: 100%">
 
-        <input hidden type="text" name="idPre" value="@Model.ID">
-        <input hidden type="text" name="namePre" value="@Model.CashierName">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.HiddenFor(model => model.ID)
+            @Html.HiddenFor(model => model.MarketID)
 
-        <div id="upleft">
-            <div class="form-group">
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.CashierName, new { htmlAttributes = new { @class = "form-control", placeholder = "ФИО Кассира" } })
-                    @Html.ValidationMessageFor(model => model.CashierName, "", new { @class = "text-danger" })
+            <div id="upleft">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CashierName, "ФИО Кассира", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.CashierName, new { htmlAttributes = new { @class = "form-control", placeholder = "ФИО Кассира" } })
+                        @Html.ValidationMessageFor(model => model.CashierName, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ID, "Пароль", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        <input type="text" id="cashierID" name="cashierID" placeholder="Пароль" value="@Model.ID" class="form-control" disabled>
+                        @Html.ValidationMessageFor(model => model.ID, "", new { @class = "text-danger" })
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <div class="col-md-10">
-                    <input type="text" id="cashierID" name="cashierID" placeholder="Пароль" value="@Model.ID" class="form-control" disabled>
-                    @Html.ValidationMessageFor(model => model.ID, "", new { @class = "text-danger" })
-                </div>
+            <div id="upright">
+                @Html.EditorFor(model => model.IsAdmin)
+                @Html.ValidationMessageFor(model => model.IsAdmin, "", new { @class = "text-danger" })
+                @Html.LabelFor(model => model.IsAdmin, "Администратор (расширенные права на кассе)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
+                <br />
+                @Html.EditorFor(model => model.IsDiscounter)
+                @Html.ValidationMessageFor(model => model.IsDiscounter, "", new { @class = "text-danger" })
+                @Html.LabelFor(model => model.IsDiscounter, "Скидки (добавление ручных скидок)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
             </div>
-        </div>
 
-        <div id="upright">
-            @Html.EditorFor(model => model.IsAdmin)
-            @Html.ValidationMessageFor(model => model.IsAdmin, "", new { @class = "text-danger" })
-            @Html.LabelFor(model => model.IsAdmin, "Администратор (расширенные права на кассе)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
-            <br />
-            @Html.EditorFor(model => model.IsDiscounter)
-            @Html.ValidationMessageFor(model => model.IsDiscounter, "", new { @class = "text-danger" })
-            @Html.LabelFor(model => model.IsDiscounter, "Скидки (добавление ручных скидок)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
-        </div>
+            <div class="form-actions no-color">
+                <p>
+                    <div class="btnPosition">
+                        <input type="submit" value="Изменить" class="my_btn my_btn_success" />
+                    </div>
 
-        <div class="form-actions no-color">
-            <p>
-                <div class="btnPosition">
-                    <input type="submit" value="Изменить" class="my_btn my_btn_success" />
-                </div>
+                    <div class="btnPositionCancel">
+                        @Html.ActionLink("Отмена","Cashiers","Home",null, new { @class="my_btn my_btn_danger"})
+                    </div>
+                </p>
+            </div>
 
-                <div class="btnPositionCancel">
-                    @Html.ActionLink("Отмена","Cashiers","Home",null, new { @class="my_btn my_btn_danger"})
-                </div>
-            </p>
         </div>
 
     </form>

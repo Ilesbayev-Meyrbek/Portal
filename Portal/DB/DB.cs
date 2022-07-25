@@ -424,7 +424,7 @@ namespace Portal.DB
                     if (string.IsNullOrEmpty(marketID))
                         marketID = _ctx.Markets.ToList()[0].MarketID;
 
-                    cashierView.Cashiers = _ctx.Cashiers.ToList();//Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                     cashierView.IsAdmin = true;
                     cashierView.UserRole = null;
                     cashierView.Markets = _ctx.Markets.ToList();
