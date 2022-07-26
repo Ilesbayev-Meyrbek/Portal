@@ -9,8 +9,8 @@ namespace Portal.Models
     {
         [Required(ErrorMessage = "Укажите пароль пользователя!")]
         [Display(Name = "Пароль")]
-        [Key]
-        [Column(Order = 0)]
+        //[Key]
+        //[Column(Order = 0)]
         public string ID { get; set; }
 
         [Required(ErrorMessage = "Укажите имя пользователя!")]

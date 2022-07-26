@@ -49,7 +49,7 @@ namespace Portal.Controllers
         }
 
         #region Roles
-        
+
         public ActionResult Roles()
         {
             var roles = new Portal.DB.DB(_ctx, _sctx).GetRoles();
@@ -159,7 +159,7 @@ namespace Portal.Controllers
 
             return View(users);
         }
-        
+
         // GET: Role/Create
         public ActionResult CreateUser()
         {
@@ -198,7 +198,7 @@ namespace Portal.Controllers
 
             return View(user);
         }
-        
+
         // POST: Role/Create
         [HttpPost]
         public async Task<ActionResult> CreateUser(User user)
@@ -391,7 +391,7 @@ namespace Portal.Controllers
                 User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id);
 
                 ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID).Name;
-                
+
                 if (user != null)
                     return View(user);
             }
@@ -467,318 +467,288 @@ namespace Portal.Controllers
 
         // POST: Cashiers/CreateCashier
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateCashier(Cashier cashier)//, FormCollection form, string[] SelectedMarkets, string MarketForUser)
+        public async Task<ActionResult> CreateCashier(Cashier cashier, string[] SelectedMarkets)
         {
             List<MarketsName> markets = new List<MarketsName>();
 
             //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
             //string _data = string.Empty;
 
-            if (ModelState.IsValid)
+            if (SelectedMarkets.Length != 0)
             {
-                //if (SelectedMarkets != null)
-                //{
-                //    if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
-                //    {
-                //        if (IsDigitsOnly(cashier.ID))
-                //        {
-                //            for (int i = 0; i < SelectedMarkets.Length; i++)
-                //            {
-                //                var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, SelectedMarkets[i]);
+                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                {
+                    if (IsDigitsOnly(cashier.ID))
+                    {
+                        for (int i = 0; i < SelectedMarkets.Length; i++)
+                        {
+                            var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, SelectedMarkets[i]);
 
-                //                if (checkCashierID == null)
-                //                {
-                //                    if (SelectedMarkets[i] != "All")
-                //                    {
-                //                        Cashier _cashier = new Cashier();
-                //                        _cashier.ID = cashier.ID;
-                //                        _cashier.CashierName = cashier.CashierName;
-                //                        _cashier.IsAdmin = cashier.IsAdmin;
-                //                        _cashier.IsDiscounter = cashier.IsDiscounter;
-                //                        _cashier.Password = "";
-                //                        _cashier.TabelNumber = string.Empty;
-                //                        _cashier.DateBegin = DateTime.Now;
-                //                        _cashier.DateEnd = DateTime.Now;
-                //                        _cashier.IsGoodDisco = false;
-                //                        _cashier.IsInvoicer = false;
-                //                        _cashier.IsSaved = false;
-                //                        _cashier.IsSavedToPOS = 0;
-                //                        _cashier.IsSavedToMarket = "0";
-                //                        _cashier.MarketID = SelectedMarkets[i];
+                            if (checkCashierID == null)
+                            {
+                                if (SelectedMarkets[i] != "All")
+                                {
+                                    Cashier _cashier = new Cashier();
+                                    _cashier.ID = cashier.ID;
+                                    _cashier.CashierName = cashier.CashierName;
+                                    _cashier.IsAdmin = cashier.IsAdmin;
+                                    _cashier.IsDiscounter = cashier.IsDiscounter;
+                                    _cashier.Password = "";
+                                    _cashier.TabelNumber = string.Empty;
+                                    _cashier.DateBegin = DateTime.Now;
+                                    _cashier.DateEnd = DateTime.Now;
+                                    _cashier.IsGoodDisco = false;
+                                    _cashier.IsInvoicer = false;
+                                    _cashier.IsSaved = false;
+                                    _cashier.IsSavedToPOS = 0;
+                                    _cashier.IsSavedToMarket = "0";
+                                    _cashier.MarketID = SelectedMarkets[i];
 
-                //                        var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(SelectedMarkets[i], _cashier);
+                                    var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(SelectedMarkets[i], _cashier);
 
-                //                        //#region Log
-                //                        //_data = string.Empty;
-                //                        //_data = "ID = " + cashier.ID + ";\n";
-                //                        //_data = _data + "TabelNumber = \"\";\n";
-                //                        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //                        //_data = _data + "Password = \"\";\n";
-                //                        //_data = _data + "DateBegin = " + DateTime.Now + ";\n";
-                //                        //_data = _data + "DateEnd = " + DateTime.Now + ";\n";
-                //                        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //                        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //                        //_data = _data + "IsGoodDisco = false;\n";
-                //                        //_data = _data + "IsInvoicer = false;\n";
-                //                        //_data = _data + "IsSaved = false;\n";
-                //                        //_data = _data + "IsSavedToPOS = 0;\n";
-                //                        //_data = _data + "IsSavedToMarket = 0;\n";
-                //                        //_data = _data + "MarketID = " + SelectedMarkets[i] + ";\n";
-                //                        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
-                //                        //#endregion
-                //                    }
-                //                }
-                //                else
-                //                {
-                //                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //                    ViewBag.Markets = markets;
-                //                    ViewBag.MarketsCount = markets.Count;
+                                    //#region Log
+                                    //_data = string.Empty;
+                                    //_data = "ID = " + cashier.ID + ";\n";
+                                    //_data = _data + "TabelNumber = \"\";\n";
+                                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                    //_data = _data + "Password = \"\";\n";
+                                    //_data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                    //_data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                    //_data = _data + "IsGoodDisco = false;\n";
+                                    //_data = _data + "IsInvoicer = false;\n";
+                                    //_data = _data + "IsSaved = false;\n";
+                                    //_data = _data + "IsSavedToPOS = 0;\n";
+                                    //_data = _data + "IsSavedToMarket = 0;\n";
+                                    //_data = _data + "MarketID = " + SelectedMarkets[i] + ";\n";
+                                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
+                                    //#endregion
+                                }
+                            }
+                            else
+                            {
+                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                                ViewBag.Markets = markets;
+                                ViewBag.MarketsCount = markets.Count;
 
-                //                    //#region Log
-                //                    //_data = string.Empty;
-                //                    //_data = "ID = " + cashier.ID + ";\n";
-                //                    //_data = _data + "TabelNumber = \"\";\n";
-                //                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //                    //_data = _data + "Password = \"\";\n";
-                //                    //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //                    //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //                    //_data = _data + "IsGoodDisco = false;\n";
-                //                    //_data = _data + "IsInvoicer = false;\n";
-                //                    //_data = _data + "IsSaved = false;\n";
-                //                    //_data = _data + "IsSavedToPOS = 0;\n";
-                //                    //_data = _data + "IsSavedToMarket = 0;\n";
-                //                    //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким именем или паролем уже существует");
-                //                    //#endregion
+                                //#region Log
+                                //_data = string.Empty;
+                                //_data = "ID = " + cashier.ID + ";\n";
+                                //_data = _data + "TabelNumber = \"\";\n";
+                                //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                //_data = _data + "Password = \"\";\n";
+                                //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                                //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                                //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                //_data = _data + "IsGoodDisco = false;\n";
+                                //_data = _data + "IsInvoicer = false;\n";
+                                //_data = _data + "IsSaved = false;\n";
+                                //_data = _data + "IsSavedToPOS = 0;\n";
+                                //_data = _data + "IsSavedToMarket = 0;\n";
+                                //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким именем или паролем уже существует");
+                                //#endregion
 
-                //                    TempData["msg"] = "<script>alert('Пользователь с таким именем или паролем уже существует!');</script>";
-                //                    return View(cashier);
-                //                }
-                //            }
+                                TempData["msg"] = "<script>alert('Пользователь с таким именем или паролем уже существует!');</script>";
+                                return View(cashier);
+                            }
+                        }
 
-                //            return RedirectToAction("Cashiers");
-                //        }
-                //        else
-                //        {
-                //            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //            ViewBag.Markets = markets;
-                //            ViewBag.MarketsCount = markets.Count;
+                        return RedirectToAction("Cashiers");
+                    }
+                    else
+                    {
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        ViewBag.Markets = markets;
+                        ViewBag.MarketsCount = markets.Count;
 
-                //            //#region Log
-                //            //_data = string.Empty;
-                //            //_data = "ID = " + cashier.ID + ";\n";
-                //            //_data = _data + "TabelNumber = \"\";\n";
-                //            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //            //_data = _data + "Password = \"\";\n";
-                //            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //            //_data = _data + "IsGoodDisco = false;\n";
-                //            //_data = _data + "IsInvoicer = false;\n";
-                //            //_data = _data + "IsSaved = false;\n";
-                //            //_data = _data + "IsSavedToPOS = 0;\n";
-                //            //_data = _data + "IsSavedToMarket = 0;\n";
-                //            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
-                //            //#endregion
+                        //#region Log
+                        //_data = string.Empty;
+                        //_data = "ID = " + cashier.ID + ";\n";
+                        //_data = _data + "TabelNumber = \"\";\n";
+                        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                        //_data = _data + "Password = \"\";\n";
+                        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                        //_data = _data + "IsGoodDisco = false;\n";
+                        //_data = _data + "IsInvoicer = false;\n";
+                        //_data = _data + "IsSaved = false;\n";
+                        //_data = _data + "IsSavedToPOS = 0;\n";
+                        //_data = _data + "IsSavedToMarket = 0;\n";
+                        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
+                        //#endregion
 
-                //            TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
-                //            return View(cashier);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //        ViewBag.Markets = markets;
-                //        ViewBag.MarketsCount = markets.Count;
+                        TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
+                        return View(cashier);
+                    }
+                }
+                else
+                {
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    ViewBag.Markets = markets;
+                    ViewBag.MarketsCount = markets.Count;
 
-                //        //#region Log
-                //        //_data = string.Empty;
-                //        //_data = "ID = " + cashier.ID + ";\n";
-                //        //_data = _data + "TabelNumber = \"\";\n";
-                //        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //        //_data = _data + "Password = \"\";\n";
-                //        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //        //_data = _data + "IsGoodDisco = false;\n";
-                //        //_data = _data + "IsInvoicer = false;\n";
-                //        //_data = _data + "IsSaved = false;\n";
-                //        //_data = _data + "IsSavedToPOS = 0;\n";
-                //        //_data = _data + "IsSavedToMarket = 0;\n";
-                //        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
-                //        //#endregion
+                    //#region Log
+                    //_data = string.Empty;
+                    //_data = "ID = " + cashier.ID + ";\n";
+                    //_data = _data + "TabelNumber = \"\";\n";
+                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                    //_data = _data + "Password = \"\";\n";
+                    //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                    //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                    //_data = _data + "IsGoodDisco = false;\n";
+                    //_data = _data + "IsInvoicer = false;\n";
+                    //_data = _data + "IsSaved = false;\n";
+                    //_data = _data + "IsSavedToPOS = 0;\n";
+                    //_data = _data + "IsSavedToMarket = 0;\n";
+                    //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
+                    //#endregion
 
-                //        TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
-                //        return View(cashier);
-                //    }
-                //}
-                //else
-                //{
-                //    if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
-                //    {
-                //        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //        string mm = markets[0].MarketID;
-
-                //        var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, mm);
-
-                //        if (checkCashierID == null)
-                //        {
-                //            if (IsDigitsOnly(cashier.ID))
-                //            {
-                //                cashier.Password = "";
-                //                cashier.TabelNumber = string.Empty;
-                //                cashier.DateBegin = DateTime.Now;
-                //                cashier.DateEnd = DateTime.Now;
-                //                cashier.IsGoodDisco = false;
-                //                cashier.IsInvoicer = false;
-                //                cashier.IsSaved = false;
-                //                cashier.IsSavedToPOS = 0;
-                //                cashier.IsSavedToMarket = "0";
-                //                cashier.MarketID = mm;
-
-                //                var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(mm, cashier);
-
-                //                //#region Log
-                //                //_data = string.Empty;
-                //                //_data = "ID = " + cashier.ID + ";\n";
-                //                //_data = _data + "TabelNumber = \"\";\n";
-                //                //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //                //_data = _data + "Password = \"\";\n";
-                //                //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //                //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //                //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //                //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //                //_data = _data + "IsGoodDisco = false;\n";
-                //                //_data = _data + "IsInvoicer = false;\n";
-                //                //_data = _data + "IsSaved = false;\n";
-                //                //_data = _data + "IsSavedToPOS = 0;\n";
-                //                //_data = _data + "IsSavedToMarket = 0;\n";
-                //                //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
-                //                //#endregion
-
-                //                return RedirectToAction("Cashiers");
-                //            }
-                //            else
-                //            {
-                //                ViewBag.Markets = markets;
-                //                ViewBag.MarketsCount = markets.Count;
-
-                //                //#region Log
-                //                //_data = string.Empty;
-                //                //_data = "ID = " + cashier.ID + ";\n";
-                //                //_data = _data + "TabelNumber = \"\";\n";
-                //                //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //                //_data = _data + "Password = \"\";\n";
-                //                //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //                //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //                //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //                //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //                //_data = _data + "IsGoodDisco = false;\n";
-                //                //_data = _data + "IsInvoicer = false;\n";
-                //                //_data = _data + "IsSaved = false;\n";
-                //                //_data = _data + "IsSavedToPOS = 0;\n";
-                //                //_data = _data + "IsSavedToMarket = 0;\n";
-                //                //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
-                //                //#endregion
-
-                //                TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
-                //                return View(cashier);
-                //            }
-                //        }
-                //        else
-                //        {
-                //            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //            ViewBag.Markets = markets;
-                //            ViewBag.MarketsCount = markets.Count;
-
-                //            //#region Log
-                //            //_data = string.Empty;
-                //            //_data = "ID = " + cashier.ID + ";\n";
-                //            //_data = _data + "TabelNumber = \"\";\n";
-                //            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //            //_data = _data + "Password = \"\";\n";
-                //            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //            //_data = _data + "IsGoodDisco = false;\n";
-                //            //_data = _data + "IsInvoicer = false;\n";
-                //            //_data = _data + "IsSaved = false;\n";
-                //            //_data = _data + "IsSavedToPOS = 0;\n";
-                //            //_data = _data + "IsSavedToMarket = 0;\n";
-                //            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким номером уже существует");
-                //            //#endregion
-
-                //            TempData["msg"] = "<script>alert('Пользователь с таким номером уже существует!');</script>";
-                //            return View(cashier);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                //        ViewBag.Markets = markets;
-                //        ViewBag.MarketsCount = markets.Count;
-
-                //        //#region Log
-                //        //_data = string.Empty;
-                //        //_data = "ID = " + cashier.ID + ";\n";
-                //        //_data = _data + "TabelNumber = \"\";\n";
-                //        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                //        //_data = _data + "Password = \"\";\n";
-                //        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                //        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                //        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                //        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                //        //_data = _data + "IsGoodDisco = false;\n";
-                //        //_data = _data + "IsInvoicer = false;\n";
-                //        //_data = _data + "IsSaved = false;\n";
-                //        //_data = _data + "IsSavedToPOS = 0;\n";
-                //        //_data = _data + "IsSavedToMarket = 0;\n";
-                //        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                //        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
-                //        //#endregion
-
-                //        TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
-                //        return View(cashier);
-                //    }
-                //}
+                    TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
+                    return View(cashier);
+                }
             }
+            else
+            {
+                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                {
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    string mm = markets[0].MarketID;
 
-            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-            ViewBag.Markets = markets;
-            ViewBag.MarketsCount = markets.Count;
+                    var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, mm);
 
-            //#region Log
-            //_data = string.Empty;
-            //_data = "ID = " + cashier.ID + ";\n";
-            //_data = _data + "TabelNumber = \"\";\n";
-            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-            //_data = _data + "Password = \"\";\n";
-            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-            //_data = _data + "IsGoodDisco = false;\n";
-            //_data = _data + "IsInvoicer = false;\n";
-            //_data = _data + "IsSaved = false;\n";
-            //_data = _data + "IsSavedToPOS = 0;\n";
-            //_data = _data + "IsSavedToMarket = 0;\n";
-            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Некорректное заполнение полей");
-            //#endregion
+                    if (checkCashierID == null)
+                    {
+                        if (IsDigitsOnly(cashier.ID))
+                        {
+                            cashier.Password = "";
+                            cashier.TabelNumber = string.Empty;
+                            cashier.DateBegin = DateTime.Now;
+                            cashier.DateEnd = DateTime.Now;
+                            cashier.IsGoodDisco = false;
+                            cashier.IsInvoicer = false;
+                            cashier.IsSaved = false;
+                            cashier.IsSavedToPOS = 0;
+                            cashier.IsSavedToMarket = "0";
+                            cashier.MarketID = mm;
 
-            TempData["msg"] = "<script>alert('Некорректное заполнение полей!');</script>";
-            return View(cashier);
+                            var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(mm, cashier);
+
+                            //#region Log
+                            //_data = string.Empty;
+                            //_data = "ID = " + cashier.ID + ";\n";
+                            //_data = _data + "TabelNumber = \"\";\n";
+                            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                            //_data = _data + "Password = \"\";\n";
+                            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                            //_data = _data + "IsGoodDisco = false;\n";
+                            //_data = _data + "IsInvoicer = false;\n";
+                            //_data = _data + "IsSaved = false;\n";
+                            //_data = _data + "IsSavedToPOS = 0;\n";
+                            //_data = _data + "IsSavedToMarket = 0;\n";
+                            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
+                            //#endregion
+
+                            return RedirectToAction("Cashiers");
+                        }
+                        else
+                        {
+                            ViewBag.Markets = markets;
+                            ViewBag.MarketsCount = markets.Count;
+
+                            //#region Log
+                            //_data = string.Empty;
+                            //_data = "ID = " + cashier.ID + ";\n";
+                            //_data = _data + "TabelNumber = \"\";\n";
+                            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                            //_data = _data + "Password = \"\";\n";
+                            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                            //_data = _data + "IsGoodDisco = false;\n";
+                            //_data = _data + "IsInvoicer = false;\n";
+                            //_data = _data + "IsSaved = false;\n";
+                            //_data = _data + "IsSavedToPOS = 0;\n";
+                            //_data = _data + "IsSavedToMarket = 0;\n";
+                            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
+                            //#endregion
+
+                            TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
+                            return View(cashier);
+                        }
+                    }
+                    else
+                    {
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        ViewBag.Markets = markets;
+                        ViewBag.MarketsCount = markets.Count;
+
+                        //#region Log
+                        //_data = string.Empty;
+                        //_data = "ID = " + cashier.ID + ";\n";
+                        //_data = _data + "TabelNumber = \"\";\n";
+                        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                        //_data = _data + "Password = \"\";\n";
+                        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                        //_data = _data + "IsGoodDisco = false;\n";
+                        //_data = _data + "IsInvoicer = false;\n";
+                        //_data = _data + "IsSaved = false;\n";
+                        //_data = _data + "IsSavedToPOS = 0;\n";
+                        //_data = _data + "IsSavedToMarket = 0;\n";
+                        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким номером уже существует");
+                        //#endregion
+
+                        TempData["msg"] = "<script>alert('Пользователь с таким номером уже существует!');</script>";
+                        return View(cashier);
+                    }
+                }
+                else
+                {
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    ViewBag.Markets = markets;
+                    ViewBag.MarketsCount = markets.Count;
+
+                    //#region Log
+                    //_data = string.Empty;
+                    //_data = "ID = " + cashier.ID + ";\n";
+                    //_data = _data + "TabelNumber = \"\";\n";
+                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                    //_data = _data + "Password = \"\";\n";
+                    //_data = _data + "DateBegin = " + DateTime.Now + "\n";
+                    //_data = _data + "DateEnd = " + DateTime.Now + "\n";
+                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                    //_data = _data + "IsGoodDisco = false;\n";
+                    //_data = _data + "IsInvoicer = false;\n";
+                    //_data = _data + "IsSaved = false;\n";
+                    //_data = _data + "IsSavedToPOS = 0;\n";
+                    //_data = _data + "IsSavedToMarket = 0;\n";
+                    //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
+                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
+                    //#endregion
+
+                    TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
+                    return View(cashier);
+                }
+            }
         }
 
         bool IsDigitsOnly(string str)
@@ -795,7 +765,6 @@ namespace Portal.Controllers
         public ActionResult EditCashier(string id, string cashierName, string marketID)
         {
             Cashier cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID);
-            //db.Cashiers.Where(w => w.ID == id && w.CashierName == cashierName && w.MarketID == marketID).FirstOrDefault();//await db.Cashiers.FindAsync(id);
 
             if (cashier == null)
                 return NotFound();
@@ -809,69 +778,57 @@ namespace Portal.Controllers
 
         // POST: Cashiers/EditCashier
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> EditCashier(Cashier cashier, string cashierID, string idPre, string namePre)
+        public async Task<ActionResult> EditCashier(Cashier cashier)
         {
             List<MarketsName> markets;
 
-            if (string.IsNullOrEmpty(cashier.TabelNumber)) cashier.TabelNumber = "";
-
-
-            if (ModelState.IsValid)
+            if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
             {
-                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                try
                 {
-                    try
-                    {
-                        new Portal.DB.DB(_ctx, _sctx).EditCashier(cashier);
+                    new Portal.DB.DB(_ctx, _sctx).EditCashier(cashier);
 
-                        //var checkCashierID = new DB(db).GetCashier(cashier.ID, cashier.MarketID);
+                    //var checkCashierID = new DB(db).GetCashier(cashier.ID, cashier.MarketID);
 
-                        //if(checkCashierID == null)
-                        //{
-                        //    Cashier _cashier = new Cashier();
-                        //    _cashier.ID = cashier.ID;
-                        //    _cashier.CashierName = cashier.CashierName;
-                        //    _cashier.Password = "";
-                        //    _cashier.IsAdmin = cashier.IsAdmin;
-                        //    _cashier.IsDiscounter = cashier.IsDiscounter;
-                        //    _cashier.TabelNumber = string.Empty;
-                        //    _cashier.DateBegin = DateTime.Now;
-                        //    _cashier.DateEnd = DateTime.Now;
-                        //    _cashier.IsGoodDisco = false;
-                        //    _cashier.IsInvoicer = false;
-                        //    _cashier.IsSaved = false;
-                        //    _cashier.IsSavedToPOS = 0;
-                        //    _cashier.IsSavedToMarket = "0";
-                        //    _cashier.MarketID = cashier.MarketID;
+                    //if(checkCashierID == null)
+                    //{
+                    //    Cashier _cashier = new Cashier();
+                    //    _cashier.ID = cashier.ID;
+                    //    _cashier.CashierName = cashier.CashierName;
+                    //    _cashier.Password = "";
+                    //    _cashier.IsAdmin = cashier.IsAdmin;
+                    //    _cashier.IsDiscounter = cashier.IsDiscounter;
+                    //    _cashier.TabelNumber = string.Empty;
+                    //    _cashier.DateBegin = DateTime.Now;
+                    //    _cashier.DateEnd = DateTime.Now;
+                    //    _cashier.IsGoodDisco = false;
+                    //    _cashier.IsInvoicer = false;
+                    //    _cashier.IsSaved = false;
+                    //    _cashier.IsSavedToPOS = 0;
+                    //    _cashier.IsSavedToMarket = "0";
+                    //    _cashier.MarketID = cashier.MarketID;
 
-                        //    db.Cashiers.Add(_cashier);
-                        //    await db.SaveChangesAsync();
-                        //}
+                    //    db.Cashiers.Add(_cashier);
+                    //    await db.SaveChangesAsync();
+                    //}
 
-                        return RedirectToAction("Cashiers");
-                    }
-                    catch (Exception)
-                    {
-                        ///return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-                    }
+                    return RedirectToAction("Cashiers");
                 }
-                else
+                catch (Exception)
                 {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                    ViewBag.Markets = markets;
-                    ViewBag.MarketsCount = markets.Count;
-
-                    TempData["msg"] = "<script>alert('Длина пароля должно быть не меньше 6 и не больше 25 символов!');</script>";
-                    return View(cashier);
+                    return NotFound();
                 }
             }
+            else
+            {
+                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                ViewBag.Markets = markets;
+                ViewBag.MarketsCount = markets.Count;
 
-            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-            ViewBag.Markets = markets;
-            ViewBag.MarketsCount = markets.Count;
+                TempData["msg"] = "<script>alert('Длина пароля должно быть не меньше 6 и не больше 25 символов!');</script>";
+                return View(cashier);
+            }
 
-            return View(cashier);
         }
 
         [HttpGet]

@@ -46,5 +46,13 @@ namespace Portal.DB
            : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.Entity<Cashier>().HasKey(table => new {
+                table.ID,
+                table.MarketID
+            });
+        }
     }
 }

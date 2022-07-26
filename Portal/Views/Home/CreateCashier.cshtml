@@ -8,65 +8,69 @@
 @using (Html.BeginForm())
 {
     <form asp-action="CreateCashier" asp-controller="Home">
-        
-        <div id="upleft">
-            <div class="form-group">
-                @Html.LabelFor(model => model.CashierName, "ФИО Кассира", htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.CashierName, "")
+
+        <div class="bodyContent" style="height: 100%">
+
+            <div id="upleft">
+                <div class="form-group">
+                    @Html.LabelFor(model => model.CashierName, "ФИО Кассира", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.CashierName, "")
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ID, "Пароль", htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-10">
+                        @Html.EditorFor(model => model.ID, "", new { @type = "number" })
+                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                @Html.LabelFor(model => model.ID, "Пароль", htmlAttributes: new { @class = "control-label col-md-2" })
-                <div class="col-md-10">
-                    @Html.EditorFor(model => model.ID, "", new { @type = "number" })
-                </div>
+
+            <div id="upright">
+
+                @Html.EditorFor(model => model.IsAdmin)
+                @Html.ValidationMessageFor(model => model.IsAdmin, "", new { @class = "text-danger" })
+                @Html.LabelFor(model => model.IsAdmin, "Администратор (расширенные права на кассе)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
+                <br />
+                @Html.EditorFor(model => model.IsDiscounter)
+                @Html.ValidationMessageFor(model => model.IsDiscounter, "", new { @class = "text-danger" })
+                @Html.LabelFor(model => model.IsDiscounter, "Скидки (добавление ручных скидок)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
             </div>
-        </div>
 
-        <div id="upright">
+            @if (ViewBag.MarketsCount > 1)
+            {
+                <div class="form-group">
+                    <div style="margin-left: 18%; overflow: auto; height: 250PX; width: 300px;">
+                        <input id="checkbox" type="checkbox" name="SelectedMarkets" value="All" /><label style="margin-left: 10px"> Все магазины</label><br />
+                        <p id="controls">
+                            @foreach (var item in ViewBag.Markets)
+                            {
+                                <input type="checkbox" name="SelectedMarkets" value="@item.MarketID" />
 
-            @Html.EditorFor(model => model.IsAdmin)
-            @Html.ValidationMessageFor(model => model.IsAdmin, "", new { @class = "text-danger" })
-            @Html.LabelFor(model => model.IsAdmin, "Администратор (расширенные права на кассе)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
-            <br />
-            @Html.EditorFor(model => model.IsDiscounter)
-            @Html.ValidationMessageFor(model => model.IsDiscounter, "", new { @class = "text-danger" })
-            @Html.LabelFor(model => model.IsDiscounter, "Скидки (добавление ручных скидок)", htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
-        </div>
+                                <label style="margin-left: 10px">
+                                    @item.Name
+                                </label>
 
-        @if (ViewBag.MarketsCount > 1)
-        {
-            <div class="form-group">
-                <div style="margin-left: 18%; overflow: auto; height: 250PX; width: 300px;">
-                    <input id="checkbox" type="checkbox" name="SelectedMarkets" value="All" /><label style="margin-left: 10px"> Все магазины</label><br />
-                    <p id="controls">
-                        @foreach (var item in ViewBag.Markets)
-                        {
-                            <input type="checkbox" name="SelectedMarkets" value="@item.MarketID" />
-
-                            <label style="margin-left: 10px">
-                                @item.Name
-                            </label>
-
-                            <br />
-                        }
-                    </p>
+                                <br />
+                            }
+                        </p>
+                    </div>
                 </div>
+            }
+
+
+            <div class="form-actions no-color">
+                <p>
+                    <div class="btnPosition">
+                        <input type="submit" value="Сохранить" class="my_btn my_btn_success" />
+                    </div>
+
+                    <div class="btnPositionCancel">
+                        @Html.ActionLink("Отмена","Cashiers","Home",null, new { @class="my_btn my_btn_danger"})
+                    </div>
+                </p>
             </div>
-        }
 
-
-        <div class="form-actions no-color">
-            <p>
-                <div class="btnPosition">
-                    <input type="submit" value="Сохранить" class="my_btn my_btn_success" />
-                </div>
-
-                <div class="btnPositionCancel">
-                    @Html.ActionLink("Отмена","Cashiers","Home",null, new { @class="my_btn my_btn_danger"})
-                </div>
-            </p>
         </div>
 
     </form>
