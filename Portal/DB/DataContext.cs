@@ -53,6 +53,17 @@ namespace Portal.DB
                 table.ID,
                 table.MarketID
             });
+
+            builder.Entity<Keyboard>(entity =>
+            {
+                entity.HasKey(e => e.ID);
+                entity.Property(e => e.MarketID).IsRequired();
+                entity.Property(e => e.Pos_num).IsRequired();
+                entity.Property(e => e.IsSavedToPOS).IsRequired();
+                entity.Property(e => e.IsSaved).IsRequired();
+            });
+                
+
         }
     }
 }

@@ -161,6 +161,11 @@ function setValues() {
             document.getElementById(id).value = id + ":" + document.getElementById(buttons[i].id).value.trim();
         }
     }
+
+    $("#submit").click(function () {
+        document.forms[0].submit();
+        return false;
+    });
 }
 
 function myFunction() {
