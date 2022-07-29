@@ -903,7 +903,7 @@ namespace Portal.Controllers
 
         // POST: Keyboards/CreateKeyboard
         [HttpPost]
-        public async Task<ActionResult> CreateKeyboard(Keyboard keyboard, string[] btnkeyH, FormCollection form, string MarketForUser)
+        public async Task<ActionResult> CreateKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
         {
             List<string> valLst = new List<string>();
 
@@ -915,7 +915,8 @@ namespace Portal.Controllers
 
                 if (value.Length > 2)
                 {
-                    var keyCode = new Portal.DB.DB(_ctx, _sctx).GetKeyCode(value);
+                    //var keyCode = new Portal.DB.DB(_ctx, _sctx).GetKeyCode(value);
+                    var keyCode = settingsKey.Where(w => w.Value == value).ToList();
 
                     if (keyCode != null && keyCode.Count > 0)
                     {
@@ -930,7 +931,7 @@ namespace Portal.Controllers
                 }
             }
 
-            if (ModelState.IsValid && valLst.Count > 0)
+            if (!string.IsNullOrEmpty(MarketForUser) && valLst.Count > 0)
             {
                 for (int i = 0; i < valLst.Count; i++)
                 {
@@ -1000,6 +1001,137 @@ namespace Portal.Controllers
                 keyboard.IsSaved = false;
 
                 var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewKeyboard(MarketForUser, keyboard);
+
+                return RedirectToAction("Keyboards");
+            }
+
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+            ViewBag.SettingsKey = settingsKey;
+
+            TempData["msg"] = "<script>alert('Не корректное заполнение полей!');</script>";
+
+            return View(keyboard);
+        }
+
+        // GET: Keyboards/EditKeyboard
+        public ActionResult EditKeyboard(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var sk = new Portal.DB.DB(_ctx, _sctx).GetKeys();
+            Keyboard keyboard = new Portal.DB.DB(_ctx, _sctx).GetKeyboard(id);
+            keyboard = ReplaceKeysValue(keyboard, sk);
+
+            if (keyboard == null)
+                return NotFound();
+
+            ViewBag.MarketID = keyboard.MarketID;
+            ViewBag.SettingsKey = sk;
+
+            return View(keyboard);
+        }
+
+        // POST: Keyboards/EditKeyboard
+        [HttpPost]
+        public async Task<ActionResult> EditKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
+        {
+            List<string> valLst = new List<string>();
+
+            var settingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys();
+
+            for (int i = 0; i < btnkeyH.Length; i++)
+            {
+                string value = btnkeyH[i].ToString().Split(':')[1].Trim().Replace("\n", "");
+
+                if (value.Length > 2)
+                {
+                    var keyCode = settingsKey.Where(w => w.Value == value).ToList();
+
+                    if (keyCode != null && keyCode.Count > 0)
+                    {
+                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), keyCode[0].KeyCode);
+                        valLst.Add(str);
+                    }
+                    else if (IsDigitsOnly(value))
+                    {
+                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), value);
+                        valLst.Add(str);
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(MarketForUser) && valLst.Count > 0)
+            {
+                for (int i = 0; i < valLst.Count; i++)
+                {
+                    string strID = valLst[i].ToString().Split(':')[0];
+                    string strValue = valLst[i].ToString().Split(':')[1].Trim().Replace("\n", "");
+
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn1H") keyboard.Key_1 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn2H") keyboard.Key_2 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn3H") keyboard.Key_3 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn4H") keyboard.Key_4 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn5H") keyboard.Key_5 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn6H") keyboard.Key_6 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn7H") keyboard.Key_7 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn8H") keyboard.Key_8 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn9H") keyboard.Key_9 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn10H") keyboard.Key_10 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn11H") keyboard.Key_11 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn12H") keyboard.Key_12 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn13H") keyboard.Key_13 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn14H") keyboard.Key_14 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn15H") keyboard.Key_15 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn16H") keyboard.Key_16 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn17H") keyboard.Key_17 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn30H") keyboard.Key_30 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn31H") keyboard.Key_31 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn32H") keyboard.Key_32 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn33H") keyboard.Key_33 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn34H") keyboard.Key_34 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn35H") keyboard.Key_35 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn36H") keyboard.Key_36 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn37H") keyboard.Key_37 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn38H") keyboard.Key_38 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn39H") keyboard.Key_39 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn40H") keyboard.Key_40 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn41H") keyboard.Key_41 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn42H") keyboard.Key_42 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn43H") keyboard.Key_43 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn44H") keyboard.Key_44 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn45H") keyboard.Key_45 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn46H") keyboard.Key_46 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn47H") keyboard.Key_47 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn48H") keyboard.Key_48 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn49H") keyboard.Key_49 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn50H") keyboard.Key_50 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn51H") keyboard.Key_51 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn52H") keyboard.Key_52 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn53H") keyboard.Key_53 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn54H") keyboard.Key_54 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn55H") keyboard.Key_55 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn56H") keyboard.Key_56 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn57H") keyboard.Key_57 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn58H") keyboard.Key_58 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn59H") keyboard.Key_59 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn60H") keyboard.Key_60 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn61H") keyboard.Key_61 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn62H") keyboard.Key_62 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn63H") keyboard.Key_63 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn64H") keyboard.Key_64 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn65H") keyboard.Key_65 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn66H") keyboard.Key_66 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn67H") keyboard.Key_67 = strValue;
+                }
+
+                keyboard.Pos_num = 0;
+                keyboard.IsSavedToPOS = 0;
+                keyboard.IsSaved = false;
+
+                var isSaved = new Portal.DB.DB(_ctx, _sctx).EditKeyboard(MarketForUser, keyboard);
 
                 return RedirectToAction("Keyboards");
             }

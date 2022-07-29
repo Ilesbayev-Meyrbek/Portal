@@ -162,10 +162,10 @@ function setValues() {
         }
     }
 
-    $("#submit").click(function () {
-        document.forms[0].submit();
-        return false;
-    });
+    //$("#submit").click(function () {
+    //    document.forms[0].submit();
+    //    return false;
+    //});
 }
 
 function myFunction() {

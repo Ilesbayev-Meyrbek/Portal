@@ -626,6 +626,37 @@ namespace Portal.DB
             }
         }
 
+        public Keyboard GetKeyboard(int? id)
+        {
+            try
+            {
+                var checkKeyboard = _ctx.Keyboards.Where(w => w.ID == id).FirstOrDefault();
+
+                return checkKeyboard;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public bool EditKeyboard(string market, Keyboard keyboard)
+        {
+            try
+            {
+                keyboard.MarketID = market;
+
+                _ctx.Update(keyboard);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
     }
