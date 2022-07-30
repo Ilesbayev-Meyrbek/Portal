@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Portal.Classes;
-using Portal.Models;
+﻿using Portal.Models;
+using System.Data.SqlClient;
 
 namespace Portal.DB
 {
@@ -408,6 +407,62 @@ namespace Portal.DB
 
         #endregion
 
+        #region Logo
+
+        public LogoView GetLogos(string user, string marketID)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(marketID))
+                    marketID = _ctx.Markets.ToList()[0].MarketID;
+
+                LogoView logosView = new LogoView();
+
+                if (admin != null)
+                {
+                    logosView.Logos = _ctx.Logos.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    logosView.IsAdmin = true;
+                    logosView.UserRole = null;
+                    logosView.Markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+                    var market = users.MarketID;
+
+                    if (role.AllMarkets)
+                    {
+                        logosView.Logos = _ctx.Logos.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        logosView.IsAdmin = false;
+                        logosView.UserRole = role;
+                        logosView.Markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        logosView.Logos = _ctx.Logos.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
+                        logosView.IsAdmin = false;
+                        logosView.UserRole = role;
+                        logosView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
+
+                //Log.WriteLogoLog(logosView.Logos);
+
+                return logosView;
+            }
+            catch (Exception ex)
+            {
+                //Log.WriteErrorLog(ex.ToString());
+                return null;
+            }
+        }
+
+        #endregion
+
         #region Cashiers
 
         public CashierView GetCashiers(string user, string marketID)
@@ -659,5 +714,160 @@ namespace Portal.DB
 
         #endregion
 
+        #region POS
+
+        //public POSView GetUserForPOS(string user, string marketID)
+        //{
+        //    try
+        //    {
+        //        var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+        //        var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+        //        if (string.IsNullOrEmpty(marketID))
+        //            marketID = _ctx.Markets.ToList()[0].MarketID;
+
+        //        POSView posView = new POSView();
+
+        //        if (admin != null)
+        //        {
+        //            posView.IsAdmin = true;
+        //            posView.UserRole = null;
+        //            posView.Market = marketID;
+        //            posView.Markets = _ctx.Markets.ToList();
+        //        }
+        //        else if (admin == null && users != null)
+        //        {
+        //            var roleID = users.RoleID;
+        //            var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+        //            var market = users.MarketID;
+
+        //            if (role.AllMarkets)
+        //            {
+        //                posView.IsAdmin = false;
+        //                posView.UserRole = role;
+        //                posView.Market = marketID;
+        //                posView.Markets = _ctx.Markets.ToList();
+        //            }
+        //            else
+        //            {
+        //                posView.IsAdmin = false;
+        //                posView.UserRole = role;
+        //                posView.Market = market;
+        //                posView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+        //            }
+        //        }
+
+        //        return posView;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return null;
+        //    }
+        //}
+
+        //public POSView GetPOSes(POSView posView)
+        //{
+        //    try
+        //    {
+        //        posView.Items = new List<GoodStatus>();
+
+        //        var today = DateTime.Now.Date;
+
+        //        if (posView.IsAdmin || posView.UserRole.AllMarkets)
+        //        {
+        //            var markets = GetMarkets();
+
+        //            var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
+
+        //            if (goodsForToday.Count > 0)
+        //            {
+        //                for (int i = 0; i < markets.Count; i++)
+        //                {
+        //                    GoodStatus goodStatus = new GoodStatus();
+        //                    var market = markets[i].MarketID;
+
+        //                    var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
+
+        //                    if (goodError.Count > 0)
+        //                    {
+        //                        var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
+
+        //                        if (errTime != null)
+        //                        {
+        //                            goodStatus.MarketID = market;
+        //                            goodStatus.Status = "Не загружено";
+        //                            goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+
+        //                            posView.Items.Add(goodStatus);
+        //                        }
+        //                    }
+        //                    else
+        //                    {
+        //                        var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
+        //                        var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
+
+        //                        if (goodSuccess.Count > 0 && _goodSuccess != null)
+        //                        {
+        //                            goodStatus.MarketID = market;
+        //                            goodStatus.Status = "Загружено";
+        //                            goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+
+        //                            posView.Items.Add(goodStatus);
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        else
+        //        {
+        //            var market = posView.Market;
+        //            var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
+
+        //            if (goodsForToday.Count > 0)
+        //            {
+        //                GoodStatus goodStatus = new GoodStatus();
+
+        //                var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
+
+        //                if (goodError.Count > 0)
+        //                {
+        //                    var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
+
+        //                    if (errTime != null)
+        //                    {
+        //                        goodStatus.MarketID = market;
+        //                        goodStatus.Status = "Не загружено";
+        //                        goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+
+        //                        posView.Items.Add(goodStatus);
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
+        //                    var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
+
+        //                    if (goodSuccess.Count > 0 && _goodSuccess != null)
+        //                    {
+        //                        goodStatus.MarketID = market;
+        //                        goodStatus.Status = "Загружено";
+        //                        goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+
+        //                        posView.Items.Add(goodStatus);
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        return posView;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        //Log.WriteErrorLog(ex.ToString());
+        //        return null;
+        //    }
+        //}
+
+        #endregion
     }
 }
