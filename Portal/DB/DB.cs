@@ -8,6 +8,11 @@ namespace Portal.DB
         private readonly DataContext _ctx;
         private readonly ScaleContext _sctx;
 
+        public DB()
+        {
+            
+        }
+
         public DB(DataContext ctx, ScaleContext sctx)
         {
             this._ctx = ctx;
@@ -461,6 +466,67 @@ namespace Portal.DB
             }
         }
 
+        public bool DeleteOldLogos(string MarketID, LogoViewModel lvm)
+        {
+            try
+            {
+                var datenow = Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
+                var yearNow = DateTime.Now.AddYears(-1);
+
+                var deleteOldLogo = _ctx.Logos.Where(w => w.MarketID == MarketID && w.DateE < yearNow).ToList();
+                for (int i = 0; i < deleteOldLogo.Count; i++)
+                {
+                    _ctx.Logos.Remove(deleteOldLogo[i]);
+                    _ctx.SaveChangesAsync();
+                }
+
+                var _logo = _ctx.Logos.Where(w => w.MarketID == MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
+                for (int i = 0; i < _logo.Count; i++)
+                {
+                    if (_logo[i] != null)
+                    {
+                        _logo[i].DateE = lvm.DateS.AddDays(-1);
+                        _logo[i].DateEnd = Convert.ToInt32(_logo[i].DateE.ToString("yyyyMMdd"));
+
+                        _ctx.Update(_logo[i]);
+                        _ctx.SaveChanges();
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public bool SaveNewLogo(string market, LogoViewModel lvm, string ds, string de, byte[] imageData)
+        {
+            try
+            {
+                Logo logo = new Logo();
+                logo.MarketID = market;
+                logo.DateS = lvm.DateS;
+                logo.DateE = lvm.DateE;
+                logo.DateBegin = Convert.ToInt32(ds);
+                logo.DateEnd = Convert.ToInt32(de);
+                logo.BMP = imageData;
+                logo.Note = lvm.Note;
+                logo.IsSaved = false;
+                logo.IsSavedToPOS = 0;
+                
+                _ctx.Logos.Add(logo);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         #endregion
 
         #region Cashiers
@@ -863,10 +929,97 @@ namespace Portal.DB
         //    }
         //    catch (Exception ex)
         //    {
-        //        //Log.WriteErrorLog(ex.ToString());
+        //        Log.WriteErrorLog(ex.ToString());
         //        return null;
         //    }
         //}
+
+        #endregion
+
+        #region Scales
+
+        public ScaleView GetUserForScales(string user, string marketID)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                if (string.IsNullOrEmpty(marketID))
+                    marketID = _ctx.Markets.ToList()[0].MarketID;
+
+                ScaleView scalesView = new ScaleView();
+
+                if (admin != null)
+                {
+                    //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == marketID).ToList();
+                    scalesView.IsAdmin = true;
+                    scalesView.UserRole = null;
+                    scalesView.Market = marketID;
+                    scalesView.Markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+                    var market = users.MarketID;
+
+                    if (role.AllMarkets)
+                    {
+                        //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == marketID).ToList();
+                        scalesView.IsAdmin = false;
+                        scalesView.UserRole = role;
+                        scalesView.Market = marketID;
+                        scalesView.Markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == market).ToList();
+                        scalesView.IsAdmin = false;
+                        scalesView.UserRole = role;
+                        scalesView.Market = market;
+                        scalesView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
+
+                return scalesView;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public ScaleView GetScales(ScaleView scaleView)
+        {
+            try
+            {
+                List<MarketsName> markets = new List<MarketsName>();
+
+                if (scaleView.IsAdmin)
+                {
+                    scaleView.Scales = _sctx.Scales.Where(w => !w.Tiger && !w.BPlus && !w.FreshBase).OrderBy(o => o.MarketID).ToList();
+                }
+                else
+                {
+                    if (scaleView.UserRole.AllMarkets)
+                    {
+                        scaleView.Scales = _sctx.Scales.Where(w => !w.Tiger && !w.BPlus && !w.FreshBase).OrderBy(o => o.MarketID).ToList();
+                    }
+                    else
+                    {
+                        scaleView.Scales = _sctx.Scales.Where(w => w.MarketID == scaleView.Market).ToList();
+                    }
+                }
+
+                return scaleView;
+            }
+            catch (Exception ex)
+            {
+                //Log.WriteErrorLog(ex.ToString());
+                return null;
+            }
+        }
 
         #endregion
     }

@@ -14,13 +14,18 @@ namespace Portal.Controllers
     [Authorize]
     public class HomeController : Controller
     {
+        CurrentUser _currentUser = new CurrentUser();
+
         private readonly ILogger<HomeController> _logger;
 
         private readonly DataContext _ctx;
         private readonly ScaleContext _sctx;
 
-        public HomeController(ILogger<HomeController> logger, DataContext ctx, ScaleContext sctx)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public HomeController(IHttpContextAccessor httpContextAccessor, ILogger<HomeController> logger, DataContext ctx, ScaleContext sctx)
         {
+            this._httpContextAccessor = httpContextAccessor;
             _logger = logger;
             this._ctx = ctx;
             this._sctx = sctx;
@@ -28,14 +33,63 @@ namespace Portal.Controllers
 
         public IActionResult Index()
         {
-            //string marketForSession = new Portal.DB.DB(_ctx, _sctx).GetUserMarketID(User.Identity.Name);
-            //CurrentUser _currentUser = new CurrentUser();
+            string marketForSession = new Portal.DB.DB(_ctx, _sctx).GetUserMarketID(User.Identity.Name);
+
             //_currentUser.Login = User.Identity.Name;
             //_currentUser.MarketID = marketForSession;
+            //_currentUser.Roles = new Portal.DB.DB(_ctx, _sctx).GetUserRole(User.Identity.Name);
 
-            //this.Session["CurrentUser"] = _currentUser;
+            //HttpContext.Session.SetObjectInSession("CurrentUser", _currentUser);
+
+            //var cu = HttpContext.Session.GetCustomObjectFromSession<CurrentUser>("CurrentUser");
+
+            //_currentUser.SetValueCookie(Response, "User", User.Identity.Name, 100);
+
+            //string cookieValueFromReq = _currentUser.GetValueCookie(Request, "User");
+
+
+            ////set the key value in Cookie  
+            //Set("UserKey", User.Identity.Name, 10);
+
+            //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["UserKey"];
+
+            ////read cookie from Request object  
+            //string cookieValueFromReq = Request.Cookies["User"];
+
+            ////Delete the cookie object  
+            //Remove("Key");
+
+
 
             return View();
+        }
+
+        public string Get(string key)
+        {
+            return Request.Cookies[key];
+        }
+        /// <summary>  
+        /// set the cookie  
+        /// </summary>  
+        /// <param name="key">key (unique indentifier)</param>  
+        /// <param name="value">value to store in cookie object</param>  
+        /// <param name="expireTime">expiration time</param>  
+        public void Set(string key, string value, int? expireTime)
+        {
+            CookieOptions option = new CookieOptions();
+            if (expireTime.HasValue)
+                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
+            else
+                option.Expires = DateTime.Now.AddMilliseconds(10);
+            Response.Cookies.Append(key, value, option);
+        }
+        /// <summary>  
+        /// Delete the key  
+        /// </summary>  
+        /// <param name="key">Key</param>  
+        public void Remove(string key)
+        {
+            Response.Cookies.Delete(key);
         }
 
         public IActionResult Privacy()
@@ -438,185 +492,190 @@ namespace Portal.Controllers
         // POST: Logos/CreateLogo
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> CreateLogo([FromForm] Logo logo, string[] SelectedMarkets)
+        public async Task<ActionResult> CreateLogo(LogoViewModel lvm, string[] SelectedMarkets)
         {
+            Logo logo = new Logo();
+
             List<MarketsName> markets;
 
-
-            if (ModelState.IsValid)
+            //if (ModelState.IsValid)
+            //{
+            if (SelectedMarkets != null)
             {
-                if (SelectedMarkets != null)
+                if (lvm.BMP != null)
                 {
-                    //if (postedFile != null)
-                    //{
-                    //    if (logo.DateS <= logo.DateE)
-                    //    {
-                    //        byte[] bytes = new byte[0];
+                    if (lvm.DateS <= lvm.DateE)
+                    {
+                        byte[] imageData = new byte[0];
 
-                    //        if (postedFile != null)
-                    //        {
-                    //            using (BinaryReader br = new BinaryReader(postedFile.InputStream))
-                    //            {
-                    //                bytes = br.ReadBytes(postedFile.ContentLength);
-                    //            }
-                    //        }
+                        if (lvm.BMP != null)
+                        {
+                            using (BinaryReader br = new BinaryReader(lvm.BMP.OpenReadStream()))
+                            {
+                                imageData = br.ReadBytes((int)lvm.BMP.Length);
+                            }
+                        }
 
-                    //        MemoryStream ms = new MemoryStream(bytes);
-                    //        Image pic = Image.FromStream(ms);
-                    //        var bitDepth = pic.PixelFormat.ToString();
-                    //        var imgWidth = pic.Width;
-                    //        var imgHeight = pic.Height;
+                        MemoryStream ms = new MemoryStream(imageData);
+                        Image pic = Image.FromStream(ms);
+                        var bitDepth = pic.PixelFormat.ToString();
+                        var imgWidth = pic.Width;
+                        var imgHeight = pic.Height;
 
-                    //        if (postedFile.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
-                    //        {
-                    //            var ds = logo.DateS.ToString("yyyyMMdd");
-                    //            var de = logo.DateE.ToString("yyyyMMdd");
+                        if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
+                        {
+                            var ds = lvm.DateS.ToString("yyyyMMdd");
+                            var de = lvm.DateE.ToString("yyyyMMdd");
 
-                    //            logo.DateBegin = Convert.ToInt32(ds);
-                    //            logo.DateEnd = Convert.ToInt32(de);
-                    //            logo.BMP = bytes;
-                    //            logo.IsSaved = false;
-                    //            logo.IsSavedToPOS = 0;
+                            logo.DateS = lvm.DateS;
+                            logo.DateE = lvm.DateE;
+                            logo.DateBegin = Convert.ToInt32(ds);
+                            logo.DateEnd = Convert.ToInt32(de);
+                            logo.BMP = imageData;
+                            logo.Note = lvm.Note;
+                            logo.IsSaved = false;
+                            logo.IsSavedToPOS = 0;
 
-                    //            foreach (var item in SelectedMarkets)
-                    //            {
-                    //                if (item != "All")
-                    //                {
-                    //                    bool IsDeleteOldLogos = new DB(db).DeleteOldLogos(item, logo);
-                    //                    bool isSaved = new DB(db).SaveNewLogo(item, logo);
-                    //                }
-                    //            }
+                            foreach (var item in SelectedMarkets)
+                            {
+                                if (item != "All")
+                                {
+                                    bool IsDeleteOldLogos = new Portal.DB.DB(_ctx, _sctx).DeleteOldLogos(item, lvm);
+                                    bool isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewLogo(item, lvm, ds, de, imageData);
+                                }
+                            }
 
-                    //            return RedirectToAction("Logos");
-                    //        }
-                    //        else
-                    //        {
-                    //            markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //            ViewBag.Markets = markets;
-                    //            ViewBag.MarketsCount = markets.Count;
+                            return RedirectToAction("Logos");
+                        }
+                        else
+                        {
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                            ViewBag.Markets = markets;
+                            ViewBag.MarketsCount = markets.Count;
 
-                    //            TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+                            TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
 
-                    //            return View(logo);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //        ViewBag.Markets = markets;
-                    //        ViewBag.MarketsCount = markets.Count;
+                            return View(logo);
+                        }
+                    }
+                    else
+                    {
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        ViewBag.Markets = markets;
+                        ViewBag.MarketsCount = markets.Count;
 
-                    //        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+                        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
 
-                    //        return View(logo);
-                    //    }
-                    //}
-                    //else
-                    //{
-                    //    markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //    ViewBag.Markets = markets;
-                    //    ViewBag.MarketsCount = markets.Count;
-
-                    //    TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
-
-                    //    return View(logo);
-                    //}
+                        return View(logo);
+                    }
                 }
                 else
                 {
-                    //var admin = new DB(db).GetAdmin(User.Identity.Name);
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    ViewBag.Markets = markets;
+                    ViewBag.MarketsCount = markets.Count;
 
-                    //if (admin != null)
-                    //{
-                    //    markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //    ViewBag.Markets = markets;
-                    //    ViewBag.MarketsCount = markets.Count;
+                    TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
 
-                    //    TempData["msg"] = "<script>alert('Не выбран маркет для выгрузки логотипа');</script>";
-
-                    //    return View(logo);
-                    //}
-                    //else
-                    //{
-                    //    if (postedFile != null)
-                    //    {
-                    //        if (logo.DateS <= logo.DateE)
-                    //        {
-                    //            byte[] bytes = new byte[0];
-
-                    //            if (postedFile != null)
-                    //            {
-                    //                using (BinaryReader br = new BinaryReader(postedFile.InputStream))
-                    //                {
-                    //                    bytes = br.ReadBytes(postedFile.ContentLength);
-                    //                }
-                    //            }
-
-                    //            MemoryStream ms = new MemoryStream(bytes);
-                    //            Image pic = Image.FromStream(ms);
-                    //            var bitDepth = pic.PixelFormat.ToString();
-                    //            var imgWidth = pic.Width;
-                    //            var imgHeight = pic.Height;
-
-                    //            if (postedFile.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
-                    //            {
-                    //                var ds = logo.DateS.ToString("yyyyMMdd");
-                    //                var de = logo.DateE.ToString("yyyyMMdd");
-
-                    //                logo.DateBegin = Convert.ToInt32(ds);
-                    //                logo.DateEnd = Convert.ToInt32(de);
-                    //                logo.BMP = bytes;
-                    //                logo.IsSaved = false;
-                    //                logo.IsSavedToPOS = 0;
-                    //                var _mID = new DB(db).GetMarketForUser(User.Identity.Name);
-
-                    //                logo.MarketID = _mID;
-
-                    //                var isEdited = new DB(db).EditOldLogos(logo);
-
-                    //                return RedirectToAction("Logos");
-                    //            }
-                    //            else
-                    //            {
-                    //                markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //                ViewBag.Markets = markets;
-                    //                ViewBag.MarketsCount = markets.Count;
-
-                    //                TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
-
-                    //                return View(logo);
-                    //            }
-                    //        }
-                    //        else
-                    //        {
-                    //            markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //            ViewBag.Markets = markets;
-                    //            ViewBag.MarketsCount = markets.Count;
-
-                    //            TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
-
-                    //            return View(logo);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                    //        ViewBag.Markets = markets;
-                    //        ViewBag.MarketsCount = markets.Count;
-
-                    //        TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
-
-                    //        return View(logo);
-                    //    }
-                    //}
+                    return View(logo);
                 }
             }
+            else
+            {
+                //var admin = new DB(db).GetAdmin(User.Identity.Name);
 
-            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-            ViewBag.Markets = markets;
-            ViewBag.MarketsCount = markets.Count;
+                //if (admin != null)
+                //{
+                //    markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
+                //    ViewBag.Markets = markets;
+                //    ViewBag.MarketsCount = markets.Count;
 
-            return View(logo);
+                //    TempData["msg"] = "<script>alert('Не выбран маркет для выгрузки логотипа');</script>";
+
+                //    return View(logo);
+                //}
+                //else
+                //{
+                //    if (postedFile != null)
+                //    {
+                //        if (logo.DateS <= logo.DateE)
+                //        {
+                //            byte[] bytes = new byte[0];
+
+                //            if (postedFile != null)
+                //            {
+                //                using (BinaryReader br = new BinaryReader(postedFile.InputStream))
+                //                {
+                //                    bytes = br.ReadBytes(postedFile.ContentLength);
+                //                }
+                //            }
+
+                //            MemoryStream ms = new MemoryStream(bytes);
+                //            Image pic = Image.FromStream(ms);
+                //            var bitDepth = pic.PixelFormat.ToString();
+                //            var imgWidth = pic.Width;
+                //            var imgHeight = pic.Height;
+
+                //            if (postedFile.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
+                //            {
+                //                var ds = logo.DateS.ToString("yyyyMMdd");
+                //                var de = logo.DateE.ToString("yyyyMMdd");
+
+                //                logo.DateBegin = Convert.ToInt32(ds);
+                //                logo.DateEnd = Convert.ToInt32(de);
+                //                logo.BMP = bytes;
+                //                logo.IsSaved = false;
+                //                logo.IsSavedToPOS = 0;
+                //                var _mID = new DB(db).GetMarketForUser(User.Identity.Name);
+
+                //                logo.MarketID = _mID;
+
+                //                var isEdited = new DB(db).EditOldLogos(logo);
+
+                //                return RedirectToAction("Logos");
+                //            }
+                //            else
+                //            {
+                //                markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
+                //                ViewBag.Markets = markets;
+                //                ViewBag.MarketsCount = markets.Count;
+
+                //                TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                //                return View(logo);
+                //            }
+                //        }
+                //        else
+                //        {
+                //            markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
+                //            ViewBag.Markets = markets;
+                //            ViewBag.MarketsCount = markets.Count;
+
+                //            TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                //            return View(logo);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
+                //        ViewBag.Markets = markets;
+                //        ViewBag.MarketsCount = markets.Count;
+
+                //        TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
+
+                //        return View(logo);
+                //    }
+                //}
+                return View(logo);
+            }
+            //}
+
+            //markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            //ViewBag.Markets = markets;
+            //ViewBag.MarketsCount = markets.Count;
+
+            //return View(logo);
         }
 
 
@@ -1484,11 +1543,23 @@ namespace Portal.Controllers
         //public ActionResult POSs(string MarketID)
         //{
         //    var _userPOSs = new Portal.DB.DB(_ctx, _sctx).GetUserForPOS(User.Identity.Name, MarketID);
-        //    var pos = new DB(db).GetPOSes(_userPOSs);
+        //    var pos = new Portal.DB.DB(_ctx, _sctx).GetPOSes(_userPOSs);
         //    ViewBag.ErrorPOSCount = pos.Items.Where(w => w.Status == "Не загружено").ToList().Count;
 
         //    return View(pos);
         //}
+
+        #endregion
+
+        #region Scales
+
+        public ActionResult Scales(string MarketID)
+        {
+            var _userScales = new Portal.DB.DB(_ctx, _sctx).GetUserForScales(User.Identity.Name, MarketID);
+            var scales = new Portal.DB.DB(_ctx, _sctx).GetScales(_userScales);
+
+            return View(scales);
+        }
 
         #endregion
 

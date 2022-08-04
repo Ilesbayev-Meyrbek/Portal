@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Portal.DB;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Portal.Models
 {

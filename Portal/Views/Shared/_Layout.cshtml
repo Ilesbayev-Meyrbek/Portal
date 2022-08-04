@@ -1,5 +1,10 @@
 ﻿@using Azure.Core
-@using Portal.DB
+@using Portal.Classes
+
+@{
+
+}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,11 +27,17 @@
 
             @if (User.Identity?.IsAuthenticated == true)
             {
+                @*var ctx = new Portal.DB.DataContext();
+                var sctx = new Portal.DB.ScaleContext();
+                *@
+               @* var isAdm = new Portal.DB.DB().GetAdmin(User.Identity.Name);*@
+
+                
+                @*IsAdmin isAdm = new IsAdmin().GetAdmin(User.Identity.Name);*@
                 @*var isAdmin = new Portal.DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
                 var role = new Portal.DB.DB(_ctx, _sctx).GetUserRole(User.Identity.Name);*@
 
-                @*if (isAdmin != null)
-                {*@
+
                     <div class="mynav_dropdownMenu">
                         <button class="mynav_dropbtnMenu">
                             POS
@@ -46,7 +57,7 @@
                             <i class="fa fa-caret-down"></i>
                         </button>
                         <div class="mynav_dropdownMenu-content">
-                            <a href="#">Статусы весов</a>
+                            @Html.ActionLink(" Статусы весов", "Scales", "Home")
                         </div>
                     </div>
 
@@ -59,11 +70,7 @@
                             @Html.ActionLink(" Отчет", "Reports", "Home")
                         </div>
                     </div>
-     @*           }
-                else if (isAdmin == null && role != null)
-                {
 
-                }*@
                 <div class="mynav_dropdownMenu">
                     <button class="mynav_dropbtnMenu">
                         Пользователи
@@ -97,10 +104,6 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    @*    @await RenderSectionAsync("~/bundles/jquery")
-    @await RenderSectionAsync("~/bundles/bootstrap")
-    @await RenderSectionAsync("scripts", required: false)
-    @await RenderSectionAsync("~/scripts/jquery-1.10.2.min.js")*@
 
     <script>
         jQuery(document).ready(function($) {

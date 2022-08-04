@@ -9,32 +9,11 @@ namespace Portal.DB
         public DbSet<Role> Roles { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<MarketsName> Markets { get; set; }
-        
+
         public DbSet<Logo> Logos { get; set; }
         public DbSet<Cashier> Cashiers { get; set; }
         public DbSet<Keyboard> Keyboards { get; set; }
         public DbSet<SettingsKey> SettingsKeys { get; set; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
 
 
         public DbSet<Cheques> Chequeses { get; set; }
@@ -45,14 +24,14 @@ namespace Portal.DB
         public DbSet<Good> Goods { get; set; }
         public DbSet<GoodsDetail> GoodsDetails { get; set; }
 
-        public DataContext(DbContextOptions<DataContext> options)
-           : base(options)
+        public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Cashier>().HasKey(table => new {
+            builder.Entity<Cashier>().HasKey(table => new
+            {
                 table.ID,
                 table.MarketID
             });
@@ -65,7 +44,7 @@ namespace Portal.DB
                 entity.Property(e => e.IsSavedToPOS).IsRequired();
                 entity.Property(e => e.IsSaved).IsRequired();
             });
-                
+
 
         }
     }

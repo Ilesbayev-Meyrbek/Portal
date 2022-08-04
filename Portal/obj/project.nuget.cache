@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "DiA7KYJwpqe+2p31gF6KeTBl366p26UpZuTa5HgEEyMt3d2HrOmNfapL2fMhz11KUcoH6SHgL1vm+Wz7yjnHUg==",
+  "dgSpecHash": "H2Qfguw2jIyBpL4Yc2JWk4P+OVNZOYaaN0qchv85Pqr+7yhZFQF1o+gct6dt2weV3PqbsqXgCXYuTD/r+vNH5Q==",
   "success": true,
   "projectFilePath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
   "expectedPackageFiles": [
@@ -20,7 +20,10 @@
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.cryptography.internal\\5.0.8\\microsoft.aspnetcore.cryptography.internal.5.0.8.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.dataprotection\\5.0.8\\microsoft.aspnetcore.dataprotection.5.0.8.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.dataprotection.abstractions\\5.0.8\\microsoft.aspnetcore.dataprotection.abstractions.5.0.8.nupkg.sha512",
+    "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.http.abstractions\\2.2.0\\microsoft.aspnetcore.http.abstractions.2.2.0.nupkg.sha512",
+    "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.http.features\\2.2.0\\microsoft.aspnetcore.http.features.2.2.0.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.razor.language\\6.0.0\\microsoft.aspnetcore.razor.language.6.0.0.nupkg.sha512",
+    "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.aspnetcore.session\\2.2.0\\microsoft.aspnetcore.session.2.2.0.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\5.0.0\\microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.build\\17.0.0\\microsoft.build.17.0.0.nupkg.sha512",
     "C:\\Users\\m.ilesbaev\\.nuget\\packages\\microsoft.build.framework\\17.0.0\\microsoft.build.framework.17.0.0.nupkg.sha512",
