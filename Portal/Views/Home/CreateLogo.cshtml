@@ -9,6 +9,8 @@
 
     <div class="bodyContent" style="height: 100%">
 
+        @Html.Raw(TempData["msg"])
+
         @if (ViewBag.MarketsCount == 1)
         {
             <h2>Добавление логотипа в маркет @ViewBag.Markets[0].Name</h2>

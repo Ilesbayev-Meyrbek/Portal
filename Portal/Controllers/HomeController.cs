@@ -491,16 +491,13 @@ namespace Portal.Controllers
 
         // POST: Logos/CreateLogo
         [HttpPost]
-        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> CreateLogo(LogoViewModel lvm, string[] SelectedMarkets)
         {
             Logo logo = new Logo();
 
             List<MarketsName> markets;
 
-            //if (ModelState.IsValid)
-            //{
-            if (SelectedMarkets != null)
+            if (SelectedMarkets.Length > 0)
             {
                 if (lvm.BMP != null)
                 {
@@ -582,98 +579,207 @@ namespace Portal.Controllers
             }
             else
             {
-                //var admin = new DB(db).GetAdmin(User.Identity.Name);
+                var admin = new Portal.DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
 
-                //if (admin != null)
-                //{
-                //    markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                //    ViewBag.Markets = markets;
-                //    ViewBag.MarketsCount = markets.Count;
+                if (admin != null)
+                {
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    ViewBag.Markets = markets;
+                    ViewBag.MarketsCount = markets.Count;
 
-                //    TempData["msg"] = "<script>alert('Не выбран маркет для выгрузки логотипа');</script>";
+                    TempData["msg"] = "<script>alert('Не выбран маркет для выгрузки логотипа');</script>";
 
-                //    return View(logo);
-                //}
-                //else
-                //{
-                //    if (postedFile != null)
-                //    {
-                //        if (logo.DateS <= logo.DateE)
-                //        {
-                //            byte[] bytes = new byte[0];
+                    return View(logo);
+                }
+                else
+                {
+                    if (lvm.BMP != null)
+                    {
+                        if (lvm.DateS <= lvm.DateE)
+                        {
+                            byte[] imageData = new byte[0];
 
-                //            if (postedFile != null)
-                //            {
-                //                using (BinaryReader br = new BinaryReader(postedFile.InputStream))
-                //                {
-                //                    bytes = br.ReadBytes(postedFile.ContentLength);
-                //                }
-                //            }
+                            if (lvm.BMP != null)
+                            {
+                                using (BinaryReader br = new BinaryReader(lvm.BMP.OpenReadStream()))
+                                {
+                                    imageData = br.ReadBytes((int)lvm.BMP.Length);
+                                }
+                            }
 
-                //            MemoryStream ms = new MemoryStream(bytes);
-                //            Image pic = Image.FromStream(ms);
-                //            var bitDepth = pic.PixelFormat.ToString();
-                //            var imgWidth = pic.Width;
-                //            var imgHeight = pic.Height;
+                            MemoryStream ms = new MemoryStream(imageData);
+                            Image pic = Image.FromStream(ms);
+                            var bitDepth = pic.PixelFormat.ToString();
+                            var imgWidth = pic.Width;
+                            var imgHeight = pic.Height;
 
-                //            if (postedFile.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
-                //            {
-                //                var ds = logo.DateS.ToString("yyyyMMdd");
-                //                var de = logo.DateE.ToString("yyyyMMdd");
+                            if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
+                            {
+                                var ds = lvm.DateS.ToString("yyyyMMdd");
+                                var de = lvm.DateE.ToString("yyyyMMdd");
 
-                //                logo.DateBegin = Convert.ToInt32(ds);
-                //                logo.DateEnd = Convert.ToInt32(de);
-                //                logo.BMP = bytes;
-                //                logo.IsSaved = false;
-                //                logo.IsSavedToPOS = 0;
-                //                var _mID = new DB(db).GetMarketForUser(User.Identity.Name);
+                                logo.DateS = lvm.DateS;
+                                logo.DateE = lvm.DateE;
+                                logo.DateBegin = Convert.ToInt32(ds);
+                                logo.DateEnd = Convert.ToInt32(de);
+                                logo.BMP = imageData;
+                                logo.IsSaved = false;
+                                logo.IsSavedToPOS = 0;
+                                var _mID = new Portal.DB.DB(_ctx, _sctx).GetMarketForUser(User.Identity.Name);
+                                logo.Note = lvm.Note;
+                                logo.MarketID = _mID;
 
-                //                logo.MarketID = _mID;
+                                var isEdited = new Portal.DB.DB(_ctx, _sctx).EditOldLogos(logo);
 
-                //                var isEdited = new DB(db).EditOldLogos(logo);
+                                return RedirectToAction("Logos");
+                            }
+                            else
+                            {
+                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                                ViewBag.Markets = markets;
+                                ViewBag.MarketsCount = markets.Count;
 
-                //                return RedirectToAction("Logos");
-                //            }
-                //            else
-                //            {
-                //                markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                //                ViewBag.Markets = markets;
-                //                ViewBag.MarketsCount = markets.Count;
+                                TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
 
-                //                TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+                                return View(logo);
+                            }
+                        }
+                        else
+                        {
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                            ViewBag.Markets = markets;
+                            ViewBag.MarketsCount = markets.Count;
 
-                //                return View(logo);
-                //            }
-                //        }
-                //        else
-                //        {
-                //            markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                //            ViewBag.Markets = markets;
-                //            ViewBag.MarketsCount = markets.Count;
+                            TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
 
-                //            TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+                            return View(logo);
+                        }
+                    }
+                    else
+                    {
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        ViewBag.Markets = markets;
+                        ViewBag.MarketsCount = markets.Count;
 
-                //            return View(logo);
-                //        }
-                //    }
-                //    else
-                //    {
-                //        markets = new DB(db).GetMarketsForPrivileges(User.Identity.Name);
-                //        ViewBag.Markets = markets;
-                //        ViewBag.MarketsCount = markets.Count;
+                        TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
 
-                //        TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
-
-                //        return View(logo);
-                //    }
-                //}
-                return View(logo);
+                        return View(logo);
+                    }
+                }
             }
+        }
+
+        public async Task<ActionResult> EditLogo(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            Logo logo = new Portal.DB.DB(_ctx, _sctx).GetLogo(id);
+
+            var market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+            ViewBag.Market = market.Name;
+
+            return View(logo);
+        }
+
+        // POST: Logos/Edit
+        [HttpPost]
+        public async Task<ActionResult> EditLogo(LogoViewModel lvm)
+        {
+            MarketsName market;
+
+            Logo logo = new Logo();
+            var ds = lvm.DateS.ToString("yyyyMMdd");
+            var de = lvm.DateE.ToString("yyyyMMdd");
+
+            logo.DateS = lvm.DateS;
+            logo.DateE = lvm.DateE;
+            logo.DateBegin = Convert.ToInt32(ds);
+            logo.DateEnd = Convert.ToInt32(de);
+            logo.Note = lvm.Note;
+            logo.IsSaved = false;
+            logo.IsSavedToPOS = 0;
+            logo.MarketID = lvm.MarketID;
+
+            //if (ModelState.IsValid)
+            //{
+                if (lvm.BMP != null)
+                {
+                    if (lvm.DateS <= lvm.DateE)
+                    {
+                        byte[] imageData = new byte[0];
+
+                        if (lvm.BMP != null)
+                        {
+                            using (BinaryReader br = new BinaryReader(lvm.BMP.OpenReadStream()))
+                            {
+                                imageData = br.ReadBytes((int)lvm.BMP.Length);
+                            }
+                        }
+
+                        MemoryStream ms = new MemoryStream(imageData);
+                        Image pic = Image.FromStream(ms);
+                        var bitDepth = pic.PixelFormat.ToString();
+                        var imgWidth = pic.Width;
+                        var imgHeight = pic.Height;
+
+                        if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
+                        {
+                            var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
+
+                            return RedirectToAction("Logos");
+                        }
+                        else
+                        {
+                            market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                            ViewBag.Market = market.Name;
+
+                            TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный');</script>";
+
+                            return View(logo);
+                        }
+                    }
+                    else
+                    {
+                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                        ViewBag.Market = market.Name;
+
+                        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                        return View(logo);
+                    }
+                }
+                else if (lvm.BMP == null)
+                {
+                    if (logo.DateS <= logo.DateE)
+                    {
+                        //var ds = logo.DateS.ToString("yyyyMMdd");
+                        //var de = logo.DateE.ToString("yyyyMMdd");
+
+                        //logo.DateBegin = Convert.ToInt32(ds);
+                        //logo.DateEnd = Convert.ToInt32(de);
+
+                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
+
+                        return RedirectToAction("Logos");
+                    }
+                    else
+                    {
+                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                        ViewBag.Market = market.Name;
+                        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                        return View(logo);
+                    }
+                }
+
+            return View(logo);
             //}
 
-            //markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-            //ViewBag.Markets = markets;
-            //ViewBag.MarketsCount = markets.Count;
+            //market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+            //ViewBag.Market = market.Name;
+
+            //TempData["msg"] = "<script>alert('Не корректное заполнение полей при изменении логотипа');</script>";
 
             //return View(logo);
         }

@@ -527,6 +527,73 @@ namespace Portal.DB
             }
         }
 
+        public bool EditOldLogos(Logo logo)
+        {
+            try
+            {
+                var datenow = Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
+
+                var _logo = _ctx.Logos.Where(w => w.MarketID == logo.MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
+                for (int i = 0; i < _logo.Count; i++)
+                {
+                    if (_logo[i] != null)
+                    {
+                        _logo[i].DateE = logo.DateS.AddDays(-1);
+                        _logo[i].DateEnd = Convert.ToInt32(_logo[i].DateE.ToString("yyyyMMdd"));
+
+                        _ctx.Update(_logo[i]);
+                        _ctx.SaveChanges();
+                    }
+                }
+
+                _ctx.Logos.Add(logo);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public Logo GetLogo(int? id)
+        {
+            try
+            {
+                Logo user = _ctx.Logos.Find(id);
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public bool SaveEditLogo(Logo logo)
+        {
+            try
+            {
+                _ctx.Update(logo);
+                _ctx.SaveChanges();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+
+
+
+
+
+
+
+
         #endregion
 
         #region Cashiers
