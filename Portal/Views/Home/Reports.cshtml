@@ -1,0 +1,161 @@
+﻿@model Portal.Models.ReportDatalistDto
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Отчёты";
+}
+
+<div class="bodyContent">
+    <div class="form-horizontal" style="overflow-x:hidden">
+        <form method="post" action="/Reports" class="form-group">
+
+            <div class="form-group">
+                @Html.Label("Дата начала", "Дата начала", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="date" name="DateBegin" class="form-control" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Дата окончания", "Дата окончания", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="date" name="DateEnd" class="form-control" />
+                </div>
+            </div>
+
+            <br />
+
+            <div class="form-group">
+                <div class="col-md-10">
+                    <input type="radio" id="MarketRadio" onclick="ChangeRadioButton(this)" name="RadioType" />
+                    <label>Поиск по магазину</label>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="form-group">
+                @Html.Label("Код магазина", "Код магазина", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="text" name="MarketID" list="market" class="form-control" id="MarketText" onchange="InputMarket()" />
+                    <datalist id="market">
+                        @{
+                            foreach (var marketid in Model.MarketId)
+                            {
+                                <option>@marketid</option>
+                            }
+                        }
+                    </datalist>
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Номер кассы", "Номер кассы", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="text" name="PosNum" list="pos" class="form-control" id="PosText" />
+                    <datalist id="pos">
+                        @{
+                            foreach (var posid in Model.Posnum)
+                            {
+                                <option>@posid</option>
+                            }
+                        }
+                    </datalist>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="form-group">
+                <div class="col-md-10">
+                    <input type="radio" id="TerminalRadio" onclick="ChangeRadioButton(this)" name="RadioType" />
+                    <label>Поиск по кассе</label>
+                </div>
+            </div>
+
+            <br />
+
+            <div class="form-group">
+                @Html.Label("Код терминала", "Код терминала", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="text" name="TerminalID" list="terminal" class="form-control" disabled id="TerminalText" />
+                    <datalist id="terminal">
+                        @{
+                            foreach (var teminalid in Model.TerminalId)
+                            {
+                                <option>@teminalid</option>
+                            }
+                        }
+                    </datalist>
+                </div>
+            </div>
+
+            <div class="form-actions no-color">
+                <p>
+                    <input type="submit" value="Загрузить" class="my_btn my_btn_success" />
+                </p>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script>
+    const radioMarket = document.getElementById("MarketRadio");
+    const radioTerminal = document.getElementById("TerminalRadio");
+
+    const inputMarket = document.getElementById("MarketText");
+    const inputPos = document.getElementById("PosText");
+
+    const inputTerminal = document.getElementById("TerminalText");
+
+    inputMarket.disabled = true;
+    inputPos.disabled = true;
+    inputTerminal.disabled = false;
+
+    function ChangeRadioButton(e) {
+        if (e == radioMarket) {
+            inputTerminal.disabled = true;
+            inputTerminal.value = "";
+
+            inputMarket.disabled = false;
+
+
+            inputPos.disabled = false;
+
+
+            return;
+
+        }
+
+        if (e == radioTerminal) {
+            inputMarket.disabled = true;
+            inputPos.disabled = true;
+
+
+            inputTerminal.disabled = false;
+            inputMarket.value = "";
+            inputPos.value = "";
+            return;
+
+        }
+    }
+
+    async function InputMarket() {
+
+        let datalist = document.getElementById("pos");
+        datalist.innerHTML = "";
+        let marketName = inputMarket.value;
+        const response = await fetch("/reports/GetPosByMarket?MarketId=" + marketName);
+        const data = await response.json();
+        data.forEach(item => {
+            let option = document.createElement("option");
+            option.innerText = item;
+
+            datalist.appendChild(option);
+        })
+    }
+
+
+
+</script>

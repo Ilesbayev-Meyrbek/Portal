@@ -1,0 +1,179 @@
+﻿@using Azure.Core
+@using Portal.Classes
+@using Portal.DB
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Portal</title>
+    <link rel="icon" href="~/Images/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Portal.styles.css" asp-append-version="true" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+    <script src="@Url.Content("~/js/setButtonValue.js")" type="text/javascript"></script>
+</head>
+<body>
+    <header>
+
+        <div class="mynav_navbarMenu">
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                @await Component.InvokeAsync("CurrentUser")
+                
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <input type="text" id="Search" placeholder="Поиск" class="form-control searchboxPosition" />
+                }
+            }
+
+            <partial name="_LoginPartial" />
+
+        </div>
+
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2022 - Portal - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        jQuery(document).ready(function($) {
+            $(".clickable-row").click(function() {
+                window.location = $(this).data("href");
+            });
+        });
+    </script>
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        $(function() {
+            $("#submit").click(function() {
+                document.forms[0].submit();
+                return false;
+            });
+        });
+    </script>
+
+    @*Search start*@
+    <script>
+        $(document).ready(function() {
+            function Contains(text_one, text_two) {
+                if (text_one.indexOf(text_two) != -1)
+                    return true;
+            }
+            $("#Search").keyup(function() {
+                var searchText = $("#Search").val().toLowerCase();
+                $(".Search").each(function() {
+                    if (!Contains($(this).text().toLowerCase(), searchText)) {
+                        $(this).hide();
+                    }
+                    else {
+                        $(this).show();
+                    }
+                });
+            });
+        });
+    </script>
+    @*Search end*@
+
+    <script>
+        $('#checkbox').click(function() {
+            if ($(this).is(':checked')) {
+                $('#controls input:checkbox').prop('checked', true);
+            } else {
+                $('#controls input:checkbox').prop('checked', false);
+            }
+        });
+    </script>
+
+    <script>
+        $('#checkboxPercent').click(function() {
+            if ($(this).is(':checked')) {
+                $('#textPercent').show(100);
+            } else {
+                $('#textPercent').hide(100);
+            }
+        });
+    </script>
+
+    <script>
+        $('#checkboxControlCashiers').click(function() {
+            if ($(this).is(':checked')) {
+                $('#cashiercontrols input:checkbox').prop('checked', true);
+            } else {
+                $('#cashiercontrols input:checkbox').prop('checked', false);
+            }
+        });
+
+        $('#checkboxControlLogo').click(function() {
+            if ($(this).is(':checked')) {
+                $('#logocontrols input:checkbox').prop('checked', true);
+            } else {
+                $('#logocontrols input:checkbox').prop('checked', false);
+            }
+        });
+
+        $('#checkboxControlSettings').click(function() {
+            if ($(this).is(':checked')) {
+                $('#settingcontrols input:checkbox').prop('checked', true);
+            } else {
+                $('#settingcontrols input:checkbox').prop('checked', false);
+            }
+        });
+
+        $('#checkboxControlSettingsKeyboard').click(function() {
+            if ($(this).is(':checked')) {
+                $('#settingkeyboardcontrols input:checkbox').prop('checked', true);
+            } else {
+                $('#settingkeyboardcontrols input:checkbox').prop('checked', false);
+            }
+        });
+
+    </script>
+
+    <script>
+        $(window).on("load resize ", function() {
+            var scrollWidth = $('.tbl-content').width() - $('.tbl-content table').width();
+            $('.tbl-header').css({ 'padding-right': scrollWidth });
+        }).resize();
+    </script>
+
+    @section Scripts{
+        <script type="text/javascript">
+
+            $(function() {
+                $.ajaxSetup({ cache: false });
+                $(".compItem").click(function(e) {
+
+                    e.preventDefault();
+                    $.get(this.href, function(data) {
+                        $('#dialogContent').html(data);
+                        $('#modDialog').modal('show');
+                    });
+                });
+            })
+        </script>
+    }
+    </body>
+    </html>

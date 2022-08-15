@@ -1,0 +1,749 @@
+﻿@model Portal.Models.Keyboard
+
+@{
+    ViewBag.Title = "Изменение клавиатуры";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+        <input id="txtBarcodeID" name="txtBarcodeName" type="text" placeholder="штрих-код" style="width: 600px" onkeypress="runScript(event)" />
+        <button id="_clickSpanClose" type="reset" onclick="clickSpanClose()">OK</button>
+    </div>
+
+</div>
+
+@using (Html.BeginForm())
+{
+    @Html.Raw(TempData["msg"])
+
+    <form asp-action="EditKeyboard" asp-controller="Home">
+
+        <input hidden name="MarketForUser" value="@ViewBag.MarketID" />
+
+        <div class="form-group">
+            <div class="row">
+                <div class="col-lg-6 col-md-6" style="width: 1000px">
+                    <div id="container" style="margin-left: 15px">
+                        <div>
+                            <input type="button" name="btnDefault" value="Загрузить" class="btn btn-default" onclick="defaultSetValue()" />
+                            <label> Загрузить DEFAULT схему клавиатуры</label>
+                        </div>
+
+                        <hr />
+
+                        <div class="keyboard_div1">
+                            <div class="btn-group-key">
+                                <input id="btn55H" hidden type="text" name="btnkeyH" value="@Model.Key_55" />
+                                <input id="btn55" type="button" name="btnkey" title="55" value="55" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn56H" hidden type="text" name="btnkeyH" value="@Model.Key_56" />
+                                <input id="btn56" type="button" name="btnkey" title="56" value="56" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn57H" hidden type="text" name="btnkeyH" value="@Model.Key_57" />
+                                <input id="btn57" type="button" name="btnkey" title="57" value="57" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn58H" hidden type="text" name="btnkeyH" value="@Model.Key_58" />
+                                <input id="btn58" type="button" name="btnkey" title="58" value="58" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn59H" hidden type="text" name="btnkeyH" value="@Model.Key_59" />
+                                <input id="btn59" type="button" name="btnkey" title="59" value="59" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn60H" hidden type="text" name="btnkeyH" value="@Model.Key_60" />
+                                <input id="btn60" type="button" name="btnkey" title="60" value="60" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn61H" hidden type="text" name="btnkeyH" value="@Model.Key_61" />
+                                <input id="btn61" type="button" name="btnkey" title="61" value="61" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn62H" hidden type="text" name="btnkeyH" value="@Model.Key_62" />
+                                <input id="btn62" type="button" name="btnkey" title="62" value="62" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn63H" hidden type="text" name="btnkeyH" value="@Model.Key_63" />
+                                <input id="btn63" type="button" name="btnkey" title="63" value="63" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn64H" hidden type="text" name="btnkeyH" value="@Model.Key_64" />
+                                <input id="btn64" type="button" name="btnkey" title="64" value="64" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn65H" hidden type="text" name="btnkeyH" value="@Model.Key_65" />
+                                <input id="btn65" type="button" name="btnkey" title="65" value="65" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn66H" hidden type="text" name="btnkeyH" value="@Model.Key_66" />
+                                <input id="btn66" type="button" name="btnkey" title="66" value="66" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn67H" hidden type="text" name="btnkeyH" value="@Model.Key_67" />
+                                <input id="btn67" type="button" name="btnkey" title="67" value="67" class="btn_keyboard btn btn-default" onClick="getBtnID(this)" />
+                            </div>
+                        </div>
+                        <div class="keyboard_div2">
+                            <div class="btn-group-key-vert">
+                                <input id="btn50H" hidden type="text" name="btnkeyH" value="@Model.Key_50" />
+                                <input id="btn50" type="button" name="btnkey" title="50" value="50" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn51H" hidden type="text" name="btnkeyH" value="@Model.Key_51" />
+                                <input id="btn51" type="button" name="btnkey" title="51" value="51" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn52H" hidden type="text" name="btnkeyH" value="@Model.Key_52" />
+                                <input id="btn52" type="button" name="btnkey" title="52" value="52" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn53H" hidden type="text" name="btnkeyH" value="@Model.Key_53" />
+                                <input id="btn53" type="button" name="btnkey" title="53" value="53" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn54H" hidden type="text" name="btnkeyH" value="@Model.Key_54" />
+                                <input id="btn54" type="button" name="btnkey" title="54" value="54" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+                            </div>
+                        </div>
+                        <div class="keyboard_div3">
+                            <div class="btn-group-key-vert">
+                                <input id="btn1H" hidden type="text" name="btnkeyH" value="@Model.Key_1" />
+                                <input id="btn1" type="button" name="btnkey" title="1" value="1" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn2H" hidden type="text" name="btnkeyH" value="@Model.Key_2" />
+                                <input id="btn2" type="button" name="btnkey" title="2" value="2" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn3H" hidden type="text" name="btnkeyH" value="@Model.Key_3" />
+                                <input id="btn3" type="button" name="btnkey" title="3" value="3" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn4H" hidden type="text" name="btnkeyH" value="@Model.Key_4" />
+                                <input id="btn4" type="button" name="btnkey" title="4" value="4" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn5H" hidden type="text" name="btnkeyH" value="@Model.Key_5" />
+                                <input id="btn5" type="button" name="btnkey" title="5" value="5" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn6H" hidden type="text" name="btnkeyH" value="@Model.Key_6" />
+                                <input id="btn6" type="button" name="btnkey" title="6" value="6" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn7H" hidden type="text" name="btnkeyH" value="@Model.Key_7" />
+                                <input id="btn7" type="button" name="btnkey" title="7" value="7" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn8H" hidden type="text" name="btnkeyH" value="@Model.Key_8" />
+                                <input id="btn8" type="button" name="btnkey" title="8" value="8" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn9H" hidden type="text" name="btnkeyH" value="@Model.Key_9" />
+                                <input id="btn9" type="button" name="btnkey" title="9" value="9" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn10H" hidden type="text" name="btnkeyH" value="@Model.Key_10" />
+                                <input id="btn10" type="button" name="btnkey" title="10" value="10" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn11H" hidden type="text" name="btnkeyH" value="@Model.Key_11" />
+                                <input id="btn11" type="button" name="btnkey" title="11" value="11" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn12H" hidden type="text" name="btnkeyH" value="@Model.Key_12" />
+                                <input id="btn12" type="button" name="btnkey" title="12" value="12" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn13H" hidden type="text" name="btnkeyH" value="@Model.Key_13" />
+                                <input id="btn13" type="button" name="btnkey" title="13" value="13" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn14H" hidden type="text" name="btnkeyH" value="@Model.Key_14" />
+                                <input id="btn14" type="button" name="btnkey" title="14" value="14" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                <input id="btn15H" hidden type="text" name="btnkeyH" value="@Model.Key_15" />
+                                <input id="btn15" type="button" name="btnkey" title="15" value="15" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+                            </div>
+                        </div>
+                        <div class="keyboard_div_over">
+                            <div class="btn-group-key-vert">
+                                <div class="keyboard_div4">
+
+                                    <input id="btn16H" hidden type="text" name="btnkeyH" value="@Model.Key_16" />
+                                    <input id="btn16" type="button" name="btnkey" title="16" value="16" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                                    <input id="btn17H" hidden type="text" name="btnkeyH" value="@Model.Key_17" />
+                                    <input id="btn17" type="button" name="btnkey" title="17" value="17" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+                                </div>
+                                <div class="keyboard_div5">
+                                    <input type="button" value="1" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="2" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="3" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="4" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="5" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="6" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="7" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="8" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="9" class="btn_keyboard1 btn btn-default" disabled />
+                                    <input type="button" value="0" class="btn_keyboard2 btn btn-default" disabled />
+                                    <input type="button" name="btn-slesh" value="/" class="btn_keyboard1 btn btn-default" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="keyboard_div6">
+                            <input id="btn30H" hidden type="text" name="btnkeyH" value="@Model.Key_30" />
+                            <input id="btn30" type="button" name="btnkey" title="30" value="30" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn31H" hidden type="text" name="btnkeyH" value="@Model.Key_31" />
+                            <input id="btn31" type="button" name="btnkey" title="31" value="31" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn32H" hidden type="text" name="btnkeyH" value="@Model.Key_32" />
+                            <input id="btn32" type="button" name="btnkey" title="32" value="32" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn33H" hidden type="text" name="btnkeyH" value="@Model.Key_33" />
+                            <input id="btn33" type="button" name="btnkey" title="33" value="33" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn34H" hidden type="text" name="btnkeyH" value="@Model.Key_34" />
+                            <input id="btn34" type="button" name="btnkey" title="34" value="34" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn35H" hidden type="text" name="btnkeyH" value="@Model.Key_35" />
+                            <input id="btn35" type="button" name="btnkey" title="35" value="35" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn36H" hidden type="text" name="btnkeyH" value="@Model.Key_36" />
+                            <input id="btn36" type="button" name="btnkey" title="36" value="36" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn37H" hidden type="text" name="btnkeyH" value="@Model.Key_37" />
+                            <input id="btn37" type="button" name="btnkey" title="37" value="37" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn38H" hidden type="text" name="btnkeyH" value="@Model.Key_38" />
+                            <input id="btn38" type="button" name="btnkey" title="38" value="38" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn39H" hidden type="text" name="btnkeyH" value="@Model.Key_39" />
+                            <input id="btn39" type="button" name="btnkey" title="39" value="39" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn40H" hidden type="text" name="btnkeyH" value="@Model.Key_40" />
+                            <input id="btn40" type="button" name="btnkey" title="40" value="40" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn41H" hidden type="text" name="btnkeyH" value="@Model.Key_41" />
+                            <input id="btn41" type="button" name="btnkey" title="41" value="41" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn42H" hidden type="text" name="btnkeyH" value="@Model.Key_42" />
+                            <input id="btn42" type="button" name="btnkey" title="42" value="42" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn43H" hidden type="text" name="btnkeyH" value="@Model.Key_43" />
+                            <input id="btn43" type="button" name="btnkey" title="43" value="43" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn44H" hidden type="text" name="btnkeyH" value="@Model.Key_44" />
+                            <input id="btn44" type="button" name="btnkey" title="44" value="44" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn45H" hidden type="text" name="btnkeyH" value="@Model.Key_45" />
+                            <input id="btn45" type="button" name="btnkey" title="45" value="45" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn46H" hidden type="text" name="btnkeyH" value="@Model.Key_46" />
+                            <input id="btn46" type="button" name="btnkey" title="46" value="46" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn47H" hidden type="text" name="btnkeyH" value="@Model.Key_47" />
+                            <input id="btn47" type="button" name="btnkey" title="47" value="47" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn48H" hidden type="text" name="btnkeyH" value="@Model.Key_48" />
+                            <input id="btn48" type="button" name="btnkey" title="48" value="48" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+
+                            <input id="btn49H" hidden type="text" name="btnkeyH" value="@Model.Key_49" />
+                            <input id="btn49" type="button" name="btnkey" title="49" value="49" class="btn_keyboard1 btn btn-default" onClick="getBtnID(this)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 col-md-6" style="width: 250px">
+                    <div style="height:500px; overflow-x: auto;">
+                        <table class="table table-striped" id="settingKeyID" onclick="selectRow(event)">
+                            <tbody>
+                                @foreach (var item in ViewBag.SettingsKey)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Value
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="form-actions no-color">
+            <p>
+                <div class="btnPosition">
+                    <input type="submit" value="Сохранить" class="my_btn my_btn_success" onclick="setValues()" />
+                </div>
+
+                <div class="btnPositionCancel">
+                    @Html.ActionLink("Отмена","Keyboards","Home",null, new { @class="my_btn my_btn_danger"})
+                </div>
+            </p>
+        </div>
+
+    </form>
+}
+
+<script>
+
+    window.onload = function() {
+        if (document.getElementById("btn1H").value != "") {
+            document.getElementById("btn1").value = document.getElementById("btn1H").value.trim();
+            document.getElementById("btn1").title = document.getElementById("btn1H").value.trim();
+        }
+        else {
+            document.getElementById("btn1").value = "1";
+        }
+
+        if (document.getElementById("btn2H").value != "") {
+            document.getElementById("btn2").value = document.getElementById("btn2H").value.trim();
+            document.getElementById("btn2").title = document.getElementById("btn2H").value.trim();
+        }
+        else {
+            document.getElementById("btn2").value = "2";
+        }
+
+        if (document.getElementById("btn3H").value != "") {
+            document.getElementById("btn3").value = document.getElementById("btn3H").value.trim();
+            document.getElementById("btn3").title = document.getElementById("btn3H").value.trim();
+        }
+        else {
+            document.getElementById("btn3").value = "3";
+        }
+
+        if (document.getElementById("btn4H").value != "") {
+            document.getElementById("btn4").value = document.getElementById("btn4H").value.trim();
+            document.getElementById("btn4").title = document.getElementById("btn4H").value.trim();
+        }
+        else {
+            document.getElementById("btn4").value = "4";
+        }
+
+        if (document.getElementById("btn5H").value != "") {
+            document.getElementById("btn5").value = document.getElementById("btn5H").value.trim();
+            document.getElementById("btn5").title = document.getElementById("btn5H").value.trim();
+        }
+        else {
+            document.getElementById("btn5").value = "5";
+        }
+
+        if (document.getElementById("btn6H").value != "") {
+            document.getElementById("btn6").value = document.getElementById("btn6H").value.trim();
+            document.getElementById("btn6").title = document.getElementById("btn6H").value.trim();
+        }
+        else {
+            document.getElementById("btn6").value = "6";
+        }
+
+        if (document.getElementById("btn7H").value != "") {
+            document.getElementById("btn7").value = document.getElementById("btn7H").value.trim();
+            document.getElementById("btn7").title = document.getElementById("btn7H").value.trim();
+        }
+        else {
+            document.getElementById("btn7").value = "7";
+        }
+
+        if (document.getElementById("btn8H").value != "") {
+            document.getElementById("btn8").value = document.getElementById("btn8H").value.trim();
+            document.getElementById("btn8").title = document.getElementById("btn8H").value.trim();
+        }
+        else {
+            document.getElementById("btn8").value = "8";
+        }
+
+        if (document.getElementById("btn9H").value != "") {
+            document.getElementById("btn9").value = document.getElementById("btn9H").value.trim();
+            document.getElementById("btn9").title = document.getElementById("btn9H").value.trim();
+        }
+        else {
+            document.getElementById("btn9").value = "9";
+        }
+
+        if (document.getElementById("btn10H").value != "") {
+            document.getElementById("btn10").value = document.getElementById("btn10H").value.trim();
+            document.getElementById("btn10").title = document.getElementById("btn10H").value.trim();
+        }
+        else {
+            document.getElementById("btn10").value = "10";
+        }
+
+        if (document.getElementById("btn11H").value != "") {
+            document.getElementById("btn11").value = document.getElementById("btn11H").value.trim();
+            document.getElementById("btn11").title = document.getElementById("btn11H").value.trim();
+        }
+        else {
+            document.getElementById("btn11").value = "11";
+        }
+
+        if (document.getElementById("btn12H").value != "") {
+            document.getElementById("btn12").value = document.getElementById("btn12H").value.trim();
+            document.getElementById("btn12").title = document.getElementById("btn12H").value.trim();
+        }
+        else {
+            document.getElementById("btn12").value = "12";
+        }
+
+        if (document.getElementById("btn13H").value != "") {
+            document.getElementById("btn13").value = document.getElementById("btn13H").value.trim();
+            document.getElementById("btn13").title = document.getElementById("btn13H").value.trim();
+        }
+        else {
+            document.getElementById("btn13").value = "13";
+        }
+
+        if (document.getElementById("btn14H").value != "") {
+            document.getElementById("btn14").value = document.getElementById("btn14H").value.trim();
+            document.getElementById("btn14").title = document.getElementById("btn14H").value.trim();
+        }
+        else {
+            document.getElementById("btn14").value = "14";
+        }
+
+        if (document.getElementById("btn15H").value != "") {
+            document.getElementById("btn15").value = document.getElementById("btn15H").value.trim();
+            document.getElementById("btn15").title = document.getElementById("btn15H").value.trim();
+        }
+        else {
+            document.getElementById("btn15").value = "15";
+        }
+
+        if (document.getElementById("btn16H").value != "") {
+            document.getElementById("btn16").value = document.getElementById("btn16H").value.trim();
+            document.getElementById("btn16").title = document.getElementById("btn16H").value.trim();
+        }
+        else {
+            document.getElementById("btn16").value = "16";
+        }
+
+        if (document.getElementById("btn17H").value != "") {
+            document.getElementById("btn17").value = document.getElementById("btn17H").value.trim();
+            document.getElementById("btn17").title = document.getElementById("btn17H").value.trim();
+        }
+        else {
+            document.getElementById("btn17").value = "17";
+        }
+
+        if (document.getElementById("btn30H").value != "") {
+            document.getElementById("btn30").value = document.getElementById("btn30H").value.trim();
+            document.getElementById("btn30").title = document.getElementById("btn30H").value.trim();
+        }
+        else {
+            document.getElementById("btn30").value = "30";
+        }
+
+        if (document.getElementById("btn31H").value != "") {
+            document.getElementById("btn31").value = document.getElementById("btn31H").value.trim();
+            document.getElementById("btn31").title = document.getElementById("btn31H").value.trim();
+        }
+        else {
+            document.getElementById("btn31").value = "31";
+        }
+
+        if (document.getElementById("btn32H").value != "") {
+            document.getElementById("btn32").value = document.getElementById("btn32H").value.trim();
+            document.getElementById("btn32").title = document.getElementById("btn32H").value.trim();
+        }
+        else {
+            document.getElementById("btn32").value = "32";
+        }
+
+        if (document.getElementById("btn33H").value != "") {
+            document.getElementById("btn33").value = document.getElementById("btn33H").value.trim();
+            document.getElementById("btn33").title = document.getElementById("btn33H").value.trim();
+        }
+        else {
+            document.getElementById("btn33").value = "33";
+        }
+
+        if (document.getElementById("btn34H").value != "") {
+            document.getElementById("btn34").value = document.getElementById("btn34H").value.trim();
+            document.getElementById("btn34").title = document.getElementById("btn34H").value.trim();
+        }
+        else {
+            document.getElementById("btn34").value = "34";
+        }
+
+        if (document.getElementById("btn35H").value != "") {
+            document.getElementById("btn35").value = document.getElementById("btn35H").value.trim();
+            document.getElementById("btn35").title = document.getElementById("btn35H").value.trim();
+        }
+        else {
+            document.getElementById("btn35").value = "35";
+        }
+
+        if (document.getElementById("btn36H").value != "") {
+            document.getElementById("btn36").value = document.getElementById("btn36H").value.trim();
+            document.getElementById("btn36").title = document.getElementById("btn36H").value.trim();
+        }
+        else {
+            document.getElementById("btn36").value = "36";
+        }
+
+        if (document.getElementById("btn37H").value != "") {
+            document.getElementById("btn37").value = document.getElementById("btn37H").value.trim();
+            document.getElementById("btn37").title = document.getElementById("btn37H").value.trim();
+        }
+        else {
+            document.getElementById("btn37").value = "37";
+        }
+
+        if (document.getElementById("btn38H").value != "") {
+            document.getElementById("btn38").value = document.getElementById("btn38H").value.trim();
+            document.getElementById("btn38").title = document.getElementById("btn38H").value.trim();
+        }
+        else {
+            document.getElementById("btn38").value = "38";
+        }
+
+        if (document.getElementById("btn39H").value != "") {
+            document.getElementById("btn39").value = document.getElementById("btn39H").value.trim();
+            document.getElementById("btn39").title = document.getElementById("btn39H").value.trim();
+        }
+        else {
+            document.getElementById("btn39").value = "39";
+        }
+
+        if (document.getElementById("btn40H").value != "") {
+            document.getElementById("btn40").value = document.getElementById("btn40H").value.trim();
+            document.getElementById("btn40").title = document.getElementById("btn40H").value.trim();
+        }
+        else {
+            document.getElementById("btn40").value = "40";
+        }
+
+        if (document.getElementById("btn41H").value != "") {
+            document.getElementById("btn41").value = document.getElementById("btn41H").value.trim();
+            document.getElementById("btn41").title = document.getElementById("btn41H").value.trim();
+        }
+        else {
+            document.getElementById("btn41").value = "41";
+        }
+
+        if (document.getElementById("btn42H").value != "") {
+            document.getElementById("btn42").value = document.getElementById("btn42H").value.trim();
+            document.getElementById("btn42").title = document.getElementById("btn42H").value.trim();
+        }
+        else {
+            document.getElementById("btn42").value = "42";
+        }
+
+        if (document.getElementById("btn43H").value != "") {
+            document.getElementById("btn43").value = document.getElementById("btn43H").value.trim();
+            document.getElementById("btn43").title = document.getElementById("btn43H").value.trim();
+        }
+        else {
+            document.getElementById("btn43").value = "43";
+        }
+
+        if (document.getElementById("btn44H").value != "") {
+            document.getElementById("btn44").value = document.getElementById("btn44H").value.trim();
+            document.getElementById("btn44").title = document.getElementById("btn44H").value.trim();
+        }
+        else {
+            document.getElementById("btn44").value = "44";
+        }
+
+        if (document.getElementById("btn45H").value != "") {
+            document.getElementById("btn45").value = document.getElementById("btn45H").value.trim();
+            document.getElementById("btn45").title = document.getElementById("btn45H").value.trim();
+        }
+        else {
+            document.getElementById("btn45").value = "45";
+        }
+
+        if (document.getElementById("btn46H").value != "") {
+            document.getElementById("btn46").value = document.getElementById("btn46H").value.trim();
+            document.getElementById("btn46").title = document.getElementById("btn46H").value.trim();
+        }
+        else {
+            document.getElementById("btn46").value = "46";
+        }
+
+        if (document.getElementById("btn47H").value != "") {
+            document.getElementById("btn47").value = document.getElementById("btn47H").value.trim();
+            document.getElementById("btn47").title = document.getElementById("btn47H").value.trim();
+        }
+        else {
+            document.getElementById("btn47").value = "47";
+        }
+
+        if (document.getElementById("btn48H").value != "") {
+            document.getElementById("btn48").value = document.getElementById("btn48H").value.trim();
+            document.getElementById("btn48").title = document.getElementById("btn48H").value.trim();
+        }
+        else {
+            document.getElementById("btn48").value = "48";
+        }
+
+        if (document.getElementById("btn49H").value != "") {
+            document.getElementById("btn49").value = document.getElementById("btn49H").value.trim();
+            document.getElementById("btn49").title = document.getElementById("btn49H").value.trim();
+        }
+        else {
+            document.getElementById("btn49").value = "49";
+        }
+
+        if (document.getElementById("btn50H").value != "") {
+            document.getElementById("btn50").value = document.getElementById("btn50H").value.trim();
+            document.getElementById("btn50").title = document.getElementById("btn50H").value.trim();
+        }
+        else {
+            document.getElementById("btn50").value = "50";
+        }
+
+        if (document.getElementById("btn51H").value != "") {
+            document.getElementById("btn51").value = document.getElementById("btn51H").value.trim();
+            document.getElementById("btn51").title = document.getElementById("btn51H").value.trim();
+        }
+        else {
+            document.getElementById("btn51").value = "51";
+        }
+
+        if (document.getElementById("btn52H").value != "") {
+            document.getElementById("btn52").value = document.getElementById("btn52H").value.trim();
+            document.getElementById("btn52").title = document.getElementById("btn52H").value.trim();
+        }
+        else {
+            document.getElementById("btn52").value = "52";
+        }
+
+        if (document.getElementById("btn53H").value != "") {
+            document.getElementById("btn53").value = document.getElementById("btn53H").value.trim();
+            document.getElementById("btn53").title = document.getElementById("btn53H").value.trim();
+        }
+        else {
+            document.getElementById("btn53").value = "53";
+        }
+
+        if (document.getElementById("btn54H").value != "") {
+            document.getElementById("btn54").value = document.getElementById("btn54H").value.trim();
+            document.getElementById("btn54").title = document.getElementById("btn54H").value.trim();
+        }
+        else {
+            document.getElementById("btn54").value = "54";
+        }
+
+        if (document.getElementById("btn55H").value != "") {
+            document.getElementById("btn55").value = document.getElementById("btn55H").value.trim();
+            document.getElementById("btn55").title = document.getElementById("btn55H").value.trim();
+        }
+        else {
+            document.getElementById("btn55").value = "55";
+        }
+
+        if (document.getElementById("btn56H").value != "") {
+            document.getElementById("btn56").value = document.getElementById("btn56H").value.trim();
+            document.getElementById("btn56").title = document.getElementById("btn56H").value.trim();
+        }
+        else {
+            document.getElementById("btn56").value = "56";
+        }
+
+        if (document.getElementById("btn57H").value != "") {
+            document.getElementById("btn57").value = document.getElementById("btn57H").value.trim();
+            document.getElementById("btn57").title = document.getElementById("btn57H").value.trim();
+        }
+        else {
+            document.getElementById("btn57").value = "57";
+        }
+
+        if (document.getElementById("btn58H").value != "") {
+            document.getElementById("btn58").value = document.getElementById("btn58H").value.trim();
+            document.getElementById("btn58").title = document.getElementById("btn58H").value.trim();
+        }
+        else {
+            document.getElementById("btn58").value = "58";
+        }
+
+        if (document.getElementById("btn59H").value != "") {
+            document.getElementById("btn59").value = document.getElementById("btn59H").value.trim();
+            document.getElementById("btn59").title = document.getElementById("btn59H").value.trim();
+        }
+        else {
+            document.getElementById("btn59").value = "59";
+        }
+
+        if (document.getElementById("btn60H").value != "") {
+            document.getElementById("btn60").value = document.getElementById("btn60H").value.trim();
+            document.getElementById("btn60").title = document.getElementById("btn60H").value.trim();
+        }
+        else {
+            document.getElementById("btn60").value = "60";
+        }
+
+        if (document.getElementById("btn61H").value != "") {
+            document.getElementById("btn61").value = document.getElementById("btn61H").value.trim();
+            document.getElementById("btn61").title = document.getElementById("btn61H").value.trim();
+        }
+        else {
+            document.getElementById("btn61").value = "61";
+        }
+
+        if (document.getElementById("btn62H").value != "") {
+            document.getElementById("btn62").value = document.getElementById("btn62H").value.trim();
+            document.getElementById("btn62").title = document.getElementById("btn62H").value.trim();
+        }
+        else {
+            document.getElementById("btn62").value = "62";
+        }
+
+        if (document.getElementById("btn63H").value != "") {
+            document.getElementById("btn63").value = document.getElementById("btn63H").value.trim();
+            document.getElementById("btn63").title = document.getElementById("btn63H").value.trim();
+        }
+        else {
+            document.getElementById("btn63").value = "63";
+        }
+
+        if (document.getElementById("btn64H").value != "") {
+            document.getElementById("btn64").value = document.getElementById("btn64H").value.trim();
+            document.getElementById("btn64").title = document.getElementById("btn64H").value.trim();
+        }
+        else {
+            document.getElementById("btn64").value = "64";
+        }
+
+        if (document.getElementById("btn65H").value != "") {
+            document.getElementById("btn65").value = document.getElementById("btn65H").value.trim();
+            document.getElementById("btn65").title = document.getElementById("btn65H").value.trim();
+        }
+        else {
+            document.getElementById("btn65").value = "65";
+        }
+
+        if (document.getElementById("btn66H").value != "") {
+            document.getElementById("btn66").value = document.getElementById("btn66H").value.trim();
+            document.getElementById("btn66").title = document.getElementById("btn66H").value.trim();
+        }
+        else {
+            document.getElementById("btn66").value = "66";
+        }
+
+        if (document.getElementById("btn67H").value != "") {
+            document.getElementById("btn67").value = document.getElementById("btn67H").value.trim();
+            document.getElementById("btn67").title = document.getElementById("btn67H").value.trim();
+        }
+        else {
+            document.getElementById("btn67").value = "67";
+        }
+    }
+
+    // Get the modal
+    var modal = document.getElementById("myModal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+
+    // When the user clicks the button, open the modal
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+        ////Press Enter
+        //function runScript(e) {
+        //    //See notes about 'which' and 'key'
+        //    if (e.keyCode == 13) {
+        //        var tb = document.getElementById("txtBarcodeID");
+        //        clickSpanClose();
+        //        return false;
+        //    }
+        //}
+
+</script>

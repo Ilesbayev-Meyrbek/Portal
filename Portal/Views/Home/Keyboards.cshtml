@@ -1,0 +1,101 @@
+﻿@model Portal.Models.KeyboardView
+
+@{
+    ViewBag.Title = "Клавиатуры";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string _currentMarketID = @ViewBag.CurrentMarketID;
+    bool _selectText = @ViewBag.SelectText;
+}
+
+<div style="margin-top:25px">
+
+    @using (Html.BeginForm())
+    {
+        @Html.DropDownList("MarketID", null, htmlAttributes: new { @class = "form-control", onchange = "this.form.submit()" })
+    }
+
+    <br />
+
+    <a asp-action="CreateKeyboard" class="my_btn my_btn_success">Добавить клавиатуру</a>
+
+    <br />
+
+    <div style="height:100%; width:auto; overflow-x: auto;margin:auto;margin-top:25px">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Код магазина</th>
+                    <th>POS №</th>
+                    <th style="width:140px">Статус</th>
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model.Keyboards)
+                {
+                    string status = string.Empty;
+
+                    if (item.IsSaved)
+                    {
+                        status = "Загружено";
+                    }
+                    else
+                    {
+                        status = "Обновлено";
+                    }
+
+                    if (Model.IsAdmin || Model.UserRole.EditKeyboard)
+                    {
+                        <tr class="Search clickable-row" data-href="@Url.Action("EditKeyboard", "Home", new { ID = item.ID })">
+
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MarketID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Pos_num)
+                            </td>
+                            <td>
+                                @status
+                            </td>
+                            <td>
+                            </td>
+
+                        </tr>
+                    }
+                    else if (!Model.UserRole.EditKeyboard)
+                    {
+                        <tr class="Search">
+
+                            <td>
+                                @Html.DisplayFor(modelItem => item.MarketID)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Pos_num)
+                            </td>
+                            <td>
+                                @status
+                            </td>
+                            <td>
+                            </td>
+
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function myFunction() {
+        alert("У вас нет доступа на изменение данных!");
+    }
+
+    function submitform() {
+        $('form').submit();
+    }
+</script>
+

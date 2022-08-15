@@ -1,0 +1,95 @@
+﻿@model Portal.Models.ScaleView
+@{
+    ViewBag.Title = "Статус весов";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="margin-top:25px">
+    @using (Html.BeginForm())
+    {
+        <div style="height:700px; width:100%; overflow-x: auto;margin:auto;margin-top:25px;">
+
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Код магазина</th>
+                        <th>Тип</th>
+                        <th>Номер</th>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>IP</th>
+                        }
+                        <th>Статус</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in Model.Scales)
+                    {
+                        string status = string.Empty;
+
+                        if (item.ScaleType == "Tiger" && item.Tiger)
+                        {
+                            status = "Загружено";
+                        }
+                        else if (item.ScaleType == "BPlus" && item.BPlus)
+                        {
+                            status = "Загружено";
+                        }
+                        else if (item.ScaleType == "FreshBase" && item.FreshBase)
+                        {
+                            status = "Загружено";
+                        }
+                        else
+                        {
+                            status = "Не загружено";
+                        }
+
+                        if (Model.IsAdmin)
+                        {
+                            <tr class="Search">
+
+                                <td>
+                                    @item.MarketID
+                                </td>
+                                <td>
+                                    @item.ScaleType
+                                </td>
+                                <td>
+                                    @item.ScaleName
+                                </td>
+                                <td>
+                                    @item.IP
+                                </td>
+                                <td>
+                                    @status
+                                </td>
+
+                            </tr>
+                        }
+                        else /*if (!Model.UserRole.AllMarkets)*/
+                        {
+                            <tr class="Search">
+
+                                <td>
+                                    @item.MarketID
+                                </td>
+                                <td>
+                                    @item.ScaleType
+                                </td>
+                                <td>
+                                    @item.ScaleName
+                                </td>
+                                <td>
+                                    @status
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    }
+</div>
