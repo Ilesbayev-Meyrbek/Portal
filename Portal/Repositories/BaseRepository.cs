@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Portal.DB;
 using Portal.Repositories.Interfaces;
 using Portal.Extensions;
+using QueryableExtensions = System.Data.Entity.QueryableExtensions;
 
 namespace Portal.Repositories
 {
@@ -21,16 +22,16 @@ namespace Portal.Repositories
         /// <param name="predicate">Filter</param>
         /// <param name="include">Example: p => p.AccountChart, p => p.Currency</param>
         /// <returns></returns>
-        public Task<T> GetAsync(
+        public async Task<T?> GetAsync(
             Expression<Func<T, bool>> predicate,
             params Expression<Func<T, object>>[] include
             )
         {
             IQueryable<T> query = _db.Set<T>();
-            if (include != null && include.Any())
+            if (include.Any())
                 query = include.Aggregate(query, (current, inc) => current.Include(inc));
 
-            return query.FirstOrDefaultAsync(predicate);
+            return await query.FirstOrDefaultAsync(predicate);
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Portal.Repositories
         /// <param name="count">Count elements</param>
         /// <param name="include">Example: p => p.AccountChart, p => p.Currency</param>
         /// <returns></returns>
-        public Task<List<T>> GetAllAsync(
+        public async Task<List<T>> GetAllAsync(
             Expression<Func<T, bool>> predicate,
             Expression<Func<T, object>>? orderByProperty = null, 
             bool orderByDescending = true,
@@ -57,7 +58,7 @@ namespace Portal.Repositories
             if (include.Any()) 
                 query = include.Aggregate(query, (current, inc) => current.Include(inc));
 
-            return query.Where(predicate).OrderBy(orderByProperty, orderByDescending).Skip(((page <= 0 ? 1 : page) - 1) * count).Take(count).ToListAsync();
+            return await QueryableExtensions.ToListAsync(query.Where(predicate).OrderBy(orderByProperty, orderByDescending).Skip(((page <= 0 ? 1 : page) - 1) * count).Take(count));
         }
 
         public virtual void Add(T entity) => _db.Set<T>().Add(entity);

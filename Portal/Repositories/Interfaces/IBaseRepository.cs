@@ -4,10 +4,8 @@ namespace Portal.Repositories.Interfaces
 {
     public interface IBaseRepository<T>
     {
-        Task<T> GetAsync(
-            Expression<Func<T, bool>> predicate,
-            params Expression<Func<T, object>>[] include
-            );
+        Task<T?> GetAsync(Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] include);
 
         Task<List<T>> GetAllAsync(
             Expression<Func<T, bool>> predicate,
