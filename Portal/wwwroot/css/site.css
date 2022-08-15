@@ -1,21 +1,21 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
     margin-bottom: 60px;
-/*    padding-top: 50px;*/
+    /*    padding-top: 50px;*/
     padding-bottom: 20px;
 }
 
@@ -507,8 +507,8 @@ hr {
 }
 
 .searchboxPosition {
-    margin-top: 15px;
-    right: 8%;
+    margin-top: 7px;
+    right: 2%;
     position: fixed;
 }
 

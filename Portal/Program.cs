@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Portal.Classes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,17 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+
+
+
+/******************************************************************************************************/
+
+
+
+
+
+/******************************************************************************************************/
 
 
 

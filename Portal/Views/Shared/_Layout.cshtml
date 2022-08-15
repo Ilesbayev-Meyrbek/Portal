@@ -1,9 +1,6 @@
 ﻿@using Azure.Core
 @using Portal.Classes
-
-@{
-
-}
+@using Portal.DB
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,6 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Portal</title>
+    <link rel="icon" href="~/Images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
@@ -27,60 +25,13 @@
 
             @if (User.Identity?.IsAuthenticated == true)
             {
-                @*var ctx = new Portal.DB.DataContext();
-                var sctx = new Portal.DB.ScaleContext();
-                *@
-               @* var isAdm = new Portal.DB.DB().GetAdmin(User.Identity.Name);*@
-
+                @await Component.InvokeAsync("CurrentUser")
                 
-                @*IsAdmin isAdm = new IsAdmin().GetAdmin(User.Identity.Name);*@
-                @*var isAdmin = new Portal.DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
-                var role = new Portal.DB.DB(_ctx, _sctx).GetUserRole(User.Identity.Name);*@
 
-
-                    <div class="mynav_dropdownMenu">
-                        <button class="mynav_dropbtnMenu">
-                            POS
-                            <i class="fa fa-caret-down"></i>
-                        </button>
-                        <div class="mynav_dropdownMenu-content">
-                            @Html.ActionLink(" Логотипы", "Logos", "Home")
-                            @Html.ActionLink(" Кассиры", "Cashiers", "Home")
-                            @Html.ActionLink(" Клавиатура", "Keyboards", "Home")
-                            @Html.ActionLink(" POS статусы", "POSs", "Home")
-                        </div>
-                    </div>
-
-                    <div class="mynav_dropdownMenu">
-                        <button class="mynav_dropbtnMenu">
-                            Весы
-                            <i class="fa fa-caret-down"></i>
-                        </button>
-                        <div class="mynav_dropdownMenu-content">
-                            @Html.ActionLink(" Статусы весов", "Scales", "Home")
-                        </div>
-                    </div>
-
-                    <div class="mynav_dropdownMenu">
-                        <button class="mynav_dropbtnMenu">
-                            Отчеты
-                            <i class="fa fa-caret-down"></i>
-                        </button>
-                        <div class="mynav_dropdownMenu-content">
-                            @Html.ActionLink(" Отчет", "Reports", "Home")
-                        </div>
-                    </div>
-
-                <div class="mynav_dropdownMenu">
-                    <button class="mynav_dropbtnMenu">
-                        Пользователи
-                        <i class="fa fa-caret-down"></i>
-                    </button>
-                    <div class="mynav_dropdownMenu-content">
-                        @Html.ActionLink(" Роли", "Roles", "Home")
-                        @Html.ActionLink(" Пользователи", "Users", "Home")
-                    </div>
-                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <input type="text" id="Search" placeholder="Поиск" class="form-control searchboxPosition" />
+                }
             }
 
             <partial name="_LoginPartial" />
@@ -113,14 +64,8 @@
         });
     </script>
 
-    <div>
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            @*<input type="text" id="Search" placeholder="Поиск" class="form-control searchboxPosition" />*@
-        }
-    </div>
-
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
     <script type="text/javascript">
         $(function() {
             $("#submit").click(function() {

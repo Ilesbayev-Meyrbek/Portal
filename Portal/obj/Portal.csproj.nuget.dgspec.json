@@ -1,25 +1,30 @@
 {
   "format": 1,
   "restore": {
-    "/Users/yuriyfilin/source/Portal/Portal/Portal.csproj": {}
+    "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj": {}
   },
   "projects": {
-    "/Users/yuriyfilin/source/Portal/Portal/Portal.csproj": {
+    "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/yuriyfilin/source/Portal/Portal/Portal.csproj",
+        "projectUniqueName": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
         "projectName": "Portal",
-        "projectPath": "/Users/yuriyfilin/source/Portal/Portal/Portal.csproj",
-        "packagesPath": "/Users/yuriyfilin/.nuget/packages/",
-        "outputPath": "/Users/yuriyfilin/source/Portal/Portal/obj/",
+        "projectPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\Portal.csproj",
+        "packagesPath": "C:\\Users\\m.ilesbaev\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\m.ilesbaev\\Desktop\\Portal\\Portal\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "/Users/yuriyfilin/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\m.ilesbaev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -115,7 +120,8 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
@@ -127,7 +133,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/6.0.301/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.400\\RuntimeIdentifierGraph.json"
         }
       }
     }

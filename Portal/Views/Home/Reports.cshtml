@@ -23,12 +23,16 @@
                 </div>
             </div>
 
+            <br />
+
             <div class="form-group">
-                <div class="col-md-10" style="margin-left:17%">
+                <div class="col-md-10">
                     <input type="radio" id="MarketRadio" onclick="ChangeRadioButton(this)" name="RadioType" />
                     <label>Поиск по магазину</label>
                 </div>
             </div>
+
+            <br />
 
             <div class="form-group">
                 @Html.Label("Код магазина", "Код магазина", htmlAttributes: new { @class = "control-label col-md-2" })
@@ -60,12 +64,16 @@
                 </div>
             </div>
 
+            <br />
+
             <div class="form-group">
-                <div class="col-md-10" style="margin-left:17%">
+                <div class="col-md-10">
                     <input type="radio" id="TerminalRadio" onclick="ChangeRadioButton(this)" name="RadioType" />
                     <label>Поиск по кассе</label>
                 </div>
             </div>
+
+            <br />
 
             <div class="form-group">
                 @Html.Label("Код терминала", "Код терминала", htmlAttributes: new { @class = "control-label col-md-2" })
@@ -84,11 +92,10 @@
 
             <div class="form-actions no-color">
                 <p>
-                    <div class="btn success">
-                        @Html.ActionLink("Загрузить", "Reports", null)
-                    </div>
+                    <input type="submit" value="Загрузить" class="my_btn my_btn_success" />
                 </p>
             </div>
+
         </form>
     </div>
 </div>

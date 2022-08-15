@@ -11,62 +11,62 @@ namespace Portal.Classes
         public bool IsUser { get; set; }
         public Role? Roles { get; set; }
 
-        public CurrentUser()
-        {
+        //public CurrentUser()
+        //{
 
-        }
+        //}
 
-        public void SetValueCookie(HttpResponse response, string key, string value, int? expireTime)
-        {
-            CookieOptions option = new CookieOptions();
+        //public void SetValueCookie(HttpResponse response, string key, string value, int? expireTime)
+        //{
+        //    CookieOptions option = new CookieOptions();
 
-            if (expireTime.HasValue)
-                option.Expires = DateTime.Now.AddDays(expireTime.Value);
-            else
-                option.Expires = DateTime.Now.AddDays(10);
+        //    if (expireTime.HasValue)
+        //        option.Expires = DateTime.Now.AddDays(expireTime.Value);
+        //    else
+        //        option.Expires = DateTime.Now.AddDays(10);
 
-            response.Cookies.Append(key, value, option);
-        }
+        //    response.Cookies.Append(key, value, option);
+        //}
 
-        public void SetValueCookie(HttpResponse response, string key, CurrentUser value, int? expireTime)
-        {
-            CookieOptions option = new CookieOptions();
+        //public void SetValueCookie(HttpResponse response, string key, CurrentUser value, int? expireTime)
+        //{
+        //    CookieOptions option = new CookieOptions();
 
-            if (expireTime.HasValue)
-                option.Expires = DateTime.Now.AddDays(expireTime.Value);
-            else
-                option.Expires = DateTime.Now.AddDays(10);
+        //    if (expireTime.HasValue)
+        //        option.Expires = DateTime.Now.AddDays(expireTime.Value);
+        //    else
+        //        option.Expires = DateTime.Now.AddDays(10);
 
-            response.Cookies.Append(key, JsonConvert.SerializeObject(value), option);
-        }
+        //    response.Cookies.Append(key, JsonConvert.SerializeObject(value), option);
+        //}
 
-        public string GetValueCookie(HttpRequest request, string key)
-        {
-            //read cookie from IHttpContextAccessor  
-            //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["key"];
-
-            //read cookie from Request object  
-            string cookieValueFromReq = request.Cookies[key];
-
-            return cookieValueFromReq;
-        }
-
-        //public CurrentUser GetValueCookie(HttpRequest request, string key)
+        //public string GetValueCookie(HttpRequest request, string key)
         //{
         //    //read cookie from IHttpContextAccessor  
         //    //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["key"];
 
         //    //read cookie from Request object  
-        //    CurrentUser value = JsonConvert.DeserializeObject<CurrentUser>(request.Cookies[key]);//request.Cookies[key];
+        //    string cookieValueFromReq = request.Cookies[key];
 
-        //    //return cookieValueFromReq;
-        //    return value;
+        //    return cookieValueFromReq;
         //}
 
+        ////public CurrentUser GetValueCookie(HttpRequest request, string key)
+        ////{
+        ////    //read cookie from IHttpContextAccessor  
+        ////    //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["key"];
 
-        public void Remove(HttpResponse response, string key)
-        {
-            response.Cookies.Delete(key);
-        }
+        ////    //read cookie from Request object  
+        ////    CurrentUser value = JsonConvert.DeserializeObject<CurrentUser>(request.Cookies[key]);//request.Cookies[key];
+
+        ////    //return cookieValueFromReq;
+        ////    return value;
+        ////}
+
+
+        //public void Remove(HttpResponse response, string key)
+        //{
+        //    response.Cookies.Delete(key);
+        //}
     }
 }

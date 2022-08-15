@@ -1,5 +1,4 @@
 ﻿using Portal.Models;
-using System.Data.SqlClient;
 
 namespace Portal.DB
 {
@@ -66,6 +65,25 @@ namespace Portal.DB
                 var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
 
                 return admin;
+
+            }
+            catch (Exception ex)
+            {
+                //#region Log
+                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
+                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
+                //#endregion
+                return null;
+            }
+        }
+
+        public User CheckUser(string user)
+        {
+            try
+            {
+                var _user = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+
+                return _user;
 
             }
             catch (Exception ex)
@@ -575,7 +593,7 @@ namespace Portal.DB
         {
             try
             {
-                _ctx.Update(logo);
+                _ctx.Logos.Update(logo);
                 _ctx.SaveChanges();
 
                 return true;
@@ -699,7 +717,7 @@ namespace Portal.DB
                 _cashier.Password = "";
                 _cashier.TabelNumber = "";
 
-                _ctx.Update(_cashier);
+                _ctx.Cashiers.Update(_cashier);
                 _ctx.SaveChanges();
 
                 return true;
@@ -834,7 +852,7 @@ namespace Portal.DB
             {
                 keyboard.MarketID = market;
 
-                _ctx.Update(keyboard);
+                _ctx.Keyboards.Update(keyboard);
                 _ctx.SaveChanges();
 
                 return true;
@@ -849,54 +867,54 @@ namespace Portal.DB
 
         #region POS
 
-        //public POSView GetUserForPOS(string user, string marketID)
-        //{
-        //    try
-        //    {
-        //        var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-        //        var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
+        public POSView GetUserForPOS(string user, string marketID)
+        {
+            try
+            {
+                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
+                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
 
-        //        if (string.IsNullOrEmpty(marketID))
-        //            marketID = _ctx.Markets.ToList()[0].MarketID;
+                if (string.IsNullOrEmpty(marketID))
+                    marketID = _ctx.Markets.ToList()[0].MarketID;
 
-        //        POSView posView = new POSView();
+                POSView posView = new POSView();
 
-        //        if (admin != null)
-        //        {
-        //            posView.IsAdmin = true;
-        //            posView.UserRole = null;
-        //            posView.Market = marketID;
-        //            posView.Markets = _ctx.Markets.ToList();
-        //        }
-        //        else if (admin == null && users != null)
-        //        {
-        //            var roleID = users.RoleID;
-        //            var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-        //            var market = users.MarketID;
+                if (admin != null)
+                {
+                    posView.IsAdmin = true;
+                    posView.UserRole = null;
+                    posView.Market = marketID;
+                    posView.Markets = _ctx.Markets.ToList();
+                }
+                else if (admin == null && users != null)
+                {
+                    var roleID = users.RoleID;
+                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+                    var market = users.MarketID;
 
-        //            if (role.AllMarkets)
-        //            {
-        //                posView.IsAdmin = false;
-        //                posView.UserRole = role;
-        //                posView.Market = marketID;
-        //                posView.Markets = _ctx.Markets.ToList();
-        //            }
-        //            else
-        //            {
-        //                posView.IsAdmin = false;
-        //                posView.UserRole = role;
-        //                posView.Market = market;
-        //                posView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
-        //            }
-        //        }
+                    if (role.AllMarkets)
+                    {
+                        posView.IsAdmin = false;
+                        posView.UserRole = role;
+                        posView.Market = marketID;
+                        posView.Markets = _ctx.Markets.ToList();
+                    }
+                    else
+                    {
+                        posView.IsAdmin = false;
+                        posView.UserRole = role;
+                        posView.Market = market;
+                        posView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                    }
+                }
 
-        //        return posView;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return null;
-        //    }
-        //}
+                return posView;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
 
         //public POSView GetPOSes(POSView posView)
         //{
@@ -1019,7 +1037,6 @@ namespace Portal.DB
 
                 if (admin != null)
                 {
-                    //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == marketID).ToList();
                     scalesView.IsAdmin = true;
                     scalesView.UserRole = null;
                     scalesView.Market = marketID;
@@ -1033,7 +1050,6 @@ namespace Portal.DB
 
                     if (role.AllMarkets)
                     {
-                        //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == marketID).ToList();
                         scalesView.IsAdmin = false;
                         scalesView.UserRole = role;
                         scalesView.Market = marketID;
@@ -1041,7 +1057,6 @@ namespace Portal.DB
                     }
                     else
                     {
-                        //scalesView.Scales = ctx.Scales.Where(w => w.MarketID == market).ToList();
                         scalesView.IsAdmin = false;
                         scalesView.UserRole = role;
                         scalesView.Market = market;

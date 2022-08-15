@@ -8,7 +8,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Net;
 using System.Net.Http.Headers;
-using Portal.Repositories;
 
 namespace Portal.Controllers
 {
@@ -50,12 +49,12 @@ namespace Portal.Controllers
 
 
             ////set the key value in Cookie  
-            //Set("UserKey", User.Identity.Name, 10);
+            Set("UserKey", User.Identity.Name);
 
             //string cookieValueFromContext = _httpContextAccessor.HttpContext.Request.Cookies["UserKey"];
 
             ////read cookie from Request object  
-            //string cookieValueFromReq = Request.Cookies["User"];
+            string cookieValueFromReq = Request.Cookies["UserKey"];
 
             ////Delete the cookie object  
             //Remove("Key");
@@ -69,25 +68,11 @@ namespace Portal.Controllers
         {
             return Request.Cookies[key];
         }
-        /// <summary>  
-        /// set the cookie  
-        /// </summary>  
-        /// <param name="key">key (unique indentifier)</param>  
-        /// <param name="value">value to store in cookie object</param>  
-        /// <param name="expireTime">expiration time</param>  
-        public void Set(string key, string value, int? expireTime)
+        public void Set(string key, string value)
         {
             CookieOptions option = new CookieOptions();
-            if (expireTime.HasValue)
-                option.Expires = DateTime.Now.AddMinutes(expireTime.Value);
-            else
-                option.Expires = DateTime.Now.AddMilliseconds(10);
-            Response.Cookies.Append(key, value, option);
+               Response.Cookies.Append(key, value, option);
         }
-        /// <summary>  
-        /// Delete the key  
-        /// </summary>  
-        /// <param name="key">Key</param>  
         public void Remove(string key)
         {
             Response.Cookies.Delete(key);
@@ -685,11 +670,10 @@ namespace Portal.Controllers
 
         // POST: Logos/Edit
         [HttpPost]
-        public async Task<ActionResult> EditLogo(LogoViewModel lvm)
+        public async Task<ActionResult> EditLogo(LogoViewModel lvm, Logo logo)
         {
             MarketsName market;
 
-            Logo logo = new Logo();
             var ds = lvm.DateS.ToString("yyyyMMdd");
             var de = lvm.DateE.ToString("yyyyMMdd");
 
@@ -702,64 +686,29 @@ namespace Portal.Controllers
             logo.IsSavedToPOS = 0;
             logo.MarketID = lvm.MarketID;
 
-            //if (ModelState.IsValid)
-            //{
-                if (lvm.BMP != null)
+            byte[] imageData = new byte[0];
+
+            if (lvm.BMP != null)
+            {
+                if (lvm.DateS <= lvm.DateE)
                 {
-                    if (lvm.DateS <= lvm.DateE)
+                    if (lvm.BMP != null)
                     {
-                        byte[] imageData = new byte[0];
-
-                        if (lvm.BMP != null)
+                        using (BinaryReader br = new BinaryReader(lvm.BMP.OpenReadStream()))
                         {
-                            using (BinaryReader br = new BinaryReader(lvm.BMP.OpenReadStream()))
-                            {
-                                imageData = br.ReadBytes((int)lvm.BMP.Length);
-                            }
-                        }
-
-                        MemoryStream ms = new MemoryStream(imageData);
-                        Image pic = Image.FromStream(ms);
-                        var bitDepth = pic.PixelFormat.ToString();
-                        var imgWidth = pic.Width;
-                        var imgHeight = pic.Height;
-
-                        if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
-                        {
-                            var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
-
-                            return RedirectToAction("Logos");
-                        }
-                        else
-                        {
-                            market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
-                            ViewBag.Market = market.Name;
-
-                            TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный');</script>";
-
-                            return View(logo);
+                            imageData = br.ReadBytes((int)lvm.BMP.Length);
                         }
                     }
-                    else
+
+                    MemoryStream ms = new MemoryStream(imageData);
+                    Image pic = Image.FromStream(ms);
+                    var bitDepth = pic.PixelFormat.ToString();
+                    var imgWidth = pic.Width;
+                    var imgHeight = pic.Height;
+
+                    if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
                     {
-                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
-                        ViewBag.Market = market.Name;
-
-                        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
-
-                        return View(logo);
-                    }
-                }
-                else if (lvm.BMP == null)
-                {
-                    if (logo.DateS <= logo.DateE)
-                    {
-                        //var ds = logo.DateS.ToString("yyyyMMdd");
-                        //var de = logo.DateE.ToString("yyyyMMdd");
-
-                        //logo.DateBegin = Convert.ToInt32(ds);
-                        //logo.DateEnd = Convert.ToInt32(de);
-
+                        logo.BMP = imageData;
                         var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
 
                         return RedirectToAction("Logos");
@@ -768,23 +717,66 @@ namespace Portal.Controllers
                     {
                         market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
                         ViewBag.Market = market.Name;
-                        TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, , для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
 
                         return View(logo);
                     }
                 }
+                else
+                {
+                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                    ViewBag.Market = market.Name;
+
+                    TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                    logo.BMP = imageData;
+                    return View(logo);
+                }
+            }
+            else if (lvm.BMP == null && logo.BMP != null)
+            {
+                imageData = logo.BMP;
+
+                if (lvm.DateS <= lvm.DateE)
+                {
+                    MemoryStream ms = new MemoryStream(imageData);
+                    Image pic = Image.FromStream(ms);
+                    var bitDepth = pic.PixelFormat.ToString();
+                    var imgWidth = pic.Width;
+                    var imgHeight = pic.Height;
+                    var imgFormat = new FileContentResult(imageData, "image/bmp");
+
+                    if (imgFormat.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
+                    {
+                        logo.BMP = imageData;
+                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
+
+                        return RedirectToAction("Logos");
+                    }
+                    else
+                    {
+                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                        ViewBag.Market = market.Name;
+
+                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, , для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                        return View(logo);
+                    }
+                }
+                else
+                {
+                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                    ViewBag.Market = market.Name;
+
+                    TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                    return View(logo);
+                }
+            }
 
             return View(logo);
-            //}
-
-            //market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
-            //ViewBag.Market = market.Name;
-
-            //TempData["msg"] = "<script>alert('Не корректное заполнение полей при изменении логотипа');</script>";
-
-            //return View(logo);
         }
-
 
         #endregion
 
@@ -1688,7 +1680,6 @@ namespace Portal.Controllers
                 MarketId = marketList,
                 Posnum = posList
             };
-
 
             return View(rdd);
         }
