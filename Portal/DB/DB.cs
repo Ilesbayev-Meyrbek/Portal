@@ -1,4 +1,8 @@
-﻿using Portal.Models;
+﻿using DurableTask.Core.Common;
+using Portal.Models;
+using System.Data.Entity;
+using System.Data.SqlClient;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Portal.DB
 {
@@ -9,7 +13,7 @@ namespace Portal.DB
 
         public DB()
         {
-            
+
         }
 
         public DB(DataContext ctx, ScaleContext sctx)
@@ -201,8 +205,6 @@ namespace Portal.DB
                 return null;
             }
         }
-
-        /**************************************** Role ************************************************/
 
         #region Roles
 
@@ -533,7 +535,7 @@ namespace Portal.DB
                 logo.Note = lvm.Note;
                 logo.IsSaved = false;
                 logo.IsSavedToPOS = 0;
-                
+
                 _ctx.Logos.Add(logo);
                 _ctx.SaveChanges();
 
@@ -604,14 +606,6 @@ namespace Portal.DB
             }
         }
 
-
-
-
-
-
-
-
-
         #endregion
 
         #region Cashiers
@@ -643,6 +637,9 @@ namespace Portal.DB
 
                     if (role.AllMarkets)
                     {
+                        //if (string.IsNullOrEmpty(marketID))
+                        //    marketID = _ctx.Markets.ToList()[0].MarketID;
+
                         cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                         cashierView.IsAdmin = false;
                         cashierView.UserRole = role;
@@ -916,108 +913,118 @@ namespace Portal.DB
             }
         }
 
-        //public POSView GetPOSes(POSView posView)
-        //{
-        //    try
-        //    {
-        //        posView.Items = new List<GoodStatus>();
+        public POSView GetPOSes(POSView posView)
+        {
+            try
+            {
+                posView.Items = new List<GoodStatus>();
 
-        //        var today = DateTime.Now.Date;
+                var today = DateTime.Now.Date;
 
-        //        if (posView.IsAdmin || posView.UserRole.AllMarkets)
-        //        {
-        //            var markets = GetMarkets();
+                if (posView.IsAdmin || posView.UserRole.AllMarkets)
+                {
+                    var markets = GetMarkets();
 
-        //            var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
+                    //var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
 
-        //            if (goodsForToday.Count > 0)
-        //            {
-        //                for (int i = 0; i < markets.Count; i++)
-        //                {
-        //                    GoodStatus goodStatus = new GoodStatus();
-        //                    var market = markets[i].MarketID;
+                    var goodsForToday =
+                        (from g in _ctx.Goods
+                         join gd in _ctx.GoodsDetails on g.ID equals gd.GoodsID
+                         where g.ID == gd.GoodsID && gd.ServerDateTime >= today
+                         select new GoodDT { IsSaved = g.IsSaved, GoodsID = gd.GoodsID, MarketID = g.MarketID, ServerDateTime = gd.ServerDateTime }).ToList();
 
-        //                    var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
+                    if (goodsForToday.Count > 0)
+                    {
+                        for (int i = 0; i < markets.Count; i++)
+                        {
+                            GoodStatus goodStatus = new GoodStatus();
+                            var market = markets[i].MarketID;
 
-        //                    if (goodError.Count > 0)
-        //                    {
-        //                        var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
+                            var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
 
-        //                        if (errTime != null)
-        //                        {
-        //                            goodStatus.MarketID = market;
-        //                            goodStatus.Status = "Не загружено";
-        //                            goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+                            if (goodError.Count > 0)
+                            {
+                                var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
 
-        //                            posView.Items.Add(goodStatus);
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
-        //                        var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
+                                if (errTime != null)
+                                {
+                                    goodStatus.MarketID = market;
+                                    goodStatus.Status = "Не загружено";
+                                    goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
 
-        //                        if (goodSuccess.Count > 0 && _goodSuccess != null)
-        //                        {
-        //                            goodStatus.MarketID = market;
-        //                            goodStatus.Status = "Загружено";
-        //                            goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+                                    posView.Items.Add(goodStatus);
+                                }
+                            }
+                            else
+                            {
+                                var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
+                                var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
 
-        //                            posView.Items.Add(goodStatus);
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        else
-        //        {
-        //            var market = posView.Market;
-        //            var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
+                                if (goodSuccess.Count > 0 && _goodSuccess != null)
+                                {
+                                    goodStatus.MarketID = market;
+                                    goodStatus.Status = "Загружено";
+                                    goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
 
-        //            if (goodsForToday.Count > 0)
-        //            {
-        //                GoodStatus goodStatus = new GoodStatus();
+                                    posView.Items.Add(goodStatus);
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    var market = posView.Market;
+                    //var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
+                    var goodsForToday = (from g in _ctx.Goods
+                                         join gd in _ctx.GoodsDetails on g.ID equals gd.GoodsID
+                                         where g.ID == gd.GoodsID && g.MarketID == market && gd.ServerDateTime >= today
+                                         select new GoodDT { IsSaved = g.IsSaved, GoodsID = gd.GoodsID, MarketID = g.MarketID, ServerDateTime = gd.ServerDateTime }).ToList();
 
-        //                var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
+                    if (goodsForToday.Count > 0)
+                    {
+                        GoodStatus goodStatus = new GoodStatus();
 
-        //                if (goodError.Count > 0)
-        //                {
-        //                    var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
+                        var goodError = goodsForToday.Where(w => w.MarketID == market && !w.IsSaved).ToList();
 
-        //                    if (errTime != null)
-        //                    {
-        //                        goodStatus.MarketID = market;
-        //                        goodStatus.Status = "Не загружено";
-        //                        goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+                        if (goodError.Count > 0)
+                        {
+                            var errTime = goodError.OrderBy(o => o.ServerDateTime).FirstOrDefault();
 
-        //                        posView.Items.Add(goodStatus);
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
-        //                    var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
+                            if (errTime != null)
+                            {
+                                goodStatus.MarketID = market;
+                                goodStatus.Status = "Не загружено";
+                                goodStatus.Note = "Товары не обновились за " + errTime.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
 
-        //                    if (goodSuccess.Count > 0 && _goodSuccess != null)
-        //                    {
-        //                        goodStatus.MarketID = market;
-        //                        goodStatus.Status = "Загружено";
-        //                        goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
+                                posView.Items.Add(goodStatus);
+                            }
+                        }
+                        else
+                        {
+                            var goodSuccess = goodsForToday.Where(w => w.MarketID == market && w.IsSaved).ToList();
+                            var _goodSuccess = goodSuccess.OrderByDescending(o => o.ServerDateTime).FirstOrDefault();
 
-        //                        posView.Items.Add(goodStatus);
-        //                    }
-        //                }
-        //            }
-        //        }
+                            if (goodSuccess.Count > 0 && _goodSuccess != null)
+                            {
+                                goodStatus.MarketID = market;
+                                goodStatus.Status = "Загружено";
+                                goodStatus.Note = "Товары обновились за " + _goodSuccess.ServerDateTime.ToString("dd.MM.yyyy HH:mm");
 
-        //        return posView;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Log.WriteErrorLog(ex.ToString());
-        //        return null;
-        //    }
-        //}
+                                posView.Items.Add(goodStatus);
+                            }
+                        }
+                    }
+                }
+
+                return posView;
+            }
+            catch (Exception ex)
+            {
+                //Log.WriteErrorLog(ex.ToString());
+                return null;
+            }
+        }
 
         #endregion
 

@@ -6,7 +6,12 @@
 
 <div style="margin-top:25px">
 
-    @Html.DropDownList("MarketID", null, htmlAttributes: new { @class = "form-control", @onchange = @"form.submit();" })
+    @using (Html.BeginForm())
+    {
+        @Html.DropDownList("MarketID", null, htmlAttributes: new { @class = "form-control", onchange = @"form.submit();", style = "margin-left:-20px" })
+    }
+    <br />
+    
     <a asp-action="CreateCashier" class="my_btn my_btn_success">Добавить кассира</a>
 
     <br />

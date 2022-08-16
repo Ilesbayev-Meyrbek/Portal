@@ -8,102 +8,101 @@
 <div style="margin-top:25px">
     @using (Html.BeginForm())
     {
-        @Html.DropDownList("MarketID", null, htmlAttributes: new { @class = "form-control", onchange = @"form.submit();" })
-
-        <br />
-
-        <a asp-action="CreateLogo" class="my_btn my_btn_success">Добавить кассира</a>
-
-        <br />
-
-        <div style="height:700px; width:100%; overflow-x: auto;margin:auto;margin-top:25px;">
-
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Код магазина</th>
-                        <th>Дата начала</th>
-                        <th>Дата завершения</th>
-                        <th>Заметки</th>
-                        <th style="width:140px">Статус</th>
-                        <th style="width:200px"></th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model.Logos)
-                    {
-                        string status = string.Empty;
-
-                        if (item.IsSaved)
-                        {
-                            status = "Загружено";
-                        }
-                        else
-                        {
-                            status = "Обновлено";
-                        }
-
-                        if (Model.IsAdmin || Model.UserRole.EditLogo)
-                        {
-                            <tr class="Search clickable-row" data-href="@Url.Action("EditLogo", "Home", new { id = item.ID })">
-
-                                <td>
-                                    @item.MarketID
-                                </td>
-                                <td>
-                                    @item.DateS.ToString("dd.MM.yyyy")
-                                </td>
-                                <td>
-                                    @item.DateE.ToString("dd.MM.yyyy")
-                                </td>
-                                <td>
-                                    @item.Note
-                                </td>
-                                <td>
-                                    @status
-                                </td>
-                                <td>
-                                    @if (Model.IsAdmin || Model.UserRole.DeleteLogo)
-                                    {
-                                        @Html.ActionLink(" ", "DeleteLogo", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        else if (!Model.UserRole.EditLogo)
-                        {
-                            <tr class="Search clickable-row">
-
-                                <td>
-                                    @item.MarketID
-                                </td>
-                                <td>
-                                    @item.DateS.ToString("dd.MM.yyyy")
-                                </td>
-                                <td>
-                                    @item.DateE.ToString("dd.MM.yyyy")
-                                </td>
-                                <td>
-                                    @item.Note
-                                </td>
-                                <td>
-                                    @status
-                                </td>
-                                <td>
-                                    @if (Model.IsAdmin || Model.UserRole.DeleteLogo)
-                                    {
-                                        @Html.ActionLink(" ", "DeleteLogo", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                </tbody>
-            </table>
-
-        </div>
+        @Html.DropDownList("MarketID", null, htmlAttributes: new { @class = "form-control", onchange = @"form.submit();", style = "margin-left:-20px" })
     }
+    <br />
+
+    <a asp-action="CreateLogo" class="my_btn my_btn_success">Добавить кассира</a>
+
+    <br />
+
+    <div style="height:700px; width:100%; overflow-x: auto;margin:auto;margin-top:25px;">
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Код магазина</th>
+                    <th>Дата начала</th>
+                    <th>Дата завершения</th>
+                    <th>Заметки</th>
+                    <th style="width:140px">Статус</th>
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model.Logos)
+                {
+                    string status = string.Empty;
+
+                    if (item.IsSaved)
+                    {
+                        status = "Загружено";
+                    }
+                    else
+                    {
+                        status = "Обновлено";
+                    }
+
+                    if (Model.IsAdmin || Model.UserRole.EditLogo)
+                    {
+                        <tr class="Search clickable-row" data-href="@Url.Action("EditLogo", "Home", new { id = item.ID })">
+
+                            <td>
+                                @item.MarketID
+                            </td>
+                            <td>
+                                @item.DateS.ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                @item.DateE.ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                @item.Note
+                            </td>
+                            <td>
+                                @status
+                            </td>
+                            <td>
+                                @if (Model.IsAdmin || Model.UserRole.DeleteLogo)
+                                {
+                                    @Html.ActionLink(" ", "DeleteLogo", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else if (!Model.UserRole.EditLogo)
+                    {
+                        <tr class="Search clickable-row">
+
+                            <td>
+                                @item.MarketID
+                            </td>
+                            <td>
+                                @item.DateS.ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                @item.DateE.ToString("dd.MM.yyyy")
+                            </td>
+                            <td>
+                                @item.Note
+                            </td>
+                            <td>
+                                @status
+                            </td>
+                            <td>
+                                @if (Model.IsAdmin || Model.UserRole.DeleteLogo)
+                                {
+                                    @Html.ActionLink(" ", "DeleteLogo", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+    </div>
 </div>
 
 <script>

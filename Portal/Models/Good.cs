@@ -27,7 +27,7 @@ namespace Portal.Models
         public int UnitCode { get; set; }
         public string UnitName { get; set; }
         public bool HasLabel { get; set; }
-        public string CTIN { get; set; }
+        public string TIN { get; set; }
 
         public virtual ICollection<GoodsDetail> GoodsDetails { get; set; }
     }

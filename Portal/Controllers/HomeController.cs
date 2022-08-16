@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using NLog;
+using NLog.Fluent;
 using Portal.Classes;
 using Portal.DB;
 using Portal.Models;
@@ -15,6 +17,8 @@ namespace Portal.Controllers
     public class HomeController : Controller
     {
         CurrentUser _currentUser = new CurrentUser();
+
+        Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly ILogger<HomeController> _logger;
 
@@ -58,6 +62,10 @@ namespace Portal.Controllers
 
             ////Delete the cookie object  
             //Remove("Key");
+
+            #region Log
+            logger.WithProperty("MarketID", marketForSession).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Главная");
+            #endregion
 
 
 
@@ -786,15 +794,6 @@ namespace Portal.Controllers
         {
             var cashiers = new Portal.DB.DB(_ctx, _sctx).GetCashiers(User.Identity.Name, MarketID);
 
-            cashiers.Markets.Insert(0, new MarketsName
-            {
-                MarketID = "",
-                Name = "Выберите магазин",
-                POS = "",
-                POSVersion = "",
-                FilesLoaded = false
-            });
-
             ViewBag.MarketID = new SelectList(cashiers.Markets != null ? cashiers.Markets : new List<MarketsName>(), "MarketID", "Name");
 
             //#region Log
@@ -1240,15 +1239,6 @@ namespace Portal.Controllers
             else
                 ViewBag.SelectText = true;
 
-            keyboards.Markets.Insert(0, new MarketsName
-            {
-                MarketID = "",
-                Name = "Выберите магазин",
-                POS = "",
-                POSVersion = "",
-                FilesLoaded = false
-            });
-
             ViewBag.MarketID = new SelectList(keyboards.Markets != null ? keyboards.Markets : new List<MarketsName>(), "MarketID", "Name");
 
             TempData["CurrentMarketID"] = MarketID;
@@ -1639,14 +1629,14 @@ namespace Portal.Controllers
 
         #region POSes
 
-        //public ActionResult POSs(string MarketID)
-        //{
-        //    var _userPOSs = new Portal.DB.DB(_ctx, _sctx).GetUserForPOS(User.Identity.Name, MarketID);
-        //    var pos = new Portal.DB.DB(_ctx, _sctx).GetPOSes(_userPOSs);
-        //    ViewBag.ErrorPOSCount = pos.Items.Where(w => w.Status == "Не загружено").ToList().Count;
+        public ActionResult POSs(string MarketID)
+        {
+            var _userPOSs = new Portal.DB.DB(_ctx, _sctx).GetUserForPOS(User.Identity.Name, MarketID);
+            var pos = new Portal.DB.DB(_ctx, _sctx).GetPOSes(_userPOSs);
+            ViewBag.ErrorPOSCount = pos.Items.Where(w => w.Status == "Не загружено").ToList().Count;
 
-        //    return View(pos);
-        //}
+            return View(pos);
+        }
 
         #endregion
 

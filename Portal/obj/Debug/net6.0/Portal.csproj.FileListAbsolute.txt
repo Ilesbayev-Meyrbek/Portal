@@ -646,3 +646,13 @@ C:\Users\m.ilesbaev\Desktop\Portal\Portal\obj\Debug\net6.0\refint\Portal.dll
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\obj\Debug\net6.0\Portal.pdb
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\obj\Debug\net6.0\Portal.genruntimeconfig.cache
 C:\Users\m.ilesbaev\Desktop\Portal\Portal\obj\Debug\net6.0\ref\Portal.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\Dynamitey.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\ImpromptuInterface.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\DurableTask.Core.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.Core.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.Interfaces.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.Linq.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.PlatformServices.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.Providers.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.dll
+C:\Users\m.ilesbaev\Desktop\Portal\Portal\bin\Debug\net6.0\System.Reactive.xml
