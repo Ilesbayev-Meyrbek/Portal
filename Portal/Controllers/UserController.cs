@@ -45,9 +45,9 @@ public class UserController : Controller
         }
         else
         {
-            var user = await _userService.GetAsync(User.Identity.Name);
+            var user = await _userService.GetCurrentUser();
 
-            if (user.Success && user.Data.Role is {AdminForScale: true})
+            if ( user.Role is {AdminForScale: true})
             {
                 var marketsResult = await _marketService.GetAllAsync();
                 if(marketsResult.Success)
@@ -58,17 +58,10 @@ public class UserController : Controller
                         !w.DeleteCashiers && !w.CreateLogo && !w.EditLogo && !w.DeleteLogo && !w.CreateSettings &&
                         !w.EditSettings && !w.DeleteSettings && !w.CreateKeyboard && !w.EditKeyboard &&
                         !w.DeleteKeyboard);
-
                 if(rolesResult.Success)
                     ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
             }
         }
-
-        //#region Log
-        //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
-        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Создание пользователя");
-        //#endregion
-
         return View(new User());
     }
 
@@ -76,91 +69,64 @@ public class UserController : Controller
     [HttpPost]
     public async Task<ActionResult> CreateUser(User user)
     {
-        Result<List<MarketsName>>? marketsResult;
-        Result<List<Role>>? rolesResult;
-        if (ModelState.IsValid)
+        var result = await _userService.CreateAsync(user);
+
+        if (result.Success)
         {
-            var result = await _userService.CreateAsync(user);
-
-            if (result.Success)
-            {
-                return RedirectToAction("Users");
-            }
-
-            marketsResult = await _marketService.GetAllAsync();
-            if(marketsResult.Success)
-                ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
-            rolesResult = await _roleService.GetAllAsync(r => true);
-            if (rolesResult.Success)
-                ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
-
-            return View(user);
+            return RedirectToAction("Users");
         }
 
-        marketsResult = await _marketService.GetAllAsync();
-        if(marketsResult.Success)
+        var marketsResult = await _marketService.GetAllAsync();
+        if (marketsResult.Success)
             ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
-        rolesResult = await _roleService.GetAllAsync(r => true);
+        var rolesResult = await _roleService.GetAllAsync(r => true);
         if (rolesResult.Success)
             ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
-
-        //#region Log
-        //_data = "ID=" + user.ID.ToString() + ";\n";
-        //_data = _data + "MarketID=" + user.MarketID + ";\n";
-        //_data = _data + "Name=" + user.Name + ";\n";
-        //_data = _data + "Login=" + user.Login + ";\n";
-        //_data = _data + "RoleID=" + user.RoleID;
-        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Ошибка при сохранение пользователя (не корректное заполнение полей)");
-        //#endregion
 
         return View(user);
     }
 
-    public async Task<ActionResult> EditUser(int? id)
+    public async Task<ActionResult> EditUser(int id)
     {
-        User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id);
+        var userResult = await _userService.GetAsync(id);
 
-        if (id == null)
+        if (!userResult.Success)
         {
             return NotFound();
         }
 
-        List<Role> roles = new List<Role>();
-        MarketsName market = new MarketsName();
-        List<MarketsName> markets = new List<MarketsName>();
+        var adminResult = await _adminService.GetAsync(User.Identity.Name);
 
-        var admin = new Portal.DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
-
-        if (admin != null)
+        if (adminResult.Success)
         {
-            markets = new Portal.DB.DB(_ctx, _sctx).GetMarkets();
-            ViewBag.MarketID = new SelectList(markets, "MarketID", "Name");
-
-            market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID);
-            ViewBag.Markets = new List<string> {market.MarketID.ToString(), market.Name};
-
-            roles = new Portal.DB.DB(_ctx, _sctx).GetRoles();
-            ViewBag.RoleID = new SelectList(roles, "ID", "Name");
+            var marketsResult = await _marketService.GetAllAsync();
+            if(marketsResult.Success)
+                ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
+            var rolesResult = await _roleService.GetAllAsync(r => true);
+            if (rolesResult.Success)
+                ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
+            
+            ViewBag.Markets = new List<string> {userResult.Data.Market.MarketID, userResult.Data.Market.Name};
         }
         else
         {
-            var _userRole = new Portal.DB.DB(_ctx, _sctx).GetUserRole(User.Identity.Name);
+            var user = await _userService.GetCurrentUser();
 
-            if (_userRole.AdminForScale)
+            if ( user.Role is {AdminForScale: true})
             {
-                markets = new Portal.DB.DB(_ctx, _sctx).GetMarkets();
-                ViewBag.MarketID = new SelectList(markets, "MarketID", "Name");
+                var marketsResult = await _marketService.GetAllAsync();
+                if(marketsResult.Success)
+                    ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
 
-                market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID);
-                ViewBag.Markets = new List<string> {market.MarketID.ToString(), market.Name};
-
-                roles = new Portal.DB.DB(_ctx, _sctx).GetRoles().Where(w =>
-                        w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
-                        !w.DeleteCashiers && !w.CreateLogo && !w.EditLogo && !w.DeleteLogo && !w.CreateSettings &&
-                        !w.EditSettings && !w.DeleteSettings && !w.CreateKeyboard && !w.EditKeyboard &&
-                        !w.DeleteKeyboard)
-                    .ToList();
-                ViewBag.RoleID = new SelectList(roles, "ID", "Name");
+                var rolesResult = await _roleService.GetAllAsync(w =>
+                    w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
+                    !w.DeleteCashiers && !w.CreateLogo && !w.EditLogo && !w.DeleteLogo && !w.CreateSettings &&
+                    !w.EditSettings && !w.DeleteSettings && !w.CreateKeyboard && !w.EditKeyboard &&
+                    !w.DeleteKeyboard);
+                if(rolesResult.Success)
+                    ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
+                
+                ViewBag.Markets = new List<string> {userResult.Data.Market.MarketID, userResult.Data.Market.Name};
             }
         }
 
@@ -168,66 +134,30 @@ public class UserController : Controller
         //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Изменение пользователя");
         //#endregion
 
-        return View(user);
+        return View(userResult.Data);
     }
 
     // POST: Users/EditUser
     [HttpPost]
-    public async Task<ActionResult> EditUser(User user, string MarketID)
+    public async Task<ActionResult> EditUser(User user)
     {
-        MarketsName market;
+        Result<MarketsName>? marketResult;
+        Result<List<Role>>? rolesResult;
 
-        //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
-        string _data = string.Empty;
+        var result = await _userService.EditAsync(user);
 
-        if (ModelState.IsValid)
+        if (result.Success)
         {
-            var isEditing = new Portal.DB.DB(_ctx, _sctx).SaveEditUser(user);
-
-            if (isEditing)
-            {
-                //#region Log
-                //_data = "ID=" + user.ID.ToString() + ";\n";
-                //_data = _data + "MarketID=" + user.MarketID + ";\n";
-                //_data = _data + "Name=" + user.Name + ";\n";
-                //_data = _data + "Login=" + user.Login + ";\n";
-                //_data = _data + "RoleID=" + user.RoleID;
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение изменение пользователя");
-                //#endregion
-
-                return RedirectToAction("Users");
-            }
-            else
-            {
-                market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID);
-                ViewBag.Markets = new List<string> {market.MarketID.ToString(), market.Name};
-                ViewBag.RoleID = new SelectList(new Portal.DB.DB(_ctx, _sctx).GetRoles(), "ID", "Name");
-
-                //#region Log
-                //_data = "ID=" + user.ID.ToString() + ";\n";
-                //_data = _data + "MarketID=" + user.MarketID + ";\n";
-                //_data = _data + "Name=" + user.Name + ";\n";
-                //_data = _data + "Login=" + user.Login + ";\n";
-                //_data = _data + "RoleID=" + user.RoleID;
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Ошибка при сохранение изменение пользователя");
-                //#endregion
-
-                return View(user);
-            }
+            return RedirectToAction("Users");
         }
 
-        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID);
-        ViewBag.Markets = new List<string> {market.MarketID.ToString(), market.Name};
-        ViewBag.RoleID = new SelectList(new Portal.DB.DB(_ctx, _sctx).GetRoles(), "ID", "Name");
+        marketResult = await _marketService.GetAsync(user.MarketID);
+        if (marketResult.Success)
+            ViewBag.Markets = new List<string> { marketResult.Data.MarketID, marketResult.Data.Name };
 
-        //#region Log
-        //_data = "ID=" + user.ID.ToString() + ";\n";
-        //_data = _data + "MarketID=" + user.MarketID + ";\n";
-        //_data = _data + "Name=" + user.Name + ";\n";
-        //_data = _data + "Login=" + user.Login + ";\n";
-        //_data = _data + "RoleID=" + user.RoleID;
-        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Ошибка при сохранение изменение пользователя (не корректное заполнение полей)");
-        //#endregion
+        rolesResult = await _roleService.GetAllAsync(r => true);
+        if (rolesResult.Success)
+            ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
 
         return View(user);
     }
@@ -236,14 +166,14 @@ public class UserController : Controller
     [ActionName("DeleteUser")]
     public async Task<IActionResult> ConfirmDeleteUser(int? id)
     {
-        if (id != null)
+        if (id.HasValue)
         {
-            User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id);
-
-            ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID).Name;
-
-            if (user != null)
-                return View(user);
+            var userResult = await _userService.GetAsync(id.Value);
+            if (userResult.Success)
+            {
+                ViewBag.CurrentMarket = userResult.Data.Market.Name;
+                return View(userResult.Data);
+            }
         }
 
         return NotFound();
@@ -252,10 +182,11 @@ public class UserController : Controller
     [HttpPost]
     public async Task<IActionResult> DeleteUser(int? id)
     {
-        if (id != null)
+        if (id.HasValue)
         {
-            var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteUser(id);
-            return RedirectToAction("Users");
+            var result = await _userService.RemoveAsync(id.Value);
+            if(result.Success)
+                return RedirectToAction("Users");
         }
 
         return NotFound();

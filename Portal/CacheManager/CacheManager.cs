@@ -9,7 +9,7 @@ namespace Portal.CacheManager
 	/// <summary>
 	/// Управление КЭШем
 	/// </summary>
-	public class CacheManager : ICacheManager, IDisposable
+	public class CacheManager : ICacheManager
 	{
 		private IMemoryCache _cache;
 
@@ -44,7 +44,7 @@ namespace Portal.CacheManager
 		/// </summary>
 		/// <param name="obj">Объект</param>
 		/// <param name="key">Ключ по которому кэшируем</param>
-		public void Set(object obj, string key)
+		public void Set(object? obj, string key)
 		{
 			_cache.Set(key, obj);
 		}
@@ -76,30 +76,5 @@ namespace Portal.CacheManager
 			_cache.Dispose();
 			_cache = new MemoryCache(new MemoryCacheOptions());
 		}
-
-		#region disposing
-
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		private bool disposed = false;
-
-		private void Dispose(bool disposing)
-		{
-			if (!this.disposed)
-			{
-				if (disposing)
-				{
-					if (_cache != null)
-						_cache.Dispose();
-				}
-			}
-			this.disposed = true;
-		}
-
-		#endregion disposing
 	}
 }

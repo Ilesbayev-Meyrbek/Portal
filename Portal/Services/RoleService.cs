@@ -20,7 +20,7 @@ public class RoleService : IRoleService
     {
         try
         {
-            var roles = await _unitOfWork.Roles.GetAllAsync(predicate);
+            var roles = await _unitOfWork.Roles.GetAllAsync(predicate, r => r.Name, false);
 
             return Result<List<Role>>.Ok(roles);
         }

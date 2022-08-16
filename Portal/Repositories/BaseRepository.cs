@@ -58,8 +58,8 @@ namespace Portal.Repositories
             if (include.Any()) 
                 query = include.Aggregate(query, (current, inc) => current.Include(inc));
 
-            return await QueryableExtensions.ToListAsync(query.Where(predicate).OrderBy(orderByProperty, orderByDescending).Skip(((page <= 0 ? 1 : page) - 1) * count).Take(count));
-        }
+            return await query.Where(predicate).OrderBy(orderByProperty, orderByDescending).Skip(((page <= 0 ? 1 : page) - 1) * count).Take(count).ToListAsync();
+            }
 
         public virtual void Add(T entity) => _db.Set<T>().Add(entity);
         public virtual void Update(T entity) => _db.Set<T>().Update(entity);

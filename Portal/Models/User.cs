@@ -10,7 +10,9 @@ namespace Portal.Models
         public int ID { get; set; }
 
         [Display(Name = "Маркет")]
+        [Required(ErrorMessage = "Укажите маркет пользователя!")]
         public string MarketID { get; set; }
+        public MarketsName Market { get; set; }
 
         [Display(Name = "Ф.И.О.")]
         [Required(ErrorMessage = "Укажите Ф.И.О. пользователя!")]
@@ -20,8 +22,10 @@ namespace Portal.Models
         [Required(ErrorMessage = "Укажите логин пользователя!")]
         public string Login { get; set; }
 
+        [Required(ErrorMessage = "Укажите роль пользователя!")]
         public int RoleID { get; set; }
 
-        public Role? Role { get; set; }
+        public Role Role { get; set; }
+        
     }
 }

@@ -12,74 +12,47 @@ public class UserService : IUserService
     private readonly IAdminService _adminService;
     private readonly IRoleService _roleService;
     private readonly ICacheManager _cacheManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public UserService(IUnitOfWork unitOfWork,
         IAdminService adminService,
         IRoleService roleService,
         ICacheManager cacheManager,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<UserService> logger)
     {
         _unitOfWork = unitOfWork;
         _adminService = adminService;
         _roleService = roleService;
         _cacheManager = cacheManager;
+        _httpContextAccessor = httpContextAccessor;
         _logger = logger;
     }
 
-    private string GetCacheKey(string userLogin)
+    public async Task<User> GetCurrentUser()
     {
-        return $"GetUserByLogin_{userLogin}";
+        var userResult = await GetAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+
+        if (userResult.Success)
+            return userResult.Data;
+
+        throw new Exception(userResult.Message);
     }
-    
-    public async Task<Result<int>> CreateAsync(User user)
+
+    public async Task<Result<User>> GetAsync(int userId)
     {
         try
         {
-            _unitOfWork.Users.Add(user);
-            await _unitOfWork.SaveChangesAsync();
+            var user = await _unitOfWork.Users.GetAsync(u => u.ID == userId, u => u.Role, u => u.Market);
 
-            _cacheManager.Set(user, GetCacheKey(user.Login));
-            return Result<int>.Ok(user.ID);
+            return user != null ?
+                Result<User>.Ok(user) :
+                Result<User>.Failed("Пользователь не найден");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
-            return Result<int>.Failed(ex.Message);
-        }
-
-    }
-
-    public async Task<Result<bool>> EditAsync(User user)
-    {
-        try
-        {
-            _unitOfWork.Users.Update(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            _cacheManager.Set(user, GetCacheKey(user.Login));
-            return Result<bool>.Ok(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return Result<bool>.Failed(ex.Message);
-        }
-    }
-
-    public async Task<Result<bool>> RemoveAsync(User user)
-    {
-        try
-        {
-            _unitOfWork.Users.Remove(user);
-            await _unitOfWork.SaveChangesAsync();
-
-            _cacheManager.Remove(GetCacheKey(user.Login));
-            return Result<bool>.Ok(true);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
-            return Result<bool>.Failed(ex.Message);
+            return Result<User>.Failed(ex.Message);
         }
     }
 
@@ -92,11 +65,10 @@ public class UserService : IUserService
             {
                 return Result<User>.Ok(userCache);
             }
-            var user = await _unitOfWork.Users.GetAsync(u => u.Login == userLogin, u => u.Role);
-
-            return user != null ?
-                Result<User>.Ok(user) :
-                Result<User>.Failed("Пользователь не найден");
+            var user = await _unitOfWork.Users.GetAsync(u => u.Login == userLogin, u => u.Role, u => u.Market);
+            _cacheManager.Set(user, keyCache);  
+            
+            return Result<User>.Ok(user);
         }
         catch (Exception ex)
         {
@@ -130,7 +102,7 @@ public class UserService : IUserService
 
             if (adminResult.Success)
             {
-                usersLst = await _unitOfWork.Users.GetAllAsync(u => true, u => u.ID, false, include: u => u.Role);
+                usersLst = await _unitOfWork.Users.GetAllAsync(u => true, u => u.ID, false);
             }
             else
             {
@@ -160,5 +132,68 @@ public class UserService : IUserService
             return Result<List<User>>.Failed(ex.Message);
         }
     }
-    
+
+    public async Task<Result<int>> CreateAsync(User user)
+    {
+        try
+        {
+            _unitOfWork.Users.Add(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            _cacheManager.Set(user, GetCacheKey(user.Login));
+            return Result<int>.Ok(user.ID);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return Result<int>.Failed(ex.Message);
+        }
+
+    }
+
+    public async Task<Result> EditAsync(User user)
+    {
+        try
+        {
+            _unitOfWork.Users.Update(user);
+            await _unitOfWork.SaveChangesAsync();
+
+            _cacheManager.Set(user, GetCacheKey(user.Login));
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return Result.Failed(ex.Message);
+        }
+    }
+
+    public async Task<Result> RemoveAsync(int userId)
+    {
+        try
+        {
+            var userResult = await GetAsync(userId);
+            if (userResult.Success)
+            {
+                _unitOfWork.Users.Remove(userResult.Data);
+                await _unitOfWork.SaveChangesAsync();
+
+                _cacheManager.Remove(GetCacheKey(userResult.Data.Login));
+                return Result.Ok();
+            }
+            _logger.LogWarning("Пользователь не найден");
+            return Result.Failed("Пользователь не найден");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
+            return Result.Failed(ex.Message);
+        }
+    }
+
+    private string GetCacheKey(string userLogin)
+    {
+        return $"GetUserByLogin_{userLogin}";
+    }
+
 }

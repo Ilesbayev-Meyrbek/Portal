@@ -45,6 +45,14 @@ namespace Portal.DB
                 entity.Property(e => e.IsSaved).IsRequired();
             });
 
+            builder.Entity<User>(entity =>
+            {
+                entity.HasOne(d => d.Market)
+                    .WithMany(p => p.Users)
+                    .HasForeignKey(d => d.MarketID)
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_Users_MarketsName");
+            });
 
         }
     }

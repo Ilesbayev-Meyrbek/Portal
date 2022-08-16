@@ -1,59 +1,64 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Portal.CacheManager;
 using Portal.Classes;
 using Portal.DB;
 using Portal.Models;
+using Portal.Services.Interfaces;
 
 namespace Portal.ViewComponents
 {
     public class CurrentUserViewComponent : ViewComponent
     {
-        private readonly DataContext _ctx;
-        private readonly ScaleContext _sctx;
+        private readonly IAdminService _adminService;
+        private readonly IUserService _userService;
+        private readonly ICacheManager _cacheManager;
 
-        public CurrentUserViewComponent(DataContext ctx, ScaleContext sctx)
+        public CurrentUserViewComponent(IAdminService adminService, IUserService userService, ICacheManager cacheManager)
         {
-            _ctx = ctx;
-            _sctx = sctx;
+            _adminService = adminService;
+            _userService = userService;
+            _cacheManager = cacheManager;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            User _user = null;
-            Role _role = null;
-            var _admin = new DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
-            if (_admin == null)
-            {
-                _user = new DB.DB(_ctx, _sctx).CheckUser(User.Identity.Name);
-                _role = new DB.DB(_ctx, _sctx).GetUserRole(User.Identity.Name);
-            }
-
-            CurrentUser currentUser = new CurrentUser();
-            currentUser.Login = User.Identity.Name;
+            string userLogin = User.Identity.Name;
             
-            if (_admin != null)
-            { 
+            string keyCache = GetCacheKey(userLogin);
+            if (_cacheManager.Get(keyCache) is CurrentUser currentUserCache)
+            {
+                return View("Default", currentUserCache);
+            }
+            CurrentUser currentUser = new CurrentUser();
+            currentUser.Login = userLogin;
+
+            var adminResult = await _adminService.GetAsync(userLogin);
+            if (adminResult.Success)
+            {
                 currentUser.IsAdmin = true;
                 currentUser.MarketID = "OFCE";
-            }
-            else 
-            {
-                currentUser.IsAdmin = false;
-            }
-
-            if (_user != null)
-            {
-                currentUser.IsUser = true;
-                string mID = new Portal.DB.DB(_ctx, _sctx).GetUserMarketID(User.Identity.Name);
-                currentUser.MarketID = mID;
+                currentUser.IsUser = false;
             }
             else
             {
-                currentUser.IsUser = false;
+                var userResult = await _userService.GetAsync(userLogin);
+                if (userResult.Success)
+                {
+                    currentUser.MarketID = userResult.Data.MarketID;
+                    currentUser.Roles = userResult.Data.Role;
+                }
+
+                currentUser.IsAdmin = false;
+                currentUser.IsUser = true;
             }
 
-            if (_role != null) currentUser.Roles = _role;
-
+            _cacheManager.Set(currentUser, keyCache);
             return View("Default", currentUser);
+        }
+        
+        private string GetCacheKey(string userLogin)
+        {
+            return $"GetCurrentUserByLogin_{userLogin}";
         }
     }
 }

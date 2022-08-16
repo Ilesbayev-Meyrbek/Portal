@@ -9,44 +9,46 @@
 
 @using (Html.BeginForm())
 {
-    <div class="form-group">
-        <dl class="dl-horizontal">
-            <dt>
-                Маркет
-            </dt>
+    <form asp-action="DeleteUser" asp-controller="User">
+        <div class="form-group">
+            <dl class="dl-horizontal">
+                <dt>
+                    Маркет
+                </dt>
 
-            <dd>
-                @ViewBag.CurrentMarket
-            </dd>
+                <dd>
+                    @ViewBag.CurrentMarket
+                </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => model.Name)
-            </dt>
+                <dt>
+                    @Html.DisplayNameFor(model => model.Name)
+                </dt>
 
-            <dd>
-                @Html.DisplayFor(model => model.Name)
-            </dd>
+                <dd>
+                    @Html.DisplayFor(model => model.Name)
+                </dd>
 
-            <dt>
-                @Html.DisplayNameFor(model => model.Login)
-            </dt>
+                <dt>
+                    @Html.DisplayNameFor(model => model.Login)
+                </dt>
 
-            <dd>
-                @Html.DisplayFor(model => model.Login)
-            </dd>
+                <dd>
+                    @Html.DisplayFor(model => model.Login)
+                </dd>
 
-        </dl>
-    </div>
+            </dl>
+        </div>
 
-    <div class="form-actions no-color">
-        <p>
-            <div class="btnPosition">
-                <input type="submit" value="Удалить" class="my_btn my_btn_success" />
-            </div>
+        <div class="form-actions no-color">
+            <p>
+                <div class="btnPosition">
+                    <input type="submit" value="Удалить" class="my_btn my_btn_success" />
+                </div>
 
-            <div class="btnPositionCancel">
-                @Html.ActionLink("Отмена","Users","Home",null, new { @class="my_btn my_btn_danger"})
-            </div>
-        </p>
-    </div>
+                <div class="btnPositionCancel">
+                    @Html.ActionLink("Отмена","Users","User",null, new { @class="my_btn my_btn_danger"})
+                </div>
+            </p>
+        </div>
+    </form>
 }
