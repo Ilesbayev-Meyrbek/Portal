@@ -1,0 +1,48 @@
+﻿@model Portal.Models.POSView
+@{
+    ViewBag.Title = "POS статусы";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="jumbotron" style="margin-top: 75px">
+    <div><h4 style="margin-left:20px">Количество не обновленных магазинов - @ViewBag.ErrorPOSCount из @Model.Items.Count</h4></div>
+
+    @using (Html.BeginForm())
+    {
+        if (Model != null)
+        {
+            <div class="bodyContent">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Магазин</th>
+                            <th>Примечание</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr class="Search">
+
+                                <td>
+                                    @item.MarketID
+                                </td>
+                                <td>
+                                    @item.Note
+                                </td>
+                                <td>
+                                    @item.Status
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+
+</div>
