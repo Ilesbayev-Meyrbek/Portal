@@ -20,5 +20,8 @@ namespace Portal.Models
         //{
         //    Cashiers = new List<Cashier>();
         //}
+        
+        
+        public virtual ICollection<User> Users { get; set; }
     }
 }
