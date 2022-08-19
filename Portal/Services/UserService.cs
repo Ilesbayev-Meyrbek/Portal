@@ -102,7 +102,7 @@ public class UserService : IUserService
 
             if (adminResult.Success)
             {
-                usersLst = await _unitOfWork.Users.GetAllAsync(u => true, u => u.ID, false);
+                usersLst = await _unitOfWork.Users.GetAllAsync(u => true, u => u.ID, true);
             }
             else
             {
@@ -114,7 +114,7 @@ public class UserService : IUserService
 
                     var roleIds = roles.Data.Select(r => r.ID);
 
-                    usersLst = (await _unitOfWork.Users.GetAllAsync(u => roleIds.Contains(u.RoleID)))
+                    usersLst = (await _unitOfWork.Users.GetAllAsync(u => roleIds.Contains(u.RoleID), u => u.ID))
                         .GroupBy(g => g.ID)
                         .Select(s => s.First())
                         .ToList();

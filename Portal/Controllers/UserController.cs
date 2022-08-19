@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using NLog;
 using Portal.Models;
 using Portal.Services.Interfaces;
 
@@ -12,6 +13,8 @@ public class UserController : Controller
     private readonly IMarketService _marketService;
     private readonly IRoleService _roleService;
 
+    Logger logger = LogManager.GetCurrentClassLogger();
+
     public UserController(IUserService userService, 
         IAdminService adminService,
         IMarketService marketService,
@@ -22,9 +25,14 @@ public class UserController : Controller
         _marketService = marketService;
         _roleService = roleService;
     }
+
     public async Task<ActionResult> Users()
     {
         var users = await _userService.GetUsersAsync(User.Identity.Name);
+
+        #region Log
+        //logger.WithProperty("MarketID", ).WithProperty("IdentityUser", ).WithProperty("Data", "").Info("Пользователи");
+        #endregion
 
         return View(users.Data);
     }
@@ -39,6 +47,7 @@ public class UserController : Controller
             var marketsResult = await _marketService.GetAllAsync();
             if(marketsResult.Success)
                 ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
+
             var rolesResult = await _roleService.GetAllAsync(r => true);
             if (rolesResult.Success)
                 ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
@@ -79,6 +88,7 @@ public class UserController : Controller
         var marketsResult = await _marketService.GetAllAsync();
         if (marketsResult.Success)
             ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
+
         var rolesResult = await _roleService.GetAllAsync(r => true);
         if (rolesResult.Success)
             ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
@@ -102,6 +112,7 @@ public class UserController : Controller
             var marketsResult = await _marketService.GetAllAsync();
             if(marketsResult.Success)
                 ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
+
             var rolesResult = await _roleService.GetAllAsync(r => true);
             if (rolesResult.Success)
                 ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
