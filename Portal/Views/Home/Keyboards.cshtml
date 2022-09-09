@@ -19,7 +19,10 @@
 
     @if (Model.Keyboards.Count == 0)
     {
-    <a asp-action="CreateKeyboard" class="my_btn my_btn_success">Добавить клавиатуру</a>
+        if (Model.UserRole.CreateKeyboard)
+        {
+            <a asp-action="CreateKeyboard" class="my_btn my_btn_success">Добавить клавиатуру</a>
+        }
     }
     <br />
 
