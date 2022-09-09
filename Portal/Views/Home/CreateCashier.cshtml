@@ -7,6 +7,8 @@
 
 @using (Html.BeginForm())
 {
+      @Html.Raw(TempData["msg"])
+
     <form asp-action="CreateCashier" asp-controller="Home">
 
         <div class="bodyContent" style="height: 100%">

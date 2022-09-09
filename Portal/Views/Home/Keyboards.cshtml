@@ -17,8 +17,10 @@
 
     <br />
 
+    @if (Model.Keyboards.Count == 0)
+    {
     <a asp-action="CreateKeyboard" class="my_btn my_btn_success">Добавить клавиатуру</a>
-
+    }
     <br />
 
     <div style="height:100%; width:auto; overflow-x: auto;margin:auto;margin-top:25px">
@@ -26,7 +28,6 @@
             <thead>
                 <tr>
                     <th>Код магазина</th>
-                    <th>POS №</th>
                     <th style="width:140px">Статус</th>
                     <th style="width:200px"></th>
                 </tr>
@@ -52,9 +53,6 @@
 
                             <td>
                                 @Html.DisplayFor(modelItem => item.MarketID)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Pos_num)
                             </td>
                             <td>
                                 @status

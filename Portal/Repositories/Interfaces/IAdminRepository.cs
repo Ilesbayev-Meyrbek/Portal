@@ -2,7 +2,7 @@
 
 namespace Portal.Repositories.Interfaces
 {
-    public interface IAdminRepository: IBaseRepository<Admin>
+    public interface IAdminRepository : IBaseRepository<Admin>
     {
     }
 }

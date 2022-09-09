@@ -11,7 +11,7 @@ namespace Portal.Models
         public byte[] BMP { get; set; }
         public int DateBegin { get; set; }
         public int DateEnd { get; set; }
-        public string Note { get; set; }
+        public string? Note { get; set; }
         public long IsSavedToPOS { get; set; }
         public bool IsSaved { get; set; }
         [DataType(DataType.Date)]

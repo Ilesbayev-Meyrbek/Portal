@@ -13,38 +13,48 @@
     <div style="height:100%; width:1500px; overflow-x: auto;margin:auto;margin-top:25px">
         <table class="table table-striped">
             <thead>
-            <tr>
-                <th>Имя</th>
-                <th>Логин</th>
-                <th>Роль</th>
-                <th>Маркет</th>
+                <tr>
+                    <th>Имя</th>
+                    <th>Логин</th>
+                    @if (ViewBag.IsAdmin)
+                    {
+                        <th>Админ</th>
+                    }
+                    <th>Роль</th>
+                    <th>Маркет</th>
 
-                <th style="width:200px"></th>
-            </tr>
+                    <th style="width:200px"></th>
+                </tr>
             </thead>
 
             <tbody>
-            @foreach (var item in Model)
-            {
-                <tr class="Search clickable-row" data-href="@Url.Action("EditUser", "User", new { id = item.ID })">
-                    <td>
-                        @Html.DisplayFor(m => item.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(m => item.Login)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(m => item.Role.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(m => item.MarketID)
-                    </td>
+                @foreach (var item in Model)
+                {
+                    <tr class="Search clickable-row" data-href="@Url.Action("EditUser", "User", new { id = item.ID })">
+                        <td>
+                            @Html.DisplayFor(m => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.Login)
+                        </td>
+                        @if (ViewBag.IsAdmin)
+                        {
+                            <td>
+                                @Html.DisplayFor(m => item.IsAdmin)
+                            </td>
+                        }
+                        <td>
+                            @Html.DisplayFor(m => item.Role.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(m => item.MarketID)
+                        </td>
 
-                    <td>
-                        @Html.ActionLink("Удалить", "DeleteUser", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
-                    </td>
-                </tr>
-            }
+                        <td>
+                            @Html.ActionLink("Удалить", "DeleteUser", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                        </td>
+                    </tr>
+                }
             </tbody>
         </table>
     </div>

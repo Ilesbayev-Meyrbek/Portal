@@ -9,8 +9,8 @@
 
     <!-- Modal content -->
     <div class="modal-content">
-        <input id="txtBarcodeID" name="txtBarcodeName" type="text" placeholder="штрих-код" style="width: 600px" onkeypress="runScript(event)" />
-        <button id="_clickSpanClose" type="reset" onclick="clickSpanClose()">OK</button>
+        <input id="txtBarcodeID" name="txtBarcodeName" type="text" placeholder="штрих-код" style="width: 280px" onkeypress="runScript(event)" />
+        <button id="_clickSpanClose" type="reset" onclick="clickSpanClose()" style="width: 280px; margin-left:5px">OK</button>
     </div>
 
 </div>
@@ -28,8 +28,8 @@
                 <div class="col-lg-6 col-md-6" style="width: 1000px">
                     <div id="container" style="margin-left: 15px">
                         <div>
-                            <input type="button" name="btnDefault" value="Загрузить" class="btn btn-default" onclick="defaultSetValue()" />
-                            <label> Загрузить DEFAULT схему клавиатуры</label>
+                            <input disabled type="button" name="btnDefault" value="Очистить клавиатуру" class="btn btn-default" onclick="defaultSetValue()" />
+                            <label> Очистить клавиатуру до минимальных настроек</label>
                         </div>
 
                         <hr />

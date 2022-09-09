@@ -35,6 +35,17 @@
             </div>
         </div>
 
+        @if (ViewBag.IsAdmin)
+        {
+            <div class="form-group">
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.IsAdmin)
+                    @Html.ValidationMessageFor(model => model.IsAdmin, "", new { @class = "text-danger" })
+                    @Html.LabelFor(model => model.IsAdmin, htmlAttributes: new { @class = "control-label", style = "margin-left: 10px" })
+                </div>
+            </div>
+        }
+
         <div class="form-group">
             @Html.LabelFor(model => model.RoleID, "Роли", htmlAttributes: new { @class = "control-label col-md-2" })
             <div class="col-md-10">
@@ -50,7 +61,7 @@
                 </div>
 
                 <div class="btnPositionCancel">
-                    @Html.ActionLink("Отмена","Users","Home",null, new { @class="my_btn my_btn_danger"})
+                    @Html.ActionLink("Отмена","Users","User",null, new { @class="my_btn my_btn_danger"})
                 </div>
             </p>
         </div>

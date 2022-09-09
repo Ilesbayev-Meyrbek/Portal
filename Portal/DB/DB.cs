@@ -1,13 +1,16 @@
-﻿using DurableTask.Core.Common;
+﻿using NLog;
 using Portal.Models;
-using System.Data.Entity;
-using System.Data.SqlClient;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Graph;
+using Admin = Portal.Models.Admin;
+using User = Portal.Models.User;
+using Portal.Classes;
 
 namespace Portal.DB
 {
     public class DB
     {
+        Logger logger = LogManager.GetCurrentClassLogger();
+
         private readonly DataContext _ctx;
         private readonly ScaleContext _sctx;
 
@@ -22,26 +25,7 @@ namespace Portal.DB
             this._sctx = sctx;
         }
 
-        public string GetUserMarketID(string user)
-        {
-            string userMID = String.Empty;
-
-            string mID = GetMarketForUser(user);
-
-            if (!string.IsNullOrEmpty(mID))
-                userMID = mID;
-            else
-            {
-                Admin adm = GetAdmin(user);
-
-                if (adm != null)
-                    userMID = "OFCE";
-            }
-
-            return userMID;
-        }
-
-        public string GetMarketForUser(string user)
+        public string GetMarketForUser(string user, User currentUser)
         {
             try
             {
@@ -54,81 +38,13 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->GetMarketForUser", "", ex.ToString()).WriteInfoLogs();
+
                 return null;
             }
         }
 
-        public Admin GetAdmin(string user)
-        {
-            try
-            {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-
-                return admin;
-
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return null;
-            }
-        }
-
-        public User CheckUser(string user)
-        {
-            try
-            {
-                var _user = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
-                return _user;
-
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return null;
-            }
-        }
-
-        public Role GetUserRole(string user)
-        {
-            try
-            {
-                var adm = GetAdmin(user);
-
-                if (adm == null)
-                {
-                    var roleID = _ctx.Users.Where(w => w.Login == user).ToList()[0].RoleID;
-                    Role role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-
-                    return role;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return null;
-            }
-        }
-
-        public List<MarketsName> GetMarkets()
+        public List<MarketsName> GetMarkets(User currentUser)
         {
             try
             {
@@ -138,15 +54,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->GetMarkets", "", ex.ToString()).WriteInfoLogs();
                 return new List<MarketsName>();
             }
         }
 
-        public MarketsName GetMarkets(string id)
+        public MarketsName GetMarkets(string id, User currentUser)
         {
             try
             {
@@ -156,33 +69,27 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->GetMarkets", "", ex.ToString()).WriteInfoLogs();
 
                 return new MarketsName();
             }
         }
 
-        public List<MarketsName> GetMarketsForPrivileges(string user)
+        public List<MarketsName> GetMarketsForPrivileges(User user)
         {
             try
             {
                 List<MarketsName> markets = new List<MarketsName>();
 
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
-                if (admin != null)
+                if (user.IsAdmin)
                 {
                     markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = user.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-                    var market = users.MarketID;
+                    var market = user.MarketID;
 
                     if (role.AllMarkets)
                     {
@@ -198,17 +105,15 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(user, "DB->GetMarketsForPrivileges", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
+
         #region Roles
 
-        public List<Role> GetRoles()
+        public List<Role> GetRoles(User currentUser)
         {
             try
             {
@@ -218,11 +123,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetRoles", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool SaveNewRole(Role role)
+        public bool SaveNewRole(Role role, User currentUser)
         {
             try
             {
@@ -233,11 +139,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->SaveNewRole", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public Role GetRoleForEdit(int? id)
+        public Role GetRoleForEdit(int? id, User currentUser)
         {
             try
             {
@@ -247,11 +154,13 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetRoleForEdit", "", ex.ToString()).WriteInfoLogs();
+
                 return null;
             }
         }
 
-        public bool SaveEditRole(Role role)
+        public bool SaveEditRole(Role role, User currentUser)
         {
             try
             {
@@ -262,11 +171,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->SaveEditRole", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public Role GetRoleForDelete(int? id)
+        public Role GetRoleForDelete(int? id, User currentUser)
         {
             try
             {
@@ -276,11 +186,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetRoleForDelete", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool DeleteRole(int? id)
+        public bool DeleteRole(int? id, User currentUser)
         {
             try
             {
@@ -292,6 +203,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->DeleteRole", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
@@ -300,80 +212,7 @@ namespace Portal.DB
 
         #region Users
 
-        public List<User> GetUsers(string user)
-        {
-            try
-            {
-                var admin = GetAdmin(user);
-
-                List<User> usersLst = new List<User>();
-
-                if (admin != null)
-                {
-                    usersLst = _ctx.Users.OrderByDescending(d => d.ID).ToList();
-
-                    for (int i = 0; i < usersLst.Count; i++)
-                    {
-                        int roleID = usersLst[i].RoleID;
-                        var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-
-                        usersLst[i].Role = role;
-                    }
-                }
-                else if (admin == null)
-                {
-                    var _userRole = GetUserRole(user);
-
-                    if (_userRole.AdminForScale)
-                    {
-                        var rSA = _ctx.Roles.Where(w => w.AdminForScale || w.Scales || w.POSs).ToList();
-
-                        if (rSA != null)
-                        {
-                            for (int i = 0; i < rSA.Count; i++)
-                            {
-                                var rID = rSA[i].ID;
-                                var scaleUsers = _ctx.Users.Where(w => w.RoleID == rID).ToList();
-                                usersLst.AddRange(scaleUsers);
-                            }
-
-                            usersLst = usersLst.GroupBy(g => g.ID).Select(s => s.First()).ToList();
-                        }
-                    }
-                }
-
-                return usersLst;
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return null;
-            }
-        }
-
-        public bool SaveNewUser(User user)
-        {
-            try
-            {
-                _ctx.Users.Add(user);
-                _ctx.SaveChanges();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return false;
-            }
-        }
-
-        public User GetUser(int? id)
+        public User GetUser(int? id, User currentUser)
         {
             try
             {
@@ -383,34 +222,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->DeleteRole", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool SaveEditUser(User user)
-        {
-            try
-            {
-                _ctx.Users.Update(user);
-                _ctx.SaveChanges();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
-                return false;
-            }
-        }
-
-        public bool DeleteUser(int? id)
+        public bool DeleteUser(int? id, User currentUser)
         {
             try
             {
@@ -422,10 +239,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->DeleteRole", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
@@ -434,30 +248,27 @@ namespace Portal.DB
 
         #region Logo
 
-        public LogoView GetLogos(string user, string marketID)
+        public LogoView GetLogos(User currentUser, string marketID)
         {
             try
             {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
-                if (string.IsNullOrEmpty(marketID))
-                    marketID = _ctx.Markets.ToList()[0].MarketID;
-
                 LogoView logosView = new LogoView();
 
-                if (admin != null)
+                if (currentUser.IsAdmin)
                 {
+                    if (string.IsNullOrEmpty(marketID))
+                        marketID = _ctx.Markets.ToList()[0].MarketID;
+
                     logosView.Logos = _ctx.Logos.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                     logosView.IsAdmin = true;
                     logosView.UserRole = null;
                     logosView.Markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = currentUser.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-                    var market = users.MarketID;
+                    var market = currentUser.MarketID;
 
                     if (role.AllMarkets)
                     {
@@ -475,18 +286,16 @@ namespace Portal.DB
                     }
                 }
 
-                //Log.WriteLogoLog(logosView.Logos);
-
                 return logosView;
             }
             catch (Exception ex)
             {
-                //Log.WriteErrorLog(ex.ToString());
+                new Logs.Logs(currentUser, "DB->GetLogos", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool DeleteOldLogos(string MarketID, LogoViewModel lvm)
+        public bool DeleteOldLogos(string MarketID, LogoViewModel lvm, User currentUser)
         {
             try
             {
@@ -517,11 +326,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->DeleteOldLogos", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public bool SaveNewLogo(string market, LogoViewModel lvm, string ds, string de, byte[] imageData)
+        public bool SaveNewLogo(string market, LogoViewModel lvm, string ds, string de, byte[] imageData, User currentUser)
         {
             try
             {
@@ -543,11 +353,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->SaveNewLogo", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public bool EditOldLogos(Logo logo)
+        public bool EditOldLogos(Logo logo, User currentUser)
         {
             try
             {
@@ -573,11 +384,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->EditOldLogos", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public Logo GetLogo(int? id)
+        public Logo GetLogo(int? id, User currentUser)
         {
             try
             {
@@ -587,11 +399,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetLogo", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool SaveEditLogo(Logo logo)
+        public bool SaveEditLogo(Logo logo, User currentUser)
         {
             try
             {
@@ -602,6 +415,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->SaveEditLogo", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
@@ -610,16 +424,13 @@ namespace Portal.DB
 
         #region Cashiers
 
-        public CashierView GetCashiers(string user, string marketID)
+        public CashierView GetCashiers(User currentUser, string marketID)
         {
             try
             {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
                 CashierView cashierView = new CashierView();
 
-                if (admin != null)
+                if (currentUser.IsAdmin)
                 {
                     if (string.IsNullOrEmpty(marketID))
                         marketID = _ctx.Markets.ToList()[0].MarketID;
@@ -629,17 +440,14 @@ namespace Portal.DB
                     cashierView.UserRole = null;
                     cashierView.Markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = currentUser.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-                    var market = users.MarketID;
+                    var market = currentUser.MarketID;
 
                     if (role.AllMarkets)
                     {
-                        //if (string.IsNullOrEmpty(marketID))
-                        //    marketID = _ctx.Markets.ToList()[0].MarketID;
-
                         cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                         cashierView.IsAdmin = false;
                         cashierView.UserRole = role;
@@ -658,15 +466,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->GetCashiers", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public Cashier GetCashier(string id, string market)
+        public Cashier GetCashier(string id, string market, User currentUser)
         {
             try
             {
@@ -676,15 +481,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->GetCashier", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool SaveNewCashier(string market, Cashier cashier)
+        public bool SaveNewCashier(string market, Cashier cashier, User currentUser)
         {
             try
             {
@@ -696,15 +498,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->SaveNewCashier", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public bool EditCashier(Cashier _cashier)
+        public bool EditCashier(Cashier _cashier, User currentUser)
         {
             try
             {
@@ -721,10 +520,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //#region Log
-                //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-                //#endregion
+                new Logs.Logs(currentUser, "DB->EditCashier", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
@@ -733,28 +529,25 @@ namespace Portal.DB
 
         #region Keyboards
 
-        public KeyboardView GetKeyboards(string user, string marketID)
+        public KeyboardView GetKeyboards(User currentUser, string marketID)
         {
             try
             {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
                 KeyboardView keyboardView = new KeyboardView();
 
-                if (admin != null)
-                {
-                    if (string.IsNullOrEmpty(marketID))
-                        marketID = _ctx.Markets.ToList()[0].MarketID;
+                if (string.IsNullOrEmpty(marketID))
+                    marketID = _ctx.Markets.ToList()[0].MarketID;
 
+                if (currentUser.IsAdmin)
+                {
                     keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                     keyboardView.IsAdmin = true;
                     keyboardView.UserRole = null;
                     keyboardView.Markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = currentUser.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
 
                     if (role.AllMarkets)
@@ -766,26 +559,24 @@ namespace Portal.DB
                     }
                     else
                     {
-                        var market = users.MarketID;
-                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        var market = currentUser.MarketID;
+                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
                         keyboardView.IsAdmin = false;
                         keyboardView.UserRole = role;
                         keyboardView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
-                //Log.WriteCashierLog(keyboardView.Keyboards);
-
                 return keyboardView;
             }
             catch (Exception ex)
             {
-                //Log.WriteErrorLog(ex.ToString());
+                new Logs.Logs(currentUser, "DB->GetKeyboards", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public List<SettingsKey> GetKeys()
+        public List<SettingsKey> GetKeys(User currentUser)
         {
             try
             {
@@ -795,11 +586,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetKeys", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public List<SettingsKey> GetKeyCode(string _value)
+        public List<SettingsKey> GetKeyCode(string _value, User currentUser)
         {
             try
             {
@@ -813,11 +605,10 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveNewKeyboard(string market, Keyboard keyboard)
+        public bool SaveNewKeyboard(Keyboard keyboard, User currentUser)
         {
             try
             {
-                keyboard.MarketID = market;
                 _ctx.Keyboards.Add(keyboard);
                 _ctx.SaveChanges();
 
@@ -825,11 +616,12 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->SaveNewKeyboard", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
 
-        public Keyboard GetKeyboard(int? id)
+        public Keyboard GetKeyboard(int? id, User currentUser)
         {
             try
             {
@@ -839,16 +631,15 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetKeyboard", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
 
-        public bool EditKeyboard(string market, Keyboard keyboard)
+        public bool EditKeyboard(Keyboard keyboard, User currentUser)
         {
             try
             {
-                keyboard.MarketID = market;
-
                 _ctx.Keyboards.Update(keyboard);
                 _ctx.SaveChanges();
 
@@ -856,6 +647,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->EditKeyboard", "", ex.ToString()).WriteInfoLogs();
                 return false;
             }
         }
@@ -864,30 +656,27 @@ namespace Portal.DB
 
         #region POS
 
-        public POSView GetUserForPOS(string user, string marketID)
+        public POSView GetUserForPOS(User currentUser, string marketID)
         {
             try
             {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
                 if (string.IsNullOrEmpty(marketID))
                     marketID = _ctx.Markets.ToList()[0].MarketID;
 
                 POSView posView = new POSView();
 
-                if (admin != null)
+                if (currentUser.IsAdmin)
                 {
                     posView.IsAdmin = true;
                     posView.UserRole = null;
                     posView.Market = marketID;
                     posView.Markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = currentUser.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-                    var market = users.MarketID;
+                    var market = currentUser.MarketID;
 
                     if (role.AllMarkets)
                     {
@@ -913,7 +702,7 @@ namespace Portal.DB
             }
         }
 
-        public POSView GetPOSes(POSView posView)
+        public POSView GetPOSes(POSView posView, User currentUser)
         {
             try
             {
@@ -923,14 +712,14 @@ namespace Portal.DB
 
                 if (posView.IsAdmin || posView.UserRole.AllMarkets)
                 {
-                    var markets = GetMarkets();
+                    var markets = GetMarkets(currentUser);
 
                     //var goodsForToday = _ctx.Database.SqlQuery<GoodDT>("SELECT * FROM [KORZINKA].[dbo].[Goods] g, [KORZINKA].[dbo].[GoodsDetails] gd where g.ID = gd.GoodsID and gd.ServerDateTime >= @today", new SqlParameter("@today", today)).ToList();
 
                     var goodsForToday =
                         (from g in _ctx.Goods
                          join gd in _ctx.GoodsDetails on g.ID equals gd.GoodsID
-                         where g.ID == gd.GoodsID && gd.ServerDateTime >= today
+                         where gd.ServerDateTime.Date == today.Date
                          select new GoodDT { IsSaved = g.IsSaved, GoodsID = gd.GoodsID, MarketID = g.MarketID, ServerDateTime = gd.ServerDateTime }).ToList();
 
                     if (goodsForToday.Count > 0)
@@ -1021,7 +810,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
-                //Log.WriteErrorLog(ex.ToString());
+                new Logs.Logs(currentUser, "DB->GetPOSes", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }
@@ -1030,30 +819,27 @@ namespace Portal.DB
 
         #region Scales
 
-        public ScaleView GetUserForScales(string user, string marketID)
+        public ScaleView GetUserForScales(User currentUser, string marketID)
         {
             try
             {
-                var admin = _ctx.Admins.Where(w => w.Login == user).FirstOrDefault();
-                var users = _ctx.Users.Where(w => w.Login == user).FirstOrDefault();
-
                 if (string.IsNullOrEmpty(marketID))
                     marketID = _ctx.Markets.ToList()[0].MarketID;
 
                 ScaleView scalesView = new ScaleView();
 
-                if (admin != null)
+                if (currentUser.IsAdmin)
                 {
                     scalesView.IsAdmin = true;
                     scalesView.UserRole = null;
                     scalesView.Market = marketID;
                     scalesView.Markets = _ctx.Markets.ToList();
                 }
-                else if (admin == null && users != null)
+                else
                 {
-                    var roleID = users.RoleID;
+                    var roleID = currentUser.RoleID;
                     var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-                    var market = users.MarketID;
+                    var market = currentUser.MarketID;
 
                     if (role.AllMarkets)
                     {
@@ -1075,6 +861,7 @@ namespace Portal.DB
             }
             catch (Exception ex)
             {
+                new Logs.Logs(currentUser, "DB->GetUserForScales", "", ex.ToString()).WriteInfoLogs();
                 return null;
             }
         }

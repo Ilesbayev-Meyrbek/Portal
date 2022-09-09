@@ -7,6 +7,8 @@
 <div style="margin-top:25px">
     @using (Html.BeginForm())
     {
+        <div><h4 style="margin-left:20px">Количество не обновленных весов - @Model.Scales.Count</h4></div>
+
         <div style="height:700px; width:100%; overflow-x: auto;margin:auto;margin-top:25px;">
 
             <table class="table table-striped">

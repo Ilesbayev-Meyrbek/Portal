@@ -30,6 +30,11 @@ namespace Portal.DB
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Logo>().HasKey(table => new
+            {
+                table.ID
+            });
+
             builder.Entity<Cashier>().HasKey(table => new
             {
                 table.ID,

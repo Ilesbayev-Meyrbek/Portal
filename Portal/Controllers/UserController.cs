@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using NLog;
+using Microsoft.Graph;
+using Portal.Classes;
 using Portal.Models;
 using Portal.Services.Interfaces;
+using User = Portal.Models.User;
 
 namespace Portal.Controllers;
 
@@ -13,9 +15,7 @@ public class UserController : Controller
     private readonly IMarketService _marketService;
     private readonly IRoleService _roleService;
 
-    Logger logger = LogManager.GetCurrentClassLogger();
-
-    public UserController(IUserService userService, 
+    public UserController(IUserService userService,
         IAdminService adminService,
         IMarketService marketService,
         IRoleService roleService)
@@ -25,13 +25,18 @@ public class UserController : Controller
         _marketService = marketService;
         _roleService = roleService;
     }
-
     public async Task<ActionResult> Users()
     {
+        var currentUser = await _userService.GetCurrentUser();
+
+        ViewBag.IsAdmin = currentUser.IsAdmin;
+
         var users = await _userService.GetUsersAsync(User.Identity.Name);
 
         #region Log
-        //logger.WithProperty("MarketID", ).WithProperty("IdentityUser", ).WithProperty("Data", "").Info("Пользователи");
+
+        new Logs.Logs(currentUser, "Users", "", "").WriteInfoLogs();
+
         #endregion
 
         return View(users.Data);
@@ -40,37 +45,46 @@ public class UserController : Controller
     // GET: Role/Create
     public async Task<ActionResult> CreateUser()
     {
-        var adminResult = await _adminService.GetAsync(User.Identity.Name);
+        var currentUser = await _userService.GetCurrentUser();
 
-        if (adminResult.Success)
+        if (currentUser.IsAdmin)
         {
             var marketsResult = await _marketService.GetAllAsync();
-            if(marketsResult.Success)
+            if (marketsResult.Success)
                 ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
 
             var rolesResult = await _roleService.GetAllAsync(r => true);
             if (rolesResult.Success)
                 ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
+
+            ViewBag.IsAdmin = currentUser.IsAdmin;
         }
         else
         {
-            var user = await _userService.GetCurrentUser();
-
-            if ( user.Role is {AdminForScale: true})
+            if (currentUser.Role is { AdminForScale: true })
             {
                 var marketsResult = await _marketService.GetAllAsync();
-                if(marketsResult.Success)
+                if (marketsResult.Success)
                     ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
 
                 var rolesResult = await _roleService.GetAllAsync(w =>
-                        w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
+                        (w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
                         !w.DeleteCashiers && !w.CreateLogo && !w.EditLogo && !w.DeleteLogo && !w.CreateSettings &&
                         !w.EditSettings && !w.DeleteSettings && !w.CreateKeyboard && !w.EditKeyboard &&
-                        !w.DeleteKeyboard);
-                if(rolesResult.Success)
+                        !w.DeleteKeyboard) && w.Name != "Admin");
+                if (rolesResult.Success)
                     ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
+
+                ViewBag.IsAdmin = currentUser.IsAdmin;
             }
         }
+
+        #region Log
+
+        new Logs.Logs(currentUser, "CreateUser", "", "").WriteInfoLogs();
+
+        #endregion
+
         return View(new User());
     }
 
@@ -78,6 +92,11 @@ public class UserController : Controller
     [HttpPost]
     public async Task<ActionResult> CreateUser(User user)
     {
+        var currentUser = await _userService.GetCurrentUser();
+
+        if (user.IsAdmin)
+            user.MarketID = "STSO";
+
         var result = await _userService.CreateAsync(user);
 
         if (result.Success)
@@ -93,11 +112,26 @@ public class UserController : Controller
         if (rolesResult.Success)
             ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
 
+        #region Log
+
+        string data = "ID = " + user.ID + ";\n";
+        data = data + "MarketID = " + user.MarketID + ";\n";
+        data = data + "Name = " + user.Name + ";\n";
+        data = data + "Login = " + user.Login + ";\n";
+        data = data + "RoleID = " + user.RoleID + ";\n";
+        data = data + "IsAdmin = " + user.IsAdmin + ";\n";
+
+        new Logs.Logs(currentUser, "CreateUser", data, "").WriteInfoLogs();
+
+        #endregion
+
         return View(user);
     }
 
     public async Task<ActionResult> EditUser(int id)
     {
+        var currentUser = await _userService.GetCurrentUser();
+
         var userResult = await _userService.GetAsync(id);
 
         if (!userResult.Success)
@@ -105,45 +139,46 @@ public class UserController : Controller
             return NotFound();
         }
 
-        var adminResult = await _adminService.GetAsync(User.Identity.Name);
-
-        if (adminResult.Success)
+        if (currentUser.IsAdmin)
         {
             var marketsResult = await _marketService.GetAllAsync();
-            if(marketsResult.Success)
+            if (marketsResult.Success)
                 ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
-
             var rolesResult = await _roleService.GetAllAsync(r => true);
             if (rolesResult.Success)
                 ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
-            
-            ViewBag.Markets = new List<string> {userResult.Data.Market.MarketID, userResult.Data.Market.Name};
+
+            ViewBag.Markets = new List<string> { userResult.Data.Market.MarketID, userResult.Data.Market.Name };
+
+            ViewBag.IsAdmin = currentUser.IsAdmin;
         }
         else
         {
-            var user = await _userService.GetCurrentUser();
-
-            if ( user.Role is {AdminForScale: true})
+            if (currentUser.Role is { AdminForScale: true })
             {
                 var marketsResult = await _marketService.GetAllAsync();
-                if(marketsResult.Success)
+                if (marketsResult.Success)
                     ViewBag.MarketID = new SelectList(marketsResult.Data, "MarketID", "Name");
 
                 var rolesResult = await _roleService.GetAllAsync(w =>
-                    w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
+                    (w.AdminForScale || w.Scales || w.POSs && !w.CreateCashiers && !w.EditCashiers &&
                     !w.DeleteCashiers && !w.CreateLogo && !w.EditLogo && !w.DeleteLogo && !w.CreateSettings &&
                     !w.EditSettings && !w.DeleteSettings && !w.CreateKeyboard && !w.EditKeyboard &&
-                    !w.DeleteKeyboard);
-                if(rolesResult.Success)
+                    !w.DeleteKeyboard) && w.Name != "Admin");
+                if (rolesResult.Success)
                     ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
-                
-                ViewBag.Markets = new List<string> {userResult.Data.Market.MarketID, userResult.Data.Market.Name};
+
+                ViewBag.Markets = new List<string> { userResult.Data.Market.MarketID, userResult.Data.Market.Name };
+
+                ViewBag.IsAdmin = currentUser.IsAdmin;
             }
         }
 
-        //#region Log
-        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Изменение пользователя");
-        //#endregion
+        #region Log
+
+        new Logs.Logs(currentUser, "EditUser", "", "").WriteInfoLogs();
+
+        #endregion
 
         return View(userResult.Data);
     }
@@ -154,6 +189,9 @@ public class UserController : Controller
     {
         Result<MarketsName>? marketResult;
         Result<List<Role>>? rolesResult;
+
+        if (user.IsAdmin)
+            user.MarketID = "OFCE";
 
         var result = await _userService.EditAsync(user);
 
@@ -169,6 +207,19 @@ public class UserController : Controller
         rolesResult = await _roleService.GetAllAsync(r => true);
         if (rolesResult.Success)
             ViewBag.RoleID = new SelectList(rolesResult.Data, "ID", "Name");
+
+        #region Log
+
+        string data = "ID = " + user.ID + ";\n";
+        data = data + "MarketID = " + user.MarketID + ";\n";
+        data = data + "Name = " + user.Name + ";\n";
+        data = data + "Login = " + user.Login + ";\n";
+        data = data + "RoleID = " + user.RoleID + ";\n";
+        data = data + "IsAdmin = " + user.IsAdmin + ";\n";
+        var currentUser = await _userService.GetCurrentUser();
+        new Logs.Logs(currentUser, "EditUser", data, "").WriteInfoLogs();
+
+        #endregion
 
         return View(user);
     }
@@ -196,8 +247,17 @@ public class UserController : Controller
         if (id.HasValue)
         {
             var result = await _userService.RemoveAsync(id.Value);
-            if(result.Success)
+            if (result.Success)
+            {
+                #region Log
+                
+                var currentUser = await _userService.GetCurrentUser();
+                new Logs.Logs(currentUser, "DeleteUser", "", "Удален!").WriteInfoLogs();
+
+                #endregion
+
                 return RedirectToAction("Users");
+            }
         }
 
         return NotFound();

@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.IdentityModel.Tokens;
 using NLog;
 using NLog.Fluent;
 using NuGet.Packaging.Core;
 using Portal.Classes;
 using Portal.DB;
+using Portal.Logs;
 using Portal.Models;
 using Portal.Services.Interfaces;
 using System.Diagnostics;
@@ -40,10 +42,12 @@ namespace Portal.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var user = await _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUser();
 
             #region Log
-            logger.WithProperty("MarketID", user.MarketID).WithProperty("IdentityUser", user.Login).WithProperty("Data", "").Info("Главная");
+
+            new Logs.Logs(currentUser, "Index", "", "").WriteInfoLogs();
+
             #endregion
 
             return View();
@@ -56,24 +60,44 @@ namespace Portal.Controllers
 
         [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public async Task<IActionResult> Error()
         {
+            #region Log
+
+            User currentUser = await _userService.GetCurrentUser();
+            new Logs.Logs(currentUser, "Error", "", HttpContext.TraceIdentifier.ToString()).WriteErrorLogs();
+
+            #endregion
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
         #region Roles
 
-        public ActionResult Roles()
+        public async Task<ActionResult> Roles()
         {
-            var roles = new Portal.DB.DB(_ctx, _sctx).GetRoles();
+            User currentUser = await _userService.GetCurrentUser();
+
+            var roles = new Portal.DB.DB(_ctx, _sctx).GetRoles(currentUser);
+
+            #region Log
+            new Logs.Logs(currentUser, "Roles", "", "").WriteInfoLogs();
+            #endregion
 
             return View(roles);
         }
 
         // GET: Role/Create
-        public ActionResult CreateRole()
+        public async Task<ActionResult> CreateRole()
         {
             Role role = new Role();
+
+            #region Log
+
+            User currentUser = await _userService.GetCurrentUser();
+            new Logs.Logs(currentUser, "CreateRole", "", "").WriteInfoLogs();
+
+            #endregion
+
             return View(role);
         }
 
@@ -83,7 +107,34 @@ namespace Portal.Controllers
         {
             if (ModelState.IsValid)
             {
-                var isCreated = new Portal.DB.DB(_ctx, _sctx).SaveNewRole(role);
+                User currentUser = await _userService.GetCurrentUser();
+
+                var isCreated = new Portal.DB.DB(_ctx, _sctx).SaveNewRole(role, currentUser);
+
+                #region Log
+                string data = "ID = " + role.ID + ";\n";
+                data = data + "Name = " + role.Name + ";\n";
+                data = data + "CreateCashiers = " + role.CreateCashiers + ";\n";
+                data = data + "EditCashiers = " + role.EditCashiers + ";\n";
+                data = data + "DeleteCashiers = " + role.DeleteCashiers + ";\n";
+
+                data = data + "CreateLogo = " + role.CreateLogo + ";\n";
+                data = data + "EditLogo = " + role.EditLogo + ";\n";
+                data = data + "DeleteLogo = " + role.DeleteLogo + ";\n";
+
+                data = data + "CreateKeyboard = " + role.CreateKeyboard + ";\n";
+                data = data + "EditKeyboard = " + role.EditKeyboard + ";\n";
+                data = data + "DeleteKeyboard = " + role.DeleteKeyboard + ";\n";
+
+                data = data + "AllMarkets = " + role.AllMarkets + ";\n";
+                data = data + "AdminForScale = " + role.AdminForScale + ";\n";
+                data = data + "Scales = " + role.Scales + ";\n";
+                data = data + "POSs = " + role.POSs + ";\n";
+
+                
+                new Logs.Logs(currentUser, "CreateRole", data, "Создан!").WriteInfoLogs();
+
+                #endregion
 
                 if (isCreated)
                     return RedirectToAction("Roles");
@@ -98,7 +149,13 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                var role = new Portal.DB.DB(_ctx, _sctx).GetRoleForEdit(id);
+                User currentUser = await _userService.GetCurrentUser();
+
+                var role = new Portal.DB.DB(_ctx, _sctx).GetRoleForEdit(id, currentUser);
+
+                #region Log
+                new Logs.Logs(currentUser, "EditRole", "", "").WriteInfoLogs();
+                #endregion
 
                 if (role != null)
                     return View(role);
@@ -112,14 +169,66 @@ namespace Portal.Controllers
         {
             if (ModelState.IsValid)
             {
-                var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditRole(role);
+                User currentUser = await _userService.GetCurrentUser();
+
+                var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditRole(role, currentUser);
 
                 if (isEdited)
                 {
+                    #region Log
+                    string data = "ID = " + role.ID + ";\n";
+                    data = data + "Name = " + role.Name + ";\n";
+                    data = data + "CreateCashiers = " + role.CreateCashiers + ";\n";
+                    data = data + "EditCashiers = " + role.EditCashiers + ";\n";
+                    data = data + "DeleteCashiers = " + role.DeleteCashiers + ";\n";
+
+                    data = data + "CreateLogo = " + role.CreateLogo + ";\n";
+                    data = data + "EditLogo = " + role.EditLogo + ";\n";
+                    data = data + "DeleteLogo = " + role.DeleteLogo + ";\n";
+
+                    data = data + "CreateKeyboard = " + role.CreateKeyboard + ";\n";
+                    data = data + "EditKeyboard = " + role.EditKeyboard + ";\n";
+                    data = data + "DeleteKeyboard = " + role.DeleteKeyboard + ";\n";
+
+                    data = data + "AllMarkets = " + role.AllMarkets + ";\n";
+                    data = data + "AdminForScale = " + role.AdminForScale + ";\n";
+                    data = data + "Scales = " + role.Scales + ";\n";
+                    data = data + "POSs = " + role.POSs + ";\n";
+                    
+                    new Logs.Logs(currentUser, "CreateRole", data, "Изменен!").WriteInfoLogs();
+
+                    #endregion
+
                     return RedirectToAction("Roles");
                 }
                 else
                 {
+                    #region Log
+
+                    string data = "ID = " + role.ID + ";\n";
+                    data = data + "Name = " + role.Name + ";\n";
+                    data = data + "CreateCashiers = " + role.CreateCashiers + ";\n";
+                    data = data + "EditCashiers = " + role.EditCashiers + ";\n";
+                    data = data + "DeleteCashiers = " + role.DeleteCashiers + ";\n";
+
+                    data = data + "CreateLogo = " + role.CreateLogo + ";\n";
+                    data = data + "EditLogo = " + role.EditLogo + ";\n";
+                    data = data + "DeleteLogo = " + role.DeleteLogo + ";\n";
+
+                    data = data + "CreateKeyboard = " + role.CreateKeyboard + ";\n";
+                    data = data + "EditKeyboard = " + role.EditKeyboard + ";\n";
+                    data = data + "DeleteKeyboard = " + role.DeleteKeyboard + ";\n";
+
+                    data = data + "AllMarkets = " + role.AllMarkets + ";\n";
+                    data = data + "AdminForScale = " + role.AdminForScale + ";\n";
+                    data = data + "Scales = " + role.Scales + ";\n";
+                    data = data + "POSs = " + role.POSs + ";\n";
+
+                    currentUser = await _userService.GetCurrentUser();
+                    new Logs.Logs(currentUser, "CreateRole", data, "Не изменено!").WriteInfoLogs();
+
+                    #endregion
+
                     return View(role);
                 }
             }
@@ -133,7 +242,8 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                Role role = new Portal.DB.DB(_ctx, _sctx).GetRoleForDelete(id);
+                User currentUser = await _userService.GetCurrentUser();
+                Role role = new Portal.DB.DB(_ctx, _sctx).GetRoleForDelete(id, currentUser);
                 if (role != null)
                     return View(role);
             }
@@ -145,7 +255,16 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteRole(id);
+                User currentUser = await _userService.GetCurrentUser();
+
+                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteRole(id, currentUser);
+
+                #region Log
+                
+                new Logs.Logs(currentUser, "DeleteRole", "", "Удален!").WriteInfoLogs();
+
+                #endregion
+
                 return RedirectToAction("Roles");
             }
             return NotFound();
@@ -157,7 +276,15 @@ namespace Portal.Controllers
 
         public ActionResult Logos(string MarketID)
         {
-            var logos = new Portal.DB.DB(_ctx, _sctx).GetLogos(User.Identity.Name, MarketID);
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            #region Log
+
+            new Logs.Logs(currentUser, "Logos", "", "").WriteInfoLogs();
+
+            #endregion
+
+            var logos = new Portal.DB.DB(_ctx, _sctx).GetLogos(currentUser, MarketID);
             ViewBag.MarketID = new SelectList(logos.Markets != null ? logos.Markets : new List<MarketsName>(), "MarketID", "Name");
 
             return View(logos);
@@ -166,10 +293,18 @@ namespace Portal.Controllers
         // GET: Logos/CreateLogo
         public ActionResult CreateLogo()
         {
+            var currentUser = _userService.GetCurrentUser().Result;
+
             Logo logo = new Logo();
-            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
             ViewBag.Markets = markets;
             ViewBag.MarketsCount = markets.Count;
+
+            #region Log
+
+            new Logs.Logs(currentUser, "CreateLogo", "", "").WriteInfoLogs();
+
+            #endregion
 
             return View(logo);
         }
@@ -179,6 +314,8 @@ namespace Portal.Controllers
         public async Task<ActionResult> CreateLogo(LogoViewModel lvm, string[] SelectedMarkets)
         {
             Logo logo = new Logo();
+
+            var currentUser = _userService.GetCurrentUser().Result;
 
             List<MarketsName> markets;
 
@@ -222,8 +359,26 @@ namespace Portal.Controllers
                             {
                                 if (item != "All")
                                 {
-                                    bool IsDeleteOldLogos = new Portal.DB.DB(_ctx, _sctx).DeleteOldLogos(item, lvm);
-                                    bool isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewLogo(item, lvm, ds, de, imageData);
+                                    bool IsDeleteOldLogos = new Portal.DB.DB(_ctx, _sctx).DeleteOldLogos(item, lvm, currentUser);
+                                    bool isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewLogo(item, lvm, ds, de, imageData, currentUser);
+
+                                    #region Log
+
+                                    string data = "MarketID = " + logo.MarketID + ";\n";
+                                    if (logo.BMP == null)
+                                        data = data + "BMP = ;\n";
+                                    else
+                                        data = data + "BMP = " + logo.BMP.Length + ";\n";
+                                    data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                                    data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                                    data = data + "Note = " + logo.Note + ";\n";
+                                    data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                                    data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                                    data = data + "DateS = " + logo.DateS + ";\n";
+                                    data = data + "DateE = " + logo.DateE + ";\n";
+                                    new Logs.Logs(currentUser, "CreateLogo", data, "Добавлен!").WriteInfoLogs();
+
+                                    #endregion
                                 }
                             }
 
@@ -231,48 +386,120 @@ namespace Portal.Controllers
                         }
                         else
                         {
-                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                             ViewBag.Markets = markets;
                             ViewBag.MarketsCount = markets.Count;
 
                             TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                            #region Log
+
+                            string data = "MarketID = " + logo.MarketID + ";\n";
+                            if (logo.BMP == null)
+                                data = data + "BMP = ;\n";
+                            else
+                                data = data + "BMP = " + logo.BMP.Length + ";\n";
+                            data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                            data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                            data = data + "Note = " + logo.Note + ";\n";
+                            data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                            data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                            data = data + "DateS = " + logo.DateS + ";\n";
+                            data = data + "DateE = " + logo.DateE + ";\n";
+
+                            new Logs.Logs(currentUser, "CreateLogo", data, "Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP").WriteErrorLogs();
+
+                            #endregion
 
                             return View(logo);
                         }
                     }
                     else
                     {
-                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                         ViewBag.Markets = markets;
                         ViewBag.MarketsCount = markets.Count;
 
                         TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+
+                        new Logs.Logs(currentUser, "CreateLogo", data, "Дата начало должно быть меньше чем дата окончание действие логотипа").WriteErrorLogs();
+
+                        #endregion
 
                         return View(logo);
                     }
                 }
                 else
                 {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                     ViewBag.Markets = markets;
                     ViewBag.MarketsCount = markets.Count;
 
                     TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
+
+                    #region Log
+
+                    string data = "MarketID = " + logo.MarketID + ";\n";
+                    if (logo.BMP == null)
+                        data = data + "BMP = ;\n";
+                    else
+                        data = data + "BMP = " + logo.BMP.Length + ";\n";
+                    data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                    data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                    data = data + "Note = " + logo.Note + ";\n";
+                    data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                    data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                    data = data + "DateS = " + logo.DateS + ";\n";
+                    data = data + "DateE = " + logo.DateE + ";\n";
+
+                    new Logs.Logs(currentUser, "CreateLogo", data, "Не выбран файл логотипа").WriteErrorLogs();
+
+                    #endregion
 
                     return View(logo);
                 }
             }
             else
             {
-                var admin = new Portal.DB.DB(_ctx, _sctx).GetAdmin(User.Identity.Name);
-
-                if (admin != null)
+                if (currentUser.IsAdmin)
                 {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                     ViewBag.Markets = markets;
                     ViewBag.MarketsCount = markets.Count;
 
                     TempData["msg"] = "<script>alert('Не выбран маркет для выгрузки логотипа');</script>";
+
+                    #region Log
+                    string data = "MarketID = " + logo.MarketID + ";\n";
+                    if (logo.BMP == null)
+                        data = data + "BMP = ;\n";
+                    else
+                        data = data + "BMP = " + logo.BMP.Length + ";\n";
+                    data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                    data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                    data = data + "Note = " + logo.Note + ";\n";
+                    data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                    data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                    data = data + "DateS = " + logo.DateS + ";\n";
+                    data = data + "DateE = " + logo.DateE + ";\n";
+                    new Logs.Logs(currentUser, "CreateLogo", data, "Не выбран маркет для выгрузки логотипа").WriteErrorLogs();
+
+                    #endregion
 
                     return View(logo);
                 }
@@ -310,43 +537,115 @@ namespace Portal.Controllers
                                 logo.BMP = imageData;
                                 logo.IsSaved = false;
                                 logo.IsSavedToPOS = 0;
-                                var _mID = new Portal.DB.DB(_ctx, _sctx).GetMarketForUser(User.Identity.Name);
+                                var _mID = new Portal.DB.DB(_ctx, _sctx).GetMarketForUser(User.Identity.Name, currentUser);
                                 logo.Note = lvm.Note;
                                 logo.MarketID = _mID;
 
-                                var isEdited = new Portal.DB.DB(_ctx, _sctx).EditOldLogos(logo);
+                                var isEdited = new Portal.DB.DB(_ctx, _sctx).EditOldLogos(logo, currentUser);
+
+                                #region Log
+
+                                string data = "MarketID = " + logo.MarketID + ";\n";
+                                if (logo.BMP == null)
+                                    data = data + "BMP = ;\n";
+                                else
+                                    data = data + "BMP = " + logo.BMP.Length + ";\n";
+                                data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                                data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                                data = data + "Note = " + logo.Note + ";\n";
+                                data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                                data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                                data = data + "DateS = " + logo.DateS + ";\n";
+                                data = data + "DateE = " + logo.DateE + ";\n";
+                                new Logs.Logs(currentUser, "CreateLogo", data, "Добавлен!").WriteInfoLogs();
+
+                                #endregion
 
                                 return RedirectToAction("Logos");
                             }
                             else
                             {
-                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                                 ViewBag.Markets = markets;
                                 ViewBag.MarketsCount = markets.Count;
 
                                 TempData["msg"] = "<script>alert('Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                                #region Log
+
+                                string data = "MarketID = " + logo.MarketID + ";\n";
+                                if (logo.BMP == null)
+                                    data = data + "BMP = ;\n";
+                                else
+                                    data = data + "BMP = " + logo.BMP.Length + ";\n";
+                                data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                                data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                                data = data + "Note = " + logo.Note + ";\n";
+                                data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                                data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                                data = data + "DateS = " + logo.DateS + ";\n";
+                                data = data + "DateE = " + logo.DateE + ";\n";
+                                new Logs.Logs(currentUser, "CreateLogo", data, "Выбранный логотип не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP").WriteErrorLogs();
+
+                                #endregion
 
                                 return View(logo);
                             }
                         }
                         else
                         {
-                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                             ViewBag.Markets = markets;
                             ViewBag.MarketsCount = markets.Count;
 
                             TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                            #region Log
+
+                            string data = "MarketID = " + logo.MarketID + ";\n";
+                            if (logo.BMP == null)
+                                data = data + "BMP = ;\n";
+                            else
+                                data = data + "BMP = " + logo.BMP.Length + ";\n";
+                            data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                            data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                            data = data + "Note = " + logo.Note + ";\n";
+                            data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                            data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                            data = data + "DateS = " + logo.DateS + ";\n";
+                            data = data + "DateE = " + logo.DateE + ";\n";
+                            new Logs.Logs(currentUser, "CreateLogo", data, "Дата начало должно быть меньше чем дата окончание действие логотипа").WriteErrorLogs();
+
+                            #endregion
 
                             return View(logo);
                         }
                     }
                     else
                     {
-                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                         ViewBag.Markets = markets;
                         ViewBag.MarketsCount = markets.Count;
 
                         TempData["msg"] = "<script>alert('Не выбран файл логотипа');</script>";
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+                        new Logs.Logs(currentUser, "CreateLogo", data, "Не выбран файл логотипа").WriteErrorLogs();
+
+                        #endregion
 
                         return View(logo);
                     }
@@ -359,10 +658,16 @@ namespace Portal.Controllers
             if (id == null)
                 return NotFound();
 
-            Logo logo = new Portal.DB.DB(_ctx, _sctx).GetLogo(id);
+            User currentUser = await _userService.GetCurrentUser();
 
-            var market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+            Logo logo = new Portal.DB.DB(_ctx, _sctx).GetLogo(id, currentUser);
+            
+            var market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID, currentUser);
             ViewBag.Market = market.Name;
+
+            #region Log
+            new Logs.Logs(currentUser, "EditLogo", "", "").WriteInfoLogs();
+            #endregion
 
             return View(logo);
         }
@@ -387,6 +692,8 @@ namespace Portal.Controllers
 
             byte[] imageData = new byte[0];
 
+            User currentUser = await _userService.GetCurrentUser();
+
             if (lvm.BMP != null)
             {
                 if (lvm.DateS <= lvm.DateE)
@@ -408,28 +715,85 @@ namespace Portal.Controllers
                     if (lvm.BMP.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
                     {
                         logo.BMP = imageData;
-                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
+                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo, currentUser);
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+
+                        new Logs.Logs(currentUser, "EditLogo", data, "Изменен!").WriteInfoLogs();
+
+                        #endregion
 
                         return RedirectToAction("Logos");
                     }
                     else
                     {
-                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID, currentUser);
                         ViewBag.Market = market.Name;
 
-                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, , для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+                        new Logs.Logs(currentUser, "EditLogo", data, "Выбранный файл логотипа не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP").WriteErrorLogs();
+
+                        #endregion
 
                         return View(logo);
                     }
                 }
                 else
                 {
-                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID, currentUser);
                     ViewBag.Market = market.Name;
 
                     TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
 
                     logo.BMP = imageData;
+
+                    #region Log
+
+                    string data = "MarketID = " + logo.MarketID + ";\n";
+                    if (logo.BMP == null)
+                        data = data + "BMP = ;\n";
+                    else
+                        data = data + "BMP = " + logo.BMP.Length + ";\n";
+                    data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                    data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                    data = data + "Note = " + logo.Note + ";\n";
+                    data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                    data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                    data = data + "DateS = " + logo.DateS + ";\n";
+                    data = data + "DateE = " + logo.DateE + ";\n";
+                    new Logs.Logs(currentUser, "EditLogo", data, "Дата начало должно быть меньше чем дата окончание действие логотипа").WriteErrorLogs();
+
+                    #endregion
+
+
                     return View(logo);
                 }
             }
@@ -449,26 +813,80 @@ namespace Portal.Controllers
                     if (imgFormat.ContentType == "image/bmp" && imgWidth == 500 && bitDepth == "Format1bppIndexed")
                     {
                         logo.BMP = imageData;
-                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo);
+                        var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditLogo(logo, currentUser);
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+
+                        new Logs.Logs(currentUser, "EditLogo", data, "Изменен!").WriteInfoLogs();
+
+                        #endregion
 
                         return RedirectToAction("Logos");
                     }
                     else
                     {
-                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                        market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID, currentUser);
                         ViewBag.Market = market.Name;
 
-                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, , для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+                        TempData["msg"] = "<script>alert('Выбранный файл логотипа не корректный, для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP');</script>";
+
+                        #region Log
+
+                        string data = "MarketID = " + logo.MarketID + ";\n";
+                        if (logo.BMP == null)
+                            data = data + "BMP = ;\n";
+                        else
+                            data = data + "BMP = " + logo.BMP.Length + ";\n";
+                        data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                        data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                        data = data + "Note = " + logo.Note + ";\n";
+                        data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                        data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                        data = data + "DateS = " + logo.DateS + ";\n";
+                        data = data + "DateE = " + logo.DateE + ";\n";
+                        new Logs.Logs(currentUser, "EditLogo", data, "Выбранный файл логотипа не корректный,для выгрузки логотипа используйте картинки с размерами: 500х94, 500х250, 500х400, 500х510, 500х579, глубина цвета - 1 bpp и расширение BMP").WriteErrorLogs();
+
+                        #endregion
 
                         return View(logo);
                     }
                 }
                 else
                 {
-                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID);
+                    market = new Portal.DB.DB(_ctx, _sctx).GetMarkets(logo.MarketID, currentUser);
                     ViewBag.Market = market.Name;
 
                     TempData["msg"] = "<script>alert('Дата начало должно быть меньше чем дата окончание действие логотипа');</script>";
+
+                    #region Log
+                    string data = "MarketID = " + logo.MarketID + ";\n";
+                    if (logo.BMP == null)
+                        data = data + "BMP = ;\n";
+                    else
+                        data = data + "BMP = " + logo.BMP.Length + ";\n";
+                    data = data + "DateBegin = " + logo.DateBegin + ";\n";
+                    data = data + "DateEnd = " + logo.DateEnd + ";\n";
+                    data = data + "Note = " + logo.Note + ";\n";
+                    data = data + "IsSavedToPOS = " + logo.IsSavedToPOS + ";\n";
+                    data = data + "IsSaved = " + logo.IsSaved + ";\n";
+                    data = data + "DateS = " + logo.DateS + ";\n";
+                    data = data + "DateE = " + logo.DateE + ";\n";
+                    new Logs.Logs(currentUser, "EditLogo", data, "Дата начало должно быть меньше чем дата окончание действие логотипа").WriteErrorLogs();
+
+                    #endregion
 
                     return View(logo);
                 }
@@ -481,27 +899,19 @@ namespace Portal.Controllers
 
         #region Cashiers
 
-        public ActionResult Cashiers(string MarketID)
+        public async Task<ActionResult> Cashiers(string MarketID)
         {
-            var cashiers = new Portal.DB.DB(_ctx, _sctx).GetCashiers(User.Identity.Name, MarketID);
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            var cashiers = new Portal.DB.DB(_ctx, _sctx).GetCashiers(currentUser, MarketID);
 
             ViewBag.MarketID = new SelectList(cashiers.Markets != null ? cashiers.Markets : new List<MarketsName>(), "MarketID", "Name");
 
-            //#region Log
-            //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
-            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("Data", "").Info("Кассиры");
-            //#endregion
+            #region Log
 
-            string marketForSession = new Portal.DB.DB(_ctx, _sctx).GetUserMarketID(User.Identity.Name);
-            CurrentUser _currentUser = new CurrentUser();
-            _currentUser.Login = User.Identity.Name;
-            _currentUser.MarketID = marketForSession;
+            new Logs.Logs(currentUser, "Cashiers", "", "").WriteInfoLogs();
 
-            //this.Session["CurrentUser"] = _currentUser;
-
-            //#region Log
-            //logger.WithProperty("MarketID", marketForSession).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Кассиры");
-            //#endregion
+            #endregion
 
             return View(cashiers);
         }
@@ -509,16 +919,19 @@ namespace Portal.Controllers
         // GET: Cashiers/CreateCashier
         public ActionResult CreateCashier()
         {
+            var currentUser = _userService.GetCurrentUser().Result;
+
             Cashier cashier = new Cashier();
 
-            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
             ViewBag.Markets = markets;
             ViewBag.MarketsCount = markets.Count;
 
-            //#region Log
-            //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
-            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", "").Info("Создание кассира");
-            //#endregion
+            #region Log
+
+            new Logs.Logs(currentUser, "CreateCashier", "", "").WriteInfoLogs();
+
+            #endregion
 
             return View(cashier);
         }
@@ -527,286 +940,367 @@ namespace Portal.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateCashier(Cashier cashier, string[] SelectedMarkets)
         {
+            var currentUser = _userService.GetCurrentUser().Result;
+
             List<MarketsName> markets = new List<MarketsName>();
 
-            //CurrentUser _currentUser = (CurrentUser)this.Session["CurrentUser"];
-            //string _data = string.Empty;
+            string _data = String.Empty;
 
-            if (SelectedMarkets.Length != 0)
+            if (!string.IsNullOrEmpty(cashier.CashierName))
             {
-                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                if (!string.IsNullOrEmpty(cashier.ID))
                 {
-                    if (IsDigitsOnly(cashier.ID))
+                    if (SelectedMarkets.Length != 0)
                     {
-                        for (int i = 0; i < SelectedMarkets.Length; i++)
+                        if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
                         {
-                            var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, SelectedMarkets[i]);
-
-                            if (checkCashierID == null)
+                            if (IsDigitsOnly(cashier.ID))
                             {
-                                if (SelectedMarkets[i] != "All")
+                                for (int i = 0; i < SelectedMarkets.Length; i++)
                                 {
-                                    Cashier _cashier = new Cashier();
-                                    _cashier.ID = cashier.ID;
-                                    _cashier.CashierName = cashier.CashierName;
-                                    _cashier.IsAdmin = cashier.IsAdmin;
-                                    _cashier.IsDiscounter = cashier.IsDiscounter;
-                                    _cashier.Password = "";
-                                    _cashier.TabelNumber = string.Empty;
-                                    _cashier.DateBegin = DateTime.Now;
-                                    _cashier.DateEnd = DateTime.Now;
-                                    _cashier.IsGoodDisco = false;
-                                    _cashier.IsInvoicer = false;
-                                    _cashier.IsSaved = false;
-                                    _cashier.IsSavedToPOS = 0;
-                                    _cashier.IsSavedToMarket = "0";
-                                    _cashier.MarketID = SelectedMarkets[i];
+                                    var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, SelectedMarkets[i], currentUser);
 
-                                    var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(SelectedMarkets[i], _cashier);
+                                    if (checkCashierID == null)
+                                    {
+                                        if (SelectedMarkets[i] != "All")
+                                        {
+                                            Cashier _cashier = new Cashier();
+                                            _cashier.ID = cashier.ID;
+                                            _cashier.CashierName = cashier.CashierName;
+                                            _cashier.IsAdmin = cashier.IsAdmin;
+                                            _cashier.IsDiscounter = cashier.IsDiscounter;
+                                            _cashier.Password = "";
+                                            _cashier.TabelNumber = string.Empty;
+                                            _cashier.DateBegin = DateTime.Now;
+                                            _cashier.DateEnd = DateTime.Now;
+                                            _cashier.IsGoodDisco = false;
+                                            _cashier.IsInvoicer = false;
+                                            _cashier.IsSaved = false;
+                                            _cashier.IsSavedToPOS = 0;
+                                            _cashier.IsSavedToMarket = "0";
+                                            _cashier.MarketID = SelectedMarkets[i];
 
-                                    //#region Log
-                                    //_data = string.Empty;
-                                    //_data = "ID = " + cashier.ID + ";\n";
-                                    //_data = _data + "TabelNumber = \"\";\n";
-                                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                                    //_data = _data + "Password = \"\";\n";
-                                    //_data = _data + "DateBegin = " + DateTime.Now + ";\n";
-                                    //_data = _data + "DateEnd = " + DateTime.Now + ";\n";
-                                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                                    //_data = _data + "IsGoodDisco = false;\n";
-                                    //_data = _data + "IsInvoicer = false;\n";
-                                    //_data = _data + "IsSaved = false;\n";
-                                    //_data = _data + "IsSavedToPOS = 0;\n";
-                                    //_data = _data + "IsSavedToMarket = 0;\n";
-                                    //_data = _data + "MarketID = " + SelectedMarkets[i] + ";\n";
-                                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
-                                    //#endregion
+                                            var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(SelectedMarkets[i], _cashier, currentUser);
+
+                                            #region Log
+
+                                            _data = String.Empty;
+                                            _data = "ID = " + _cashier.ID + ";\n";
+                                            _data = _data + "TabelNumber = \"\";\n";
+                                            _data = _data + "CashierName = " + _cashier.CashierName + ";\n";
+                                            _data = _data + "Password = \"\";\n";
+                                            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                            _data = _data + "IsAdmin = " + _cashier.IsAdmin + ";\n";
+                                            _data = _data + "IsDiscounter = " + _cashier.IsDiscounter + ";\n";
+                                            _data = _data + "IsGoodDisco = false;\n";
+                                            _data = _data + "IsInvoicer = false;\n";
+                                            _data = _data + "IsSaved = false;\n";
+                                            _data = _data + "IsSavedToPOS = 0;\n";
+                                            _data = _data + "IsSavedToMarket = 0;\n";
+                                            _data = _data + "MarketID = " + _cashier.MarketID + ";\n";
+
+                                            new Logs.Logs(currentUser, "CreateCashier", _data, "Добавлен!").WriteInfoLogs();
+
+                                            #endregion
+                                        }
+                                    }
+                                    else
+                                    {
+                                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                                        ViewBag.Markets = markets;
+                                        ViewBag.MarketsCount = markets.Count;
+
+                                        #region Log
+                                        _data = String.Empty;
+                                        _data = "ID = " + cashier.ID + ";\n";
+                                        _data = _data + "TabelNumber = \"\";\n";
+                                        _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                        _data = _data + "Password = \"\";\n";
+                                        _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                        _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                        _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                        _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                        _data = _data + "IsGoodDisco = false;\n";
+                                        _data = _data + "IsInvoicer = false;\n";
+                                        _data = _data + "IsSaved = false;\n";
+                                        _data = _data + "IsSavedToPOS = 0;\n";
+                                        _data = _data + "IsSavedToMarket = 0;\n";
+                                        _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                                        new Logs.Logs(currentUser, "CreateCashier", _data, "Кассир с таким именем или паролем уже существует!").WriteErrorLogs();
+
+                                        #endregion
+
+                                        TempData["msg"] = "<script>alert('Кассир с таким именем или паролем уже существует!');</script>";
+                                        return View(cashier);
+                                    }
                                 }
+
+                                return RedirectToAction("Cashiers");
                             }
                             else
                             {
-                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                                 ViewBag.Markets = markets;
                                 ViewBag.MarketsCount = markets.Count;
 
-                                //#region Log
-                                //_data = string.Empty;
-                                //_data = "ID = " + cashier.ID + ";\n";
-                                //_data = _data + "TabelNumber = \"\";\n";
-                                //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                                //_data = _data + "Password = \"\";\n";
-                                //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                                //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                                //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                                //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                                //_data = _data + "IsGoodDisco = false;\n";
-                                //_data = _data + "IsInvoicer = false;\n";
-                                //_data = _data + "IsSaved = false;\n";
-                                //_data = _data + "IsSavedToPOS = 0;\n";
-                                //_data = _data + "IsSavedToMarket = 0;\n";
-                                //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                                //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким именем или паролем уже существует");
-                                //#endregion
+                                #region Log
+                                _data = String.Empty;
+                                _data = "ID = " + cashier.ID + ";\n";
+                                _data = _data + "TabelNumber = \"\";\n";
+                                _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                _data = _data + "Password = \"\";\n";
+                                _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                _data = _data + "IsGoodDisco = false;\n";
+                                _data = _data + "IsInvoicer = false;\n";
+                                _data = _data + "IsSaved = false;\n";
+                                _data = _data + "IsSavedToPOS = 0;\n";
+                                _data = _data + "IsSavedToMarket = 0;\n";
+                                _data = _data + "MarketID = " + cashier.MarketID + ";\n";
 
-                                TempData["msg"] = "<script>alert('Пользователь с таким именем или паролем уже существует!');</script>";
+                                new Logs.Logs(currentUser, "CreateCashier", _data, "Кассир с таким именем или паролем уже существует!").WriteErrorLogs();
+
+                                #endregion
+
+                                TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
                                 return View(cashier);
                             }
                         }
-
-                        return RedirectToAction("Cashiers");
-                    }
-                    else
-                    {
-                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                        ViewBag.Markets = markets;
-                        ViewBag.MarketsCount = markets.Count;
-
-                        //#region Log
-                        //_data = string.Empty;
-                        //_data = "ID = " + cashier.ID + ";\n";
-                        //_data = _data + "TabelNumber = \"\";\n";
-                        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                        //_data = _data + "Password = \"\";\n";
-                        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                        //_data = _data + "IsGoodDisco = false;\n";
-                        //_data = _data + "IsInvoicer = false;\n";
-                        //_data = _data + "IsSaved = false;\n";
-                        //_data = _data + "IsSavedToPOS = 0;\n";
-                        //_data = _data + "IsSavedToMarket = 0;\n";
-                        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
-                        //#endregion
-
-                        TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
-                        return View(cashier);
-                    }
-                }
-                else
-                {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                    ViewBag.Markets = markets;
-                    ViewBag.MarketsCount = markets.Count;
-
-                    //#region Log
-                    //_data = string.Empty;
-                    //_data = "ID = " + cashier.ID + ";\n";
-                    //_data = _data + "TabelNumber = \"\";\n";
-                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                    //_data = _data + "Password = \"\";\n";
-                    //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                    //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                    //_data = _data + "IsGoodDisco = false;\n";
-                    //_data = _data + "IsInvoicer = false;\n";
-                    //_data = _data + "IsSaved = false;\n";
-                    //_data = _data + "IsSavedToPOS = 0;\n";
-                    //_data = _data + "IsSavedToMarket = 0;\n";
-                    //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
-                    //#endregion
-
-                    TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
-                    return View(cashier);
-                }
-            }
-            else
-            {
-                if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
-                {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                    string mm = markets[0].MarketID;
-
-                    var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, mm);
-
-                    if (checkCashierID == null)
-                    {
-                        if (IsDigitsOnly(cashier.ID))
-                        {
-                            cashier.Password = "";
-                            cashier.TabelNumber = string.Empty;
-                            cashier.DateBegin = DateTime.Now;
-                            cashier.DateEnd = DateTime.Now;
-                            cashier.IsGoodDisco = false;
-                            cashier.IsInvoicer = false;
-                            cashier.IsSaved = false;
-                            cashier.IsSavedToPOS = 0;
-                            cashier.IsSavedToMarket = "0";
-                            cashier.MarketID = mm;
-
-                            var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(mm, cashier);
-
-                            //#region Log
-                            //_data = string.Empty;
-                            //_data = "ID = " + cashier.ID + ";\n";
-                            //_data = _data + "TabelNumber = \"\";\n";
-                            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                            //_data = _data + "Password = \"\";\n";
-                            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                            //_data = _data + "IsGoodDisco = false;\n";
-                            //_data = _data + "IsInvoicer = false;\n";
-                            //_data = _data + "IsSaved = false;\n";
-                            //_data = _data + "IsSavedToPOS = 0;\n";
-                            //_data = _data + "IsSavedToMarket = 0;\n";
-                            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Info("Сохранение кассира");
-                            //#endregion
-
-                            return RedirectToAction("Cashiers");
-                        }
                         else
                         {
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                             ViewBag.Markets = markets;
                             ViewBag.MarketsCount = markets.Count;
 
-                            //#region Log
-                            //_data = string.Empty;
-                            //_data = "ID = " + cashier.ID + ";\n";
-                            //_data = _data + "TabelNumber = \"\";\n";
-                            //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                            //_data = _data + "Password = \"\";\n";
-                            //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                            //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                            //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                            //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                            //_data = _data + "IsGoodDisco = false;\n";
-                            //_data = _data + "IsInvoicer = false;\n";
-                            //_data = _data + "IsSaved = false;\n";
-                            //_data = _data + "IsSavedToPOS = 0;\n";
-                            //_data = _data + "IsSavedToMarket = 0;\n";
-                            //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Поле «Пароль» должен содержать только цифры");
-                            //#endregion
+                            #region Log
+                            _data = String.Empty;
+                            _data = "ID = " + cashier.ID + ";\n";
+                            _data = _data + "TabelNumber = \"\";\n";
+                            _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                            _data = _data + "Password = \"\";\n";
+                            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                            _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                            _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                            _data = _data + "IsGoodDisco = false;\n";
+                            _data = _data + "IsInvoicer = false;\n";
+                            _data = _data + "IsSaved = false;\n";
+                            _data = _data + "IsSavedToPOS = 0;\n";
+                            _data = _data + "IsSavedToMarket = 0;\n";
+                            _data = _data + "MarketID = " + cashier.MarketID + ";\n";
 
-                            TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
+                            new Logs.Logs(currentUser, "CreateCashier", _data, "Длина пароля должна быть не меньше 6 и не больше 25 символов!").WriteErrorLogs();
+
+                            #endregion
+
+                            TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
                             return View(cashier);
                         }
                     }
                     else
                     {
-                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                        ViewBag.Markets = markets;
-                        ViewBag.MarketsCount = markets.Count;
+                        if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                        {
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                            string mm = markets[0].MarketID;
 
-                        //#region Log
-                        //_data = string.Empty;
-                        //_data = "ID = " + cashier.ID + ";\n";
-                        //_data = _data + "TabelNumber = \"\";\n";
-                        //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                        //_data = _data + "Password = \"\";\n";
-                        //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                        //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                        //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                        //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                        //_data = _data + "IsGoodDisco = false;\n";
-                        //_data = _data + "IsInvoicer = false;\n";
-                        //_data = _data + "IsSaved = false;\n";
-                        //_data = _data + "IsSavedToPOS = 0;\n";
-                        //_data = _data + "IsSavedToMarket = 0;\n";
-                        //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                        //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Пользователь с таким номером уже существует");
-                        //#endregion
+                            var checkCashierID = new Portal.DB.DB(_ctx, _sctx).GetCashier(cashier.ID, mm, currentUser);
 
-                        TempData["msg"] = "<script>alert('Пользователь с таким номером уже существует!');</script>";
-                        return View(cashier);
+                            if (checkCashierID == null)
+                            {
+                                if (IsDigitsOnly(cashier.ID))
+                                {
+                                    cashier.Password = "";
+                                    cashier.TabelNumber = string.Empty;
+                                    cashier.DateBegin = DateTime.Now;
+                                    cashier.DateEnd = DateTime.Now;
+                                    cashier.IsGoodDisco = false;
+                                    cashier.IsInvoicer = false;
+                                    cashier.IsSaved = false;
+                                    cashier.IsSavedToPOS = 0;
+                                    cashier.IsSavedToMarket = "0";
+                                    cashier.MarketID = mm;
+
+                                    var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewCashier(mm, cashier, currentUser);
+
+                                    #region Log
+                                    _data = String.Empty;
+                                    _data = "ID = " + cashier.ID + ";\n";
+                                    _data = _data + "TabelNumber = \"\";\n";
+                                    _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                    _data = _data + "Password = \"\";\n";
+                                    _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                    _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                    _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                    _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                    _data = _data + "IsGoodDisco = false;\n";
+                                    _data = _data + "IsInvoicer = false;\n";
+                                    _data = _data + "IsSaved = false;\n";
+                                    _data = _data + "IsSavedToPOS = 0;\n";
+                                    _data = _data + "IsSavedToMarket = 0;\n";
+                                    _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                                    new Logs.Logs(currentUser, "CreateCashier", _data, "Добавлен!").WriteInfoLogs();
+
+                                    #endregion
+
+                                    return RedirectToAction("Cashiers");
+                                }
+                                else
+                                {
+                                    ViewBag.Markets = markets;
+                                    ViewBag.MarketsCount = markets.Count;
+
+                                    #region Log
+                                    _data = String.Empty;
+                                    _data = "ID = " + cashier.ID + ";\n";
+                                    _data = _data + "TabelNumber = \"\";\n";
+                                    _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                    _data = _data + "Password = \"\";\n";
+                                    _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                    _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                    _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                    _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                    _data = _data + "IsGoodDisco = false;\n";
+                                    _data = _data + "IsInvoicer = false;\n";
+                                    _data = _data + "IsSaved = false;\n";
+                                    _data = _data + "IsSavedToPOS = 0;\n";
+                                    _data = _data + "IsSavedToMarket = 0;\n";
+                                    _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                                    new Logs.Logs(currentUser, "CreateCashier", _data, "Поле «Пароль» должен содержать только цифры!").WriteErrorLogs();
+
+                                    #endregion
+
+                                    TempData["msg"] = "<script>alert('Поле «Пароль» должен содержать только цифры!');</script>";
+                                    return View(cashier);
+                                }
+                            }
+                            else
+                            {
+                                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                                ViewBag.Markets = markets;
+                                ViewBag.MarketsCount = markets.Count;
+
+                                #region Log
+                                _data = String.Empty;
+                                _data = "ID = " + cashier.ID + ";\n";
+                                _data = _data + "TabelNumber = \"\";\n";
+                                _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                                _data = _data + "Password = \"\";\n";
+                                _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                                _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                                _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                                _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                                _data = _data + "IsGoodDisco = false;\n";
+                                _data = _data + "IsInvoicer = false;\n";
+                                _data = _data + "IsSaved = false;\n";
+                                _data = _data + "IsSavedToPOS = 0;\n";
+                                _data = _data + "IsSavedToMarket = 0;\n";
+                                _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                                new Logs.Logs(currentUser, "CreateCashier", _data, "Пользователь с таким номером уже существует!").WriteErrorLogs();
+
+                                #endregion
+
+                                TempData["msg"] = "<script>alert('Пользователь с таким номером уже существует!');</script>";
+                                return View(cashier);
+                            }
+                        }
+                        else
+                        {
+                            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                            ViewBag.Markets = markets;
+                            ViewBag.MarketsCount = markets.Count;
+
+                            #region Log
+                            _data = String.Empty;
+                            _data = "ID = " + cashier.ID + ";\n";
+                            _data = _data + "TabelNumber = \"\";\n";
+                            _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                            _data = _data + "Password = \"\";\n";
+                            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                            _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                            _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                            _data = _data + "IsGoodDisco = false;\n";
+                            _data = _data + "IsInvoicer = false;\n";
+                            _data = _data + "IsSaved = false;\n";
+                            _data = _data + "IsSavedToPOS = 0;\n";
+                            _data = _data + "IsSavedToMarket = 0;\n";
+                            _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                            new Logs.Logs(currentUser, "CreateCashier", _data, "Длина пароля должна быть не меньше 6 и не больше 25 символов!").WriteErrorLogs();
+
+                            #endregion
+
+                            TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
+                            return View(cashier);
+                        }
                     }
                 }
-                else
-                {
-                    markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-                    ViewBag.Markets = markets;
-                    ViewBag.MarketsCount = markets.Count;
 
-                    //#region Log
-                    //_data = string.Empty;
-                    //_data = "ID = " + cashier.ID + ";\n";
-                    //_data = _data + "TabelNumber = \"\";\n";
-                    //_data = _data + "CashierName = " + cashier.CashierName + ";\n";
-                    //_data = _data + "Password = \"\";\n";
-                    //_data = _data + "DateBegin = " + DateTime.Now + "\n";
-                    //_data = _data + "DateEnd = " + DateTime.Now + "\n";
-                    //_data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
-                    //_data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
-                    //_data = _data + "IsGoodDisco = false;\n";
-                    //_data = _data + "IsInvoicer = false;\n";
-                    //_data = _data + "IsSaved = false;\n";
-                    //_data = _data + "IsSavedToPOS = 0;\n";
-                    //_data = _data + "IsSavedToMarket = 0;\n";
-                    //_data = _data + "MarketID = " + cashier.MarketID + ";\n";
-                    //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", User.Identity.Name).WithProperty("Data", _data).Error("Длина пароля должна быть не меньше 6 и не больше 25 символов");
-                    //#endregion
+                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                ViewBag.Markets = markets;
+                ViewBag.MarketsCount = markets.Count;
 
-                    TempData["msg"] = "<script>alert('Длина пароля должна быть не меньше 6 и не больше 25 символов!');</script>";
-                    return View(cashier);
-                }
+                #region Log
+                _data = String.Empty;
+                _data = "ID = " + cashier.ID + ";\n";
+                _data = _data + "TabelNumber = \"\";\n";
+                _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                _data = _data + "Password = \"\";\n";
+                _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                _data = _data + "IsGoodDisco = false;\n";
+                _data = _data + "IsInvoicer = false;\n";
+                _data = _data + "IsSaved = false;\n";
+                _data = _data + "IsSavedToPOS = 0;\n";
+                _data = _data + "IsSavedToMarket = 0;\n";
+                _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                new Logs.Logs(currentUser, "CreateCashier", _data, "Некорректное заполнение полей!").WriteErrorLogs();
+
+                #endregion
+
+                TempData["msg"] = "<script>alert('Некорректное заполнение полей!');</script>";
+                return View(cashier);
             }
+
+            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+
+            #region Log
+            _data = String.Empty;
+            _data = "ID = " + cashier.ID + ";\n";
+            _data = _data + "TabelNumber = \"\";\n";
+            _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+            _data = _data + "Password = \"\";\n";
+            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+            _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+            _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+            _data = _data + "IsGoodDisco = false;\n";
+            _data = _data + "IsInvoicer = false;\n";
+            _data = _data + "IsSaved = false;\n";
+            _data = _data + "IsSavedToPOS = 0;\n";
+            _data = _data + "IsSavedToMarket = 0;\n";
+            _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+            new Logs.Logs(currentUser, "CreateCashier", _data, "Некорректное заполнение полей!").WriteErrorLogs();
+
+            #endregion
+
+            TempData["msg"] = "<script>alert('Некорректное заполнение полей!');</script>";
+            return View(cashier);
+
         }
 
         bool IsDigitsOnly(string str)
@@ -820,16 +1314,24 @@ namespace Portal.Controllers
             return true;
         }
 
-        public ActionResult EditCashier(string id, string cashierName, string marketID)
+        public async Task<ActionResult> EditCashier(string id, string cashierName, string marketID)
         {
-            Cashier cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID);
+            var currentUser = _userService.GetCurrentUser();
+
+            Cashier cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID, currentUser.Result);
 
             if (cashier == null)
                 return NotFound();
 
-            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser.Result);
             ViewBag.Markets = markets;
             ViewBag.MarketsCount = markets.Count;
+
+            #region Log
+
+            new Logs.Logs(currentUser.Result, "EditCashier", "", "").WriteInfoLogs();
+
+            #endregion
 
             return View(cashier);
         }
@@ -839,54 +1341,135 @@ namespace Portal.Controllers
         public async Task<ActionResult> EditCashier(Cashier cashier)
         {
             List<MarketsName> markets;
+            var currentUser = _userService.GetCurrentUser().Result;
+            string _data = String.Empty;
 
-            if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+            if (!string.IsNullOrEmpty(cashier.CashierName))
             {
-                try
+                if (!string.IsNullOrEmpty(cashier.ID))
                 {
-                    new Portal.DB.DB(_ctx, _sctx).EditCashier(cashier);
+                    if (cashier.ID.Length > 5 && cashier.ID.Length < 26)
+                    {
+                        try
+                        {
+                            new Portal.DB.DB(_ctx, _sctx).EditCashier(cashier, currentUser);
 
-                    //var checkCashierID = new DB(db).GetCashier(cashier.ID, cashier.MarketID);
+                            #region Log
+                            _data = String.Empty;
+                            _data = "ID = " + cashier.ID + ";\n";
+                            _data = _data + "TabelNumber = \"\";\n";
+                            _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                            _data = _data + "Password = \"\";\n";
+                            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                            _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                            _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                            _data = _data + "IsGoodDisco = false;\n";
+                            _data = _data + "IsInvoicer = false;\n";
+                            _data = _data + "IsSaved = false;\n";
+                            _data = _data + "IsSavedToPOS = 0;\n";
+                            _data = _data + "IsSavedToMarket = 0;\n";
+                            _data = _data + "MarketID = " + cashier.MarketID + ";\n";
 
-                    //if(checkCashierID == null)
-                    //{
-                    //    Cashier _cashier = new Cashier();
-                    //    _cashier.ID = cashier.ID;
-                    //    _cashier.CashierName = cashier.CashierName;
-                    //    _cashier.Password = "";
-                    //    _cashier.IsAdmin = cashier.IsAdmin;
-                    //    _cashier.IsDiscounter = cashier.IsDiscounter;
-                    //    _cashier.TabelNumber = string.Empty;
-                    //    _cashier.DateBegin = DateTime.Now;
-                    //    _cashier.DateEnd = DateTime.Now;
-                    //    _cashier.IsGoodDisco = false;
-                    //    _cashier.IsInvoicer = false;
-                    //    _cashier.IsSaved = false;
-                    //    _cashier.IsSavedToPOS = 0;
-                    //    _cashier.IsSavedToMarket = "0";
-                    //    _cashier.MarketID = cashier.MarketID;
+                            new Logs.Logs(currentUser, "EditCashier", _data, "Изменен!").WriteInfoLogs();
 
-                    //    db.Cashiers.Add(_cashier);
-                    //    await db.SaveChangesAsync();
-                    //}
+                            #endregion
 
-                    return RedirectToAction("Cashiers");
+                            return RedirectToAction("Cashiers");
+                        }
+                        catch (Exception)
+                        {
+                            return NotFound();
+                        }
+                    }
+                    else
+                    {
+                        markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+                        ViewBag.Markets = markets;
+                        ViewBag.MarketsCount = markets.Count;
+
+                        #region Log
+                        _data = String.Empty;
+                        _data = "ID = " + cashier.ID + ";\n";
+                        _data = _data + "TabelNumber = \"\";\n";
+                        _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                        _data = _data + "Password = \"\";\n";
+                        _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                        _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                        _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                        _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                        _data = _data + "IsGoodDisco = false;\n";
+                        _data = _data + "IsInvoicer = false;\n";
+                        _data = _data + "IsSaved = false;\n";
+                        _data = _data + "IsSavedToPOS = 0;\n";
+                        _data = _data + "IsSavedToMarket = 0;\n";
+                        _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                        new Logs.Logs(currentUser, "EditCashier", _data, "Длина пароля должно быть не меньше 6 и не больше 25 символов!").WriteErrorLogs();
+
+                        #endregion
+
+                        TempData["msg"] = "<script>alert('Длина пароля должно быть не меньше 6 и не больше 25 символов!');</script>";
+                        return View(cashier);
+                    }
                 }
-                catch (Exception)
-                {
-                    return NotFound();
-                }
-            }
-            else
-            {
-                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+
+                markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
                 ViewBag.Markets = markets;
                 ViewBag.MarketsCount = markets.Count;
 
-                TempData["msg"] = "<script>alert('Длина пароля должно быть не меньше 6 и не больше 25 символов!');</script>";
+                #region Log
+                _data = String.Empty;
+                _data = "ID = " + cashier.ID + ";\n";
+                _data = _data + "TabelNumber = \"\";\n";
+                _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+                _data = _data + "Password = \"\";\n";
+                _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+                _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+                _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+                _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+                _data = _data + "IsGoodDisco = false;\n";
+                _data = _data + "IsInvoicer = false;\n";
+                _data = _data + "IsSaved = false;\n";
+                _data = _data + "IsSavedToPOS = 0;\n";
+                _data = _data + "IsSavedToMarket = 0;\n";
+                _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+                new Logs.Logs(currentUser, "EditCashier", _data, "Некорректное заполнение полей!").WriteErrorLogs();
+
+                #endregion
+
+                TempData["msg"] = "<script>alert('Некорректное заполнение полей!');</script>";
                 return View(cashier);
             }
 
+            markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+
+            #region Log
+            _data = String.Empty;
+            _data = "ID = " + cashier.ID + ";\n";
+            _data = _data + "TabelNumber = \"\";\n";
+            _data = _data + "CashierName = " + cashier.CashierName + ";\n";
+            _data = _data + "Password = \"\";\n";
+            _data = _data + "DateBegin = " + DateTime.Now + ";\n";
+            _data = _data + "DateEnd = " + DateTime.Now + ";\n";
+            _data = _data + "IsAdmin = " + cashier.IsAdmin + ";\n";
+            _data = _data + "IsDiscounter = " + cashier.IsDiscounter + ";\n";
+            _data = _data + "IsGoodDisco = false;\n";
+            _data = _data + "IsInvoicer = false;\n";
+            _data = _data + "IsSaved = false;\n";
+            _data = _data + "IsSavedToPOS = 0;\n";
+            _data = _data + "IsSavedToMarket = 0;\n";
+            _data = _data + "MarketID = " + cashier.MarketID + ";\n";
+
+            new Logs.Logs(currentUser, "EditCashier", _data, "Некорректное заполнение полей!").WriteErrorLogs();
+
+            #endregion
+
+            TempData["msg"] = "<script>alert('Некорректное заполнение полей!');</script>";
+            return View(cashier);
         }
 
         [HttpGet]
@@ -895,9 +1478,10 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id);
+                var currentUser = _userService.GetCurrentUser().Result;
+                User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id, currentUser);
 
-                ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID).Name;
+                ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID, currentUser).Name;
 
                 if (user != null)
                     return View(user);
@@ -911,7 +1495,13 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteUser(id);
+                var currentUser = _userService.GetCurrentUser().Result;
+                var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteUser(id, currentUser);
+
+                #region Log
+                new Logs.Logs(currentUser, "EditCashier", "", "Удален!").WriteInfoLogs();
+                #endregion
+
                 return RedirectToAction("Cashiers");
             }
             return NotFound();
@@ -923,7 +1513,9 @@ namespace Portal.Controllers
 
         public ActionResult Keyboards(string MarketID)
         {
-            var keyboards = new Portal.DB.DB(_ctx, _sctx).GetKeyboards(User.Identity.Name, MarketID);
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            var keyboards = new Portal.DB.DB(_ctx, _sctx).GetKeyboards(currentUser, MarketID);
 
             if (string.IsNullOrEmpty(MarketID))
                 ViewBag.SelectText = false;
@@ -934,18 +1526,31 @@ namespace Portal.Controllers
 
             TempData["CurrentMarketID"] = MarketID;
 
+            #region Log
+
+            new Logs.Logs(currentUser, "Keyboards", "", "").WriteInfoLogs();
+
+            #endregion
+
             return View(keyboards);
         }
 
         // GET: Keyboards/CreateKeyboard
         public ActionResult CreateKeyboard()
         {
+            var currentUser = _userService.GetCurrentUser().Result;
+
             Keyboard keyboard = new Keyboard();
 
-            var currentMarketID = TempData.Peek("CurrentMarketID");
+            ViewBag.MarketID = TempData.Peek("CurrentMarketID");
 
-            ViewBag.MarketID = currentMarketID;
-            ViewBag.SettingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys();
+            ViewBag.SettingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys(currentUser);
+
+            #region Log
+
+            new Logs.Logs(currentUser, "CreateKeyboard", "", "").WriteInfoLogs();
+
+            #endregion
 
             return View(keyboard);
         }
@@ -954,9 +1559,12 @@ namespace Portal.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
         {
+            string _data = string.Empty;
+            var currentUser = _userService.GetCurrentUser().Result;
+
             List<string> valLst = new List<string>();
 
-            var settingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys();
+            var settingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys(currentUser);
 
             for (int i = 0; i < btnkeyH.Length; i++)
             {
@@ -964,7 +1572,282 @@ namespace Portal.Controllers
 
                 if (value.Length > 2)
                 {
-                    //var keyCode = new Portal.DB.DB(_ctx, _sctx).GetKeyCode(value);
+                    var keyCode = settingsKey.Where(w => w.Value == value).ToList();
+
+                    if (keyCode != null && keyCode.Count > 0)
+                    {
+                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), keyCode[0].KeyCode);
+                        valLst.Add(str);
+                    }
+                    else if (IsDigitsOnly(value))
+                    {
+                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), value);
+                        valLst.Add(str);
+                    }
+                }
+            }
+
+            if (valLst.Count > 0)
+            {
+                for (int i = 0; i < valLst.Count; i++)
+                {
+                    string strID = valLst[i].ToString().Split(':')[0];
+                    string strValue = valLst[i].ToString().Split(':')[1].Trim().Replace("\n", "");
+
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn1H") keyboard.Key_1 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn2H") keyboard.Key_2 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn3H") keyboard.Key_3 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn4H") keyboard.Key_4 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn5H") keyboard.Key_5 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn6H") keyboard.Key_6 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn7H") keyboard.Key_7 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn8H") keyboard.Key_8 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn9H") keyboard.Key_9 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn10H") keyboard.Key_10 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn11H") keyboard.Key_11 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn12H") keyboard.Key_12 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn13H") keyboard.Key_13 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn14H") keyboard.Key_14 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn15H") keyboard.Key_15 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn16H") keyboard.Key_16 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn17H") keyboard.Key_17 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn30H") keyboard.Key_30 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn31H") keyboard.Key_31 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn32H") keyboard.Key_32 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn33H") keyboard.Key_33 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn34H") keyboard.Key_34 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn35H") keyboard.Key_35 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn36H") keyboard.Key_36 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn37H") keyboard.Key_37 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn38H") keyboard.Key_38 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn39H") keyboard.Key_39 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn40H") keyboard.Key_40 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn41H") keyboard.Key_41 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn42H") keyboard.Key_42 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn43H") keyboard.Key_43 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn44H") keyboard.Key_44 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn45H") keyboard.Key_45 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn46H") keyboard.Key_46 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn47H") keyboard.Key_47 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn48H") keyboard.Key_48 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn49H") keyboard.Key_49 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn50H") keyboard.Key_50 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn51H") keyboard.Key_51 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn52H") keyboard.Key_52 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn53H") keyboard.Key_53 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn54H") keyboard.Key_54 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn55H") keyboard.Key_55 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn56H") keyboard.Key_56 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn57H") keyboard.Key_57 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn58H") keyboard.Key_58 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn59H") keyboard.Key_59 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn60H") keyboard.Key_60 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn61H") keyboard.Key_61 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn62H") keyboard.Key_62 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn63H") keyboard.Key_63 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn64H") keyboard.Key_64 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn65H") keyboard.Key_65 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn66H") keyboard.Key_66 = strValue;
+                    if (!string.IsNullOrEmpty(strID) && strID == "btn67H") keyboard.Key_67 = strValue;
+                }
+
+                if (!currentUser.IsAdmin && !currentUser.Role.AllMarkets)
+                    keyboard.MarketID = currentUser.MarketID;
+                else
+                    keyboard.MarketID = MarketForUser;
+
+                keyboard.Pos_num = 0;
+                keyboard.IsSavedToPOS = 0;
+                keyboard.IsSaved = false;
+
+                var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewKeyboard(keyboard, currentUser);
+
+                #region Log
+
+                _data = "ID = " + keyboard.ID + ";\n";
+                _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
+                _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
+                _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
+                _data = _data + "Key_2 = " + keyboard.Key_2 + ";\n";
+                _data = _data + "Key_3 = " + keyboard.Key_3 + ";\n";
+                _data = _data + "Key_4 = " + keyboard.Key_4 + ";\n";
+                _data = _data + "Key_5 = " + keyboard.Key_5 + ";\n";
+                _data = _data + "Key_6 = " + keyboard.Key_6 + ";\n";
+                _data = _data + "Key_7 = " + keyboard.Key_7 + ";\n";
+                _data = _data + "Key_8 = " + keyboard.Key_8 + ";\n";
+                _data = _data + "Key_9 = " + keyboard.Key_9 + ";\n";
+                _data = _data + "Key_10 = " + keyboard.Key_10 + ";\n";
+                _data = _data + "Key_11 = " + keyboard.Key_11 + ";\n";
+                _data = _data + "Key_12 = " + keyboard.Key_12 + ";\n";
+                _data = _data + "Key_13 = " + keyboard.Key_13 + ";\n";
+                _data = _data + "Key_14 = " + keyboard.Key_14 + ";\n";
+                _data = _data + "Key_15 = " + keyboard.Key_15 + ";\n";
+                _data = _data + "Key_16 = " + keyboard.Key_16 + ";\n";
+                _data = _data + "Key_17 = " + keyboard.Key_17 + ";\n";
+                _data = _data + "Key_30 = " + keyboard.Key_30 + ";\n";
+                _data = _data + "Key_31 = " + keyboard.Key_31 + ";\n";
+                _data = _data + "Key_32 = " + keyboard.Key_32 + ";\n";
+                _data = _data + "Key_33 = " + keyboard.Key_33 + ";\n";
+                _data = _data + "Key_34 = " + keyboard.Key_34 + ";\n";
+                _data = _data + "Key_35 = " + keyboard.Key_35 + ";\n";
+                _data = _data + "Key_36 = " + keyboard.Key_36 + ";\n";
+                _data = _data + "Key_37 = " + keyboard.Key_37 + ";\n";
+                _data = _data + "Key_38 = " + keyboard.Key_38 + ";\n";
+                _data = _data + "Key_39 = " + keyboard.Key_39 + ";\n";
+                _data = _data + "Key_40 = " + keyboard.Key_40 + ";\n";
+                _data = _data + "Key_41 = " + keyboard.Key_41 + ";\n";
+                _data = _data + "Key_42 = " + keyboard.Key_42 + ";\n";
+                _data = _data + "Key_43 = " + keyboard.Key_43 + ";\n";
+                _data = _data + "Key_44 = " + keyboard.Key_44 + ";\n";
+                _data = _data + "Key_45 = " + keyboard.Key_45 + ";\n";
+                _data = _data + "Key_46 = " + keyboard.Key_46 + ";\n";
+                _data = _data + "Key_47 = " + keyboard.Key_47 + ";\n";
+                _data = _data + "Key_48 = " + keyboard.Key_48 + ";\n";
+                _data = _data + "Key_49 = " + keyboard.Key_49 + ";\n";
+                _data = _data + "Key_50 = " + keyboard.Key_50 + ";\n";
+                _data = _data + "Key_51 = " + keyboard.Key_51 + ";\n";
+                _data = _data + "Key_52 = " + keyboard.Key_52 + ";\n";
+                _data = _data + "Key_53 = " + keyboard.Key_53 + ";\n";
+                _data = _data + "Key_54 = " + keyboard.Key_54 + ";\n";
+                _data = _data + "Key_55 = " + keyboard.Key_55 + ";\n";
+                _data = _data + "Key_56 = " + keyboard.Key_56 + ";\n";
+                _data = _data + "Key_57 = " + keyboard.Key_57 + ";\n";
+                _data = _data + "Key_58 = " + keyboard.Key_58 + ";\n";
+                _data = _data + "Key_59 = " + keyboard.Key_59 + ";\n";
+                _data = _data + "Key_60 = " + keyboard.Key_60 + ";\n";
+                _data = _data + "Key_61 = " + keyboard.Key_61 + ";\n";
+                _data = _data + "Key_62 = " + keyboard.Key_62 + ";\n";
+                _data = _data + "Key_63 = " + keyboard.Key_63 + ";\n";
+                _data = _data + "Key_64 = " + keyboard.Key_64 + ";\n";
+                _data = _data + "Key_65 = " + keyboard.Key_65 + ";\n";
+                _data = _data + "Key_66 = " + keyboard.Key_66 + ";\n";
+                _data = _data + "Key_67 = " + keyboard.Key_67 + ";\n";
+                new Logs.Logs(currentUser, "CreateKeyboard", _data, "Добавлен!").WriteInfoLogs();
+
+                #endregion
+
+                return RedirectToAction("Keyboards");
+            }
+
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
+            ViewBag.Markets = markets;
+            ViewBag.MarketsCount = markets.Count;
+            ViewBag.SettingsKey = settingsKey;
+
+            TempData["msg"] = "<script>alert('Не корректное заполнение полей!');</script>";
+
+            #region Log
+
+            _data = "ID = " + keyboard.ID + ";\n";
+            _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
+            _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
+            _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
+            _data = _data + "Key_2 = " + keyboard.Key_2 + ";\n";
+            _data = _data + "Key_3 = " + keyboard.Key_3 + ";\n";
+            _data = _data + "Key_4 = " + keyboard.Key_4 + ";\n";
+            _data = _data + "Key_5 = " + keyboard.Key_5 + ";\n";
+            _data = _data + "Key_6 = " + keyboard.Key_6 + ";\n";
+            _data = _data + "Key_7 = " + keyboard.Key_7 + ";\n";
+            _data = _data + "Key_8 = " + keyboard.Key_8 + ";\n";
+            _data = _data + "Key_9 = " + keyboard.Key_9 + ";\n";
+            _data = _data + "Key_10 = " + keyboard.Key_10 + ";\n";
+            _data = _data + "Key_11 = " + keyboard.Key_11 + ";\n";
+            _data = _data + "Key_12 = " + keyboard.Key_12 + ";\n";
+            _data = _data + "Key_13 = " + keyboard.Key_13 + ";\n";
+            _data = _data + "Key_14 = " + keyboard.Key_14 + ";\n";
+            _data = _data + "Key_15 = " + keyboard.Key_15 + ";\n";
+            _data = _data + "Key_16 = " + keyboard.Key_16 + ";\n";
+            _data = _data + "Key_17 = " + keyboard.Key_17 + ";\n";
+            _data = _data + "Key_30 = " + keyboard.Key_30 + ";\n";
+            _data = _data + "Key_31 = " + keyboard.Key_31 + ";\n";
+            _data = _data + "Key_32 = " + keyboard.Key_32 + ";\n";
+            _data = _data + "Key_33 = " + keyboard.Key_33 + ";\n";
+            _data = _data + "Key_34 = " + keyboard.Key_34 + ";\n";
+            _data = _data + "Key_35 = " + keyboard.Key_35 + ";\n";
+            _data = _data + "Key_36 = " + keyboard.Key_36 + ";\n";
+            _data = _data + "Key_37 = " + keyboard.Key_37 + ";\n";
+            _data = _data + "Key_38 = " + keyboard.Key_38 + ";\n";
+            _data = _data + "Key_39 = " + keyboard.Key_39 + ";\n";
+            _data = _data + "Key_40 = " + keyboard.Key_40 + ";\n";
+            _data = _data + "Key_41 = " + keyboard.Key_41 + ";\n";
+            _data = _data + "Key_42 = " + keyboard.Key_42 + ";\n";
+            _data = _data + "Key_43 = " + keyboard.Key_43 + ";\n";
+            _data = _data + "Key_44 = " + keyboard.Key_44 + ";\n";
+            _data = _data + "Key_45 = " + keyboard.Key_45 + ";\n";
+            _data = _data + "Key_46 = " + keyboard.Key_46 + ";\n";
+            _data = _data + "Key_47 = " + keyboard.Key_47 + ";\n";
+            _data = _data + "Key_48 = " + keyboard.Key_48 + ";\n";
+            _data = _data + "Key_49 = " + keyboard.Key_49 + ";\n";
+            _data = _data + "Key_50 = " + keyboard.Key_50 + ";\n";
+            _data = _data + "Key_51 = " + keyboard.Key_51 + ";\n";
+            _data = _data + "Key_52 = " + keyboard.Key_52 + ";\n";
+            _data = _data + "Key_53 = " + keyboard.Key_53 + ";\n";
+            _data = _data + "Key_54 = " + keyboard.Key_54 + ";\n";
+            _data = _data + "Key_55 = " + keyboard.Key_55 + ";\n";
+            _data = _data + "Key_56 = " + keyboard.Key_56 + ";\n";
+            _data = _data + "Key_57 = " + keyboard.Key_57 + ";\n";
+            _data = _data + "Key_58 = " + keyboard.Key_58 + ";\n";
+            _data = _data + "Key_59 = " + keyboard.Key_59 + ";\n";
+            _data = _data + "Key_60 = " + keyboard.Key_60 + ";\n";
+            _data = _data + "Key_61 = " + keyboard.Key_61 + ";\n";
+            _data = _data + "Key_62 = " + keyboard.Key_62 + ";\n";
+            _data = _data + "Key_63 = " + keyboard.Key_63 + ";\n";
+            _data = _data + "Key_64 = " + keyboard.Key_64 + ";\n";
+            _data = _data + "Key_65 = " + keyboard.Key_65 + ";\n";
+            _data = _data + "Key_66 = " + keyboard.Key_66 + ";\n";
+            _data = _data + "Key_67 = " + keyboard.Key_67 + ";\n";
+            new Logs.Logs(currentUser, "CreateKeyboard", _data, "Не корректное заполнение полей!").WriteErrorLogs();
+
+            #endregion
+
+            return View(keyboard);
+        }
+
+        // GET: Keyboards/EditKeyboard
+        public ActionResult EditKeyboard(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            var sk = new Portal.DB.DB(_ctx, _sctx).GetKeys(currentUser);
+            Keyboard keyboard = new Portal.DB.DB(_ctx, _sctx).GetKeyboard(id, currentUser);
+            keyboard = ReplaceKeysValue(keyboard, sk);
+
+            if (keyboard == null)
+                return NotFound();
+
+            ViewBag.MarketID = keyboard.MarketID;
+            ViewBag.SettingsKey = sk;
+
+            #region Log
+            
+            new Logs.Logs(currentUser, "EditKeyboard", "", "").WriteInfoLogs();
+
+            #endregion
+
+            return View(keyboard);
+        }
+
+        // POST: Keyboards/EditKeyboard
+        [HttpPost]
+        public async Task<ActionResult> EditKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
+        {
+            string _data = string.Empty;
+
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            List<string> valLst = new List<string>();
+
+            var settingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys(currentUser);
+
+            for (int i = 0; i < btnkeyH.Length; i++)
+            {
+                string value = btnkeyH[i].ToString().Split(':')[1].Trim().Replace("\n", "");
+
+                if (value.Length > 2)
+                {
                     var keyCode = settingsKey.Where(w => w.Value == value).ToList();
 
                     if (keyCode != null && keyCode.Count > 0)
@@ -1049,148 +1932,145 @@ namespace Portal.Controllers
                 keyboard.IsSavedToPOS = 0;
                 keyboard.IsSaved = false;
 
-                var isSaved = new Portal.DB.DB(_ctx, _sctx).SaveNewKeyboard(MarketForUser, keyboard);
+                var isSaved = new Portal.DB.DB(_ctx, _sctx).EditKeyboard(keyboard, currentUser);
+
+                #region Log
+
+                _data = "ID = " + keyboard.ID + ";\n";
+                _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
+                _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
+                _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
+                _data = _data + "Key_2 = " + keyboard.Key_2 + ";\n";
+                _data = _data + "Key_3 = " + keyboard.Key_3 + ";\n";
+                _data = _data + "Key_4 = " + keyboard.Key_4 + ";\n";
+                _data = _data + "Key_5 = " + keyboard.Key_5 + ";\n";
+                _data = _data + "Key_6 = " + keyboard.Key_6 + ";\n";
+                _data = _data + "Key_7 = " + keyboard.Key_7 + ";\n";
+                _data = _data + "Key_8 = " + keyboard.Key_8 + ";\n";
+                _data = _data + "Key_9 = " + keyboard.Key_9 + ";\n";
+                _data = _data + "Key_10 = " + keyboard.Key_10 + ";\n";
+                _data = _data + "Key_11 = " + keyboard.Key_11 + ";\n";
+                _data = _data + "Key_12 = " + keyboard.Key_12 + ";\n";
+                _data = _data + "Key_13 = " + keyboard.Key_13 + ";\n";
+                _data = _data + "Key_14 = " + keyboard.Key_14 + ";\n";
+                _data = _data + "Key_15 = " + keyboard.Key_15 + ";\n";
+                _data = _data + "Key_16 = " + keyboard.Key_16 + ";\n";
+                _data = _data + "Key_17 = " + keyboard.Key_17 + ";\n";
+                _data = _data + "Key_30 = " + keyboard.Key_30 + ";\n";
+                _data = _data + "Key_31 = " + keyboard.Key_31 + ";\n";
+                _data = _data + "Key_32 = " + keyboard.Key_32 + ";\n";
+                _data = _data + "Key_33 = " + keyboard.Key_33 + ";\n";
+                _data = _data + "Key_34 = " + keyboard.Key_34 + ";\n";
+                _data = _data + "Key_35 = " + keyboard.Key_35 + ";\n";
+                _data = _data + "Key_36 = " + keyboard.Key_36 + ";\n";
+                _data = _data + "Key_37 = " + keyboard.Key_37 + ";\n";
+                _data = _data + "Key_38 = " + keyboard.Key_38 + ";\n";
+                _data = _data + "Key_39 = " + keyboard.Key_39 + ";\n";
+                _data = _data + "Key_40 = " + keyboard.Key_40 + ";\n";
+                _data = _data + "Key_41 = " + keyboard.Key_41 + ";\n";
+                _data = _data + "Key_42 = " + keyboard.Key_42 + ";\n";
+                _data = _data + "Key_43 = " + keyboard.Key_43 + ";\n";
+                _data = _data + "Key_44 = " + keyboard.Key_44 + ";\n";
+                _data = _data + "Key_45 = " + keyboard.Key_45 + ";\n";
+                _data = _data + "Key_46 = " + keyboard.Key_46 + ";\n";
+                _data = _data + "Key_47 = " + keyboard.Key_47 + ";\n";
+                _data = _data + "Key_48 = " + keyboard.Key_48 + ";\n";
+                _data = _data + "Key_49 = " + keyboard.Key_49 + ";\n";
+                _data = _data + "Key_50 = " + keyboard.Key_50 + ";\n";
+                _data = _data + "Key_51 = " + keyboard.Key_51 + ";\n";
+                _data = _data + "Key_52 = " + keyboard.Key_52 + ";\n";
+                _data = _data + "Key_53 = " + keyboard.Key_53 + ";\n";
+                _data = _data + "Key_54 = " + keyboard.Key_54 + ";\n";
+                _data = _data + "Key_55 = " + keyboard.Key_55 + ";\n";
+                _data = _data + "Key_56 = " + keyboard.Key_56 + ";\n";
+                _data = _data + "Key_57 = " + keyboard.Key_57 + ";\n";
+                _data = _data + "Key_58 = " + keyboard.Key_58 + ";\n";
+                _data = _data + "Key_59 = " + keyboard.Key_59 + ";\n";
+                _data = _data + "Key_60 = " + keyboard.Key_60 + ";\n";
+                _data = _data + "Key_61 = " + keyboard.Key_61 + ";\n";
+                _data = _data + "Key_62 = " + keyboard.Key_62 + ";\n";
+                _data = _data + "Key_63 = " + keyboard.Key_63 + ";\n";
+                _data = _data + "Key_64 = " + keyboard.Key_64 + ";\n";
+                _data = _data + "Key_65 = " + keyboard.Key_65 + ";\n";
+                _data = _data + "Key_66 = " + keyboard.Key_66 + ";\n";
+                _data = _data + "Key_67 = " + keyboard.Key_67 + ";\n";
+                new Logs.Logs(currentUser, "EditKeyboard", _data, "Изменен!").WriteInfoLogs();
+
+                #endregion
 
                 return RedirectToAction("Keyboards");
             }
 
-            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
+            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
             ViewBag.Markets = markets;
             ViewBag.MarketsCount = markets.Count;
             ViewBag.SettingsKey = settingsKey;
 
             TempData["msg"] = "<script>alert('Не корректное заполнение полей!');</script>";
 
-            return View(keyboard);
-        }
+            #region Log
 
-        // GET: Keyboards/EditKeyboard
-        public ActionResult EditKeyboard(int? id)
-        {
-            if (id == null)
-                return NotFound();
+            _data = "ID = " + keyboard.ID + ";\n";
+            _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
+            _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
+            _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
+            _data = _data + "Key_2 = " + keyboard.Key_2 + ";\n";
+            _data = _data + "Key_3 = " + keyboard.Key_3 + ";\n";
+            _data = _data + "Key_4 = " + keyboard.Key_4 + ";\n";
+            _data = _data + "Key_5 = " + keyboard.Key_5 + ";\n";
+            _data = _data + "Key_6 = " + keyboard.Key_6 + ";\n";
+            _data = _data + "Key_7 = " + keyboard.Key_7 + ";\n";
+            _data = _data + "Key_8 = " + keyboard.Key_8 + ";\n";
+            _data = _data + "Key_9 = " + keyboard.Key_9 + ";\n";
+            _data = _data + "Key_10 = " + keyboard.Key_10 + ";\n";
+            _data = _data + "Key_11 = " + keyboard.Key_11 + ";\n";
+            _data = _data + "Key_12 = " + keyboard.Key_12 + ";\n";
+            _data = _data + "Key_13 = " + keyboard.Key_13 + ";\n";
+            _data = _data + "Key_14 = " + keyboard.Key_14 + ";\n";
+            _data = _data + "Key_15 = " + keyboard.Key_15 + ";\n";
+            _data = _data + "Key_16 = " + keyboard.Key_16 + ";\n";
+            _data = _data + "Key_17 = " + keyboard.Key_17 + ";\n";
+            _data = _data + "Key_30 = " + keyboard.Key_30 + ";\n";
+            _data = _data + "Key_31 = " + keyboard.Key_31 + ";\n";
+            _data = _data + "Key_32 = " + keyboard.Key_32 + ";\n";
+            _data = _data + "Key_33 = " + keyboard.Key_33 + ";\n";
+            _data = _data + "Key_34 = " + keyboard.Key_34 + ";\n";
+            _data = _data + "Key_35 = " + keyboard.Key_35 + ";\n";
+            _data = _data + "Key_36 = " + keyboard.Key_36 + ";\n";
+            _data = _data + "Key_37 = " + keyboard.Key_37 + ";\n";
+            _data = _data + "Key_38 = " + keyboard.Key_38 + ";\n";
+            _data = _data + "Key_39 = " + keyboard.Key_39 + ";\n";
+            _data = _data + "Key_40 = " + keyboard.Key_40 + ";\n";
+            _data = _data + "Key_41 = " + keyboard.Key_41 + ";\n";
+            _data = _data + "Key_42 = " + keyboard.Key_42 + ";\n";
+            _data = _data + "Key_43 = " + keyboard.Key_43 + ";\n";
+            _data = _data + "Key_44 = " + keyboard.Key_44 + ";\n";
+            _data = _data + "Key_45 = " + keyboard.Key_45 + ";\n";
+            _data = _data + "Key_46 = " + keyboard.Key_46 + ";\n";
+            _data = _data + "Key_47 = " + keyboard.Key_47 + ";\n";
+            _data = _data + "Key_48 = " + keyboard.Key_48 + ";\n";
+            _data = _data + "Key_49 = " + keyboard.Key_49 + ";\n";
+            _data = _data + "Key_50 = " + keyboard.Key_50 + ";\n";
+            _data = _data + "Key_51 = " + keyboard.Key_51 + ";\n";
+            _data = _data + "Key_52 = " + keyboard.Key_52 + ";\n";
+            _data = _data + "Key_53 = " + keyboard.Key_53 + ";\n";
+            _data = _data + "Key_54 = " + keyboard.Key_54 + ";\n";
+            _data = _data + "Key_55 = " + keyboard.Key_55 + ";\n";
+            _data = _data + "Key_56 = " + keyboard.Key_56 + ";\n";
+            _data = _data + "Key_57 = " + keyboard.Key_57 + ";\n";
+            _data = _data + "Key_58 = " + keyboard.Key_58 + ";\n";
+            _data = _data + "Key_59 = " + keyboard.Key_59 + ";\n";
+            _data = _data + "Key_60 = " + keyboard.Key_60 + ";\n";
+            _data = _data + "Key_61 = " + keyboard.Key_61 + ";\n";
+            _data = _data + "Key_62 = " + keyboard.Key_62 + ";\n";
+            _data = _data + "Key_63 = " + keyboard.Key_63 + ";\n";
+            _data = _data + "Key_64 = " + keyboard.Key_64 + ";\n";
+            _data = _data + "Key_65 = " + keyboard.Key_65 + ";\n";
+            _data = _data + "Key_66 = " + keyboard.Key_66 + ";\n";
+            _data = _data + "Key_67 = " + keyboard.Key_67 + ";\n";
+            new Logs.Logs(currentUser, "EditKeyboard", _data, "Не корректное заполнение полей!").WriteErrorLogs();
 
-            var sk = new Portal.DB.DB(_ctx, _sctx).GetKeys();
-            Keyboard keyboard = new Portal.DB.DB(_ctx, _sctx).GetKeyboard(id);
-            keyboard = ReplaceKeysValue(keyboard, sk);
-
-            if (keyboard == null)
-                return NotFound();
-
-            ViewBag.MarketID = keyboard.MarketID;
-            ViewBag.SettingsKey = sk;
-
-            return View(keyboard);
-        }
-
-        // POST: Keyboards/EditKeyboard
-        [HttpPost]
-        public async Task<ActionResult> EditKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
-        {
-            List<string> valLst = new List<string>();
-
-            var settingsKey = new Portal.DB.DB(_ctx, _sctx).GetKeys();
-
-            for (int i = 0; i < btnkeyH.Length; i++)
-            {
-                string value = btnkeyH[i].ToString().Split(':')[1].Trim().Replace("\n", "");
-
-                if (value.Length > 2)
-                {
-                    var keyCode = settingsKey.Where(w => w.Value == value).ToList();
-
-                    if (keyCode != null && keyCode.Count > 0)
-                    {
-                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), keyCode[0].KeyCode);
-                        valLst.Add(str);
-                    }
-                    else if (IsDigitsOnly(value))
-                    {
-                        var str = string.Format("{0}:{1}", btnkeyH[i].ToString().Split(':')[0].Trim(), value);
-                        valLst.Add(str);
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(MarketForUser) && valLst.Count > 0)
-            {
-                for (int i = 0; i < valLst.Count; i++)
-                {
-                    string strID = valLst[i].ToString().Split(':')[0];
-                    string strValue = valLst[i].ToString().Split(':')[1].Trim().Replace("\n", "");
-
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn1H") keyboard.Key_1 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn2H") keyboard.Key_2 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn3H") keyboard.Key_3 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn4H") keyboard.Key_4 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn5H") keyboard.Key_5 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn6H") keyboard.Key_6 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn7H") keyboard.Key_7 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn8H") keyboard.Key_8 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn9H") keyboard.Key_9 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn10H") keyboard.Key_10 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn11H") keyboard.Key_11 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn12H") keyboard.Key_12 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn13H") keyboard.Key_13 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn14H") keyboard.Key_14 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn15H") keyboard.Key_15 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn16H") keyboard.Key_16 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn17H") keyboard.Key_17 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn30H") keyboard.Key_30 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn31H") keyboard.Key_31 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn32H") keyboard.Key_32 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn33H") keyboard.Key_33 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn34H") keyboard.Key_34 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn35H") keyboard.Key_35 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn36H") keyboard.Key_36 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn37H") keyboard.Key_37 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn38H") keyboard.Key_38 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn39H") keyboard.Key_39 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn40H") keyboard.Key_40 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn41H") keyboard.Key_41 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn42H") keyboard.Key_42 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn43H") keyboard.Key_43 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn44H") keyboard.Key_44 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn45H") keyboard.Key_45 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn46H") keyboard.Key_46 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn47H") keyboard.Key_47 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn48H") keyboard.Key_48 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn49H") keyboard.Key_49 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn50H") keyboard.Key_50 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn51H") keyboard.Key_51 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn52H") keyboard.Key_52 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn53H") keyboard.Key_53 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn54H") keyboard.Key_54 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn55H") keyboard.Key_55 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn56H") keyboard.Key_56 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn57H") keyboard.Key_57 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn58H") keyboard.Key_58 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn59H") keyboard.Key_59 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn60H") keyboard.Key_60 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn61H") keyboard.Key_61 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn62H") keyboard.Key_62 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn63H") keyboard.Key_63 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn64H") keyboard.Key_64 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn65H") keyboard.Key_65 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn66H") keyboard.Key_66 = strValue;
-                    if (!string.IsNullOrEmpty(strID) && strID == "btn67H") keyboard.Key_67 = strValue;
-                }
-
-                keyboard.Pos_num = 0;
-                keyboard.IsSavedToPOS = 0;
-                keyboard.IsSaved = false;
-
-                var isSaved = new Portal.DB.DB(_ctx, _sctx).EditKeyboard(MarketForUser, keyboard);
-
-                return RedirectToAction("Keyboards");
-            }
-
-            var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(User.Identity.Name);
-            ViewBag.Markets = markets;
-            ViewBag.MarketsCount = markets.Count;
-            ViewBag.SettingsKey = settingsKey;
-
-            TempData["msg"] = "<script>alert('Не корректное заполнение полей!');</script>";
+            #endregion
 
             return View(keyboard);
         }
@@ -1322,9 +2202,17 @@ namespace Portal.Controllers
 
         public ActionResult POSs(string MarketID)
         {
-            var _userPOSs = new Portal.DB.DB(_ctx, _sctx).GetUserForPOS(User.Identity.Name, MarketID);
-            var pos = new Portal.DB.DB(_ctx, _sctx).GetPOSes(_userPOSs);
+            var currentUser = _userService.GetCurrentUser().Result;
+
+            var _userPOSs = new Portal.DB.DB(_ctx, _sctx).GetUserForPOS(currentUser, MarketID);
+            var pos = new Portal.DB.DB(_ctx, _sctx).GetPOSes(_userPOSs, currentUser);
             ViewBag.ErrorPOSCount = pos.Items.Where(w => w.Status == "Не загружено").ToList().Count;
+
+            #region Log
+
+            new Logs.Logs(currentUser, "POSs", "", "Просмотр POS статуса!").WriteInfoLogs();
+
+            #endregion
 
             return View(pos);
         }
@@ -1335,8 +2223,15 @@ namespace Portal.Controllers
 
         public ActionResult Scales(string MarketID)
         {
-            var _userScales = new Portal.DB.DB(_ctx, _sctx).GetUserForScales(User.Identity.Name, MarketID);
+            var currentUser = _userService.GetCurrentUser().Result;
+            var _userScales = new Portal.DB.DB(_ctx, _sctx).GetUserForScales(currentUser, MarketID);
             var scales = new Portal.DB.DB(_ctx, _sctx).GetScales(_userScales);
+
+            #region Log
+
+            new Logs.Logs(currentUser, "Scales", "", "Просмотр статуса весов!").WriteInfoLogs();
+
+            #endregion
 
             return View(scales);
         }

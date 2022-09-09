@@ -55,7 +55,7 @@
         @if (ViewBag.MarketsCount > 1)
         {
             <div class="form-group">
-                <div style="margin-left: 18%; overflow: auto; height: 250PX; width: 300px;">
+                <div style="overflow: auto; height: 250PX; width: 300px;">
                     <input id="checkbox" type="checkbox" name="SelectedMarkets" value="All" /><label style="margin-left: 10px"> Все маркеты</label><br />
                     <p id="controls">
                         @foreach (var item in ViewBag.Markets)

@@ -31,7 +31,9 @@ public class UserService : IUserService
 
     public async Task<User> GetCurrentUser()
     {
-        var userResult = await GetAsync(_httpContextAccessor.HttpContext.User.Identity.Name);
+        string login = _httpContextAccessor.HttpContext.User.Identity.Name;
+
+        var userResult = await GetAsync(login);
 
         if (userResult.Success)
             return userResult.Data;
@@ -65,9 +67,14 @@ public class UserService : IUserService
             {
                 return Result<User>.Ok(userCache);
             }
+
             var user = await _unitOfWork.Users.GetAsync(u => u.Login == userLogin, u => u.Role, u => u.Market);
-            _cacheManager.Set(user, keyCache);  
             
+            if(user == null)
+                return Result<User>.Failed($"Пользователь с логином {userLogin} не найден.");
+            
+            _cacheManager.Set(user, keyCache);
+
             return Result<User>.Ok(user);
         }
         catch (Exception ex)
@@ -96,25 +103,28 @@ public class UserService : IUserService
     {
         try
         {
-            var adminResult = await _adminService.GetAsync(userLogin);
+            var userResult = await GetAsync(userLogin);
 
             List<User> usersLst = new List<User>();
 
-            if (adminResult.Success)
+            if (userResult.Success && userResult.Data.IsAdmin)
             {
                 usersLst = await _unitOfWork.Users.GetAllAsync(u => true, u => u.ID, true);
             }
-            else
+            else if (userResult.Success && !userResult.Data.IsAdmin)
             {
-                var user = await _unitOfWork.Users.GetAsync(u => u.Login == userLogin, u => u.Role );
+                var user = await _unitOfWork.Users.GetAsync(u => u.Login == userLogin, u => u.Role);
 
-                if (user is {Role: {AdminForScale: true}})
+                if (user is { Role: { AdminForScale: true } })
                 {
-                    var roles = await _roleService.GetAllAsync(r => r.AdminForScale || r.Scales || r.POSs);
+                    var roles1 = await _roleService.GetAllAsync(r => r.AdminForScale && r.Name != "Admin");
+                    var roles2 = await _roleService.GetAllAsync(r => (r.Scales || r.POSs) && !r.CreateCashiers && !r.EditCashiers && !r.DeleteCashiers && !r.CreateLogo && !r.EditLogo && !r.DeleteLogo && !r.CreateKeyboard && !r.EditKeyboard && !r.DeleteKeyboard);
+                    var roles = roles1.Data.Concat(roles2.Data);
 
-                    var roleIds = roles.Data.Select(r => r.ID);
+                    var roleIds = roles.Select(r => r.ID);
 
                     usersLst = (await _unitOfWork.Users.GetAllAsync(u => roleIds.Contains(u.RoleID), u => u.ID))
+                        .Where(w => !w.IsAdmin)
                         .GroupBy(g => g.ID)
                         .Select(s => s.First())
                         .ToList();

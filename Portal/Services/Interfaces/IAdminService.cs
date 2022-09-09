@@ -1,4 +1,4 @@
-using Portal.Models;
+﻿using Portal.Models;
 
 namespace Portal.Services.Interfaces;
 

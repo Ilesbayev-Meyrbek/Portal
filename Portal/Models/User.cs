@@ -26,6 +26,11 @@ namespace Portal.Models
         public int RoleID { get; set; }
 
         public Role Role { get; set; }
-        
+
+        [Display(Name = "Админ")]
+        [Required(ErrorMessage = "Укажите тип пользователя!")]
+        public bool IsAdmin { get; set; }
+
+
     }
 }

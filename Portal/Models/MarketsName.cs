@@ -10,8 +10,8 @@ namespace Portal.Models
 
         public string MarketID { get; set; }
         public string Name { get; set; }
-        public string POS { get; set; }
-        public string POSVersion { get; set; }
+        public string? POS { get; set; }
+        public string? POSVersion { get; set; }
         public bool FilesLoaded { get; set; }
 
         //public ICollection<Cashier> Cashiers { get; set; }
