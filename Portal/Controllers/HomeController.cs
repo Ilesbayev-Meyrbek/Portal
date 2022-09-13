@@ -336,7 +336,7 @@ namespace Portal.Controllers
                         }
 
                         MemoryStream ms = new MemoryStream(imageData);
-                        Image pic = Image.FromStream(ms);
+                        System.Drawing.Image pic = System.Drawing.Image.FromStream(ms);
                         var bitDepth = pic.PixelFormat.ToString();
                         var imgWidth = pic.Width;
                         var imgHeight = pic.Height;
@@ -520,7 +520,7 @@ namespace Portal.Controllers
                             }
 
                             MemoryStream ms = new MemoryStream(imageData);
-                            Image pic = Image.FromStream(ms);
+                            System.Drawing.Image pic = System.Drawing.Image.FromStream(ms);
                             var bitDepth = pic.PixelFormat.ToString();
                             var imgWidth = pic.Width;
                             var imgHeight = pic.Height;
@@ -707,7 +707,7 @@ namespace Portal.Controllers
                     }
 
                     MemoryStream ms = new MemoryStream(imageData);
-                    Image pic = Image.FromStream(ms);
+                    System.Drawing.Image pic = System.Drawing.Image.FromStream(ms);
                     var bitDepth = pic.PixelFormat.ToString();
                     var imgWidth = pic.Width;
                     var imgHeight = pic.Height;
@@ -804,7 +804,7 @@ namespace Portal.Controllers
                 if (lvm.DateS <= lvm.DateE)
                 {
                     MemoryStream ms = new MemoryStream(imageData);
-                    Image pic = Image.FromStream(ms);
+                    System.Drawing.Image pic = System.Drawing.Image.FromStream(ms);
                     var bitDepth = pic.PixelFormat.ToString();
                     var imgWidth = pic.Width;
                     var imgHeight = pic.Height;

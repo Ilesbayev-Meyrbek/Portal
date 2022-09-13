@@ -10,6 +10,7 @@ namespace Portal.Models
 
         public string MarketID { get; set; }
         public string Name { get; set; }
+        public string Address { get; set; }
         public string? POS { get; set; }
         public string? POSVersion { get; set; }
         public bool FilesLoaded { get; set; }
@@ -20,8 +21,10 @@ namespace Portal.Models
         //{
         //    Cashiers = new List<Cashier>();
         //}
-        
-        
+
+        [NotMapped]
+        public List<Scale> Scales { get; set; }
+
         public virtual ICollection<User> Users { get; set; }
     }
 }

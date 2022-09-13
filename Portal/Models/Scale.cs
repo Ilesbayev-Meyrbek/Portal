@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 namespace Portal.Models
 {
+    [Serializable]
+    [DataContract(IsReference = true)]
     [Table("Scales")]
     public class Scale
     {
@@ -15,5 +20,12 @@ namespace Portal.Models
         public bool Tiger { get; set; }
         public bool BPlus { get; set; }
         public bool FreshBase { get; set; }
+
+        public ScalesSyncStatus ScalesSyncStatus { get; set; }
+        public int DefaultCategoryIndex { get; set; }
+        public DateTime UpdateTime { get; set; }
+
+        //public int SettingsId { get; set; }
+
     }
 }

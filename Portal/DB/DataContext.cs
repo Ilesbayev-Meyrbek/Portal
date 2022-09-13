@@ -24,6 +24,9 @@ namespace Portal.DB
         public DbSet<Good> Goods { get; set; }
         public DbSet<GoodsDetail> GoodsDetails { get; set; }
 
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<MarketCategory> MarketCategories { get; set; }
+
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
@@ -40,6 +43,9 @@ namespace Portal.DB
                 table.ID,
                 table.MarketID
             });
+
+            builder.Entity<MarketCategory>()
+            .HasKey(sc => new { sc.MarketId, sc.CategoryId });
 
             builder.Entity<Keyboard>(entity =>
             {
