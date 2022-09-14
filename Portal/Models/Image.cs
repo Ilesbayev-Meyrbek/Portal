@@ -6,5 +6,7 @@
         public string Data { get; set; }
         public string Thumbnail { get; set; }
         public DateTime UpdateTime { get; set; }
+
+        public List<ScalesGood> Goods { get; set; }
     }
 }

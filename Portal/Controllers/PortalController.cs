@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Portal.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class PortalController : ControllerBase
     {
         private ScaleContext scaleContext;
@@ -67,9 +67,10 @@ namespace Portal.Controllers
             return Ok(outputMarkets);
         }
 
+        [AcceptVerbs("GET", "POST")]
         [HttpPost]
         public async Task<IActionResult> SetDefaultCategory(int scaleId, int categoryIndex)
-        {//api/Portal/SetDefaultCategory?scaleId=1&categoryId=1
+        {//Portal/SetDefaultCategory?scaleId=1&categoryIndex=1
             if (categoryIndex < 0 || categoryIndex > 4)
                 return BadRequest();
 
@@ -86,27 +87,26 @@ namespace Portal.Controllers
         }
 
         [HttpGet]
-        public JsonResult GetCategoriesAndGroups()
+        public async Task<ActionResult<OutputCategoryAndGroup>> GetCategoriesAndGroups()
         {
             var categories = dataContext.Categories.Select(x => new OutputCategoryAndGroup { Id = x.Id, Name = x.RuName }).ToList();
 
             foreach (var category in categories)
             {
-                category.GroupsPLU = scaleContext.Groups.Where(x => x.CategoryId == category.Id).Select(x => x.Name);
+                category.GroupsPLU = scaleContext.Groups.Where(x => x.CategoryId == category.Id).Select(x => x.SapID);
             }
 
             var groupWithoutCategories = scaleContext.Groups.Where(x => x.CategoryId == null).ToList();
-            categories.Add(new OutputCategoryAndGroup { Id = categories.Last().Id + 1, Name = "Группы без категорий", GroupsPLU = groupWithoutCategories.Select(x => x.Name) });
+            categories.Add(new OutputCategoryAndGroup { Id = categories.Last().Id + 1, Name = "Группы без категорий", GroupsPLU = groupWithoutCategories.Select(x => x.SapID) });
 
-            var output = new JsonResult(categories);
-
-            return output;
+            return Ok(categories);
         }
 
+        [AcceptVerbs("GET", "POST")]
         [HttpPost]
-        public async Task<IActionResult> SetGroupCategory(int groupPlu, int categoryId)
+        public async Task<IActionResult> SetGroupCategory(string groupPlu, int categoryId)
         {//api/Portal/SetGroupCategory?groupId=1&categoryId=1
-            var group = scaleContext.Groups.FirstOrDefault(x => x.Name == groupPlu);
+            var group = scaleContext.Groups.FirstOrDefault(x => x.SapID == groupPlu);
             if (group is null)
                 return NotFound();
 
@@ -115,42 +115,40 @@ namespace Portal.Controllers
                 return NotFound();
 
             category.UpdateTime = DateTime.Now;
+            group.CategoryId = categoryId;
 
             var goods = scaleContext.ScalesGoods.Where(x => x.GroupId == group.Id).ToList();
             foreach (var good in goods)
                 good.ReceiptGoodDate = DateTime.Now;
 
-            group.Category = category;
-
             scaleContext.SaveChanges();
+            dataContext.SaveChanges();
             return Ok();
             //возвращать категорию
         }
 
         [HttpGet]
-        public JsonResult GetMarketCategories(string marketId)
+        public async Task<ActionResult<Category>> GetMarketCategories(string marketId)
         {
-            var categories = dataContext.MarketCategories.Include("Category").Where(x => x.MarketId == marketId).OrderBy(x => x.CategoryOrder).Select(x => x.Category).ToList();
-            var cat = categories.ToList();
-            var output = new JsonResult(cat);
-
-            return output;
+            var categories = dataContext.MarketCategories.Where(x => x.MarketId == marketId).OrderBy(x => x.CategoryOrder).Select(x => x.Category).ToList();
+            
+            return Ok(categories);
         }
 
         [HttpGet]
-        public JsonResult GetCategories()
+        public async Task<ActionResult<Category>> GetCategories()
         {
             var categories = dataContext.Categories.ToList();
-            var output = new JsonResult(categories);
 
-            return output;
+            return Ok(categories);
         }
 
+        [AcceptVerbs("GET", "PATCH")]
         [HttpPatch]
         public async Task<IActionResult> ChangeCategoriesOrder(string marketId, string categoryIdsOrder)
         {
-            var categoriesOrder = dataContext.MarketCategories.Where(x => x.MarketId.Equals(marketId)).OrderByDescending(x => x.CategoryOrder);
-            if (categoriesOrder != null)
+            var categoriesOrder = dataContext.MarketCategories.Where(x => x.MarketId.Equals(marketId)).OrderByDescending(x => x.CategoryOrder).ToList();
+            if (categoriesOrder.Count() != 0)
             {
                 var listString = categoryIdsOrder.Split(',');
                 var listInt = new List<int>();
@@ -166,22 +164,29 @@ namespace Portal.Controllers
                             category.UpdateTime = DateTime.Now;
                         }
 
-                scaleContext.SaveChanges();
+                dataContext.SaveChanges();
                 return Ok();
             }
             return NotFound();
         }
 
         [HttpGet]
-        public JsonResult GetGoods(string marketId)
+        public async Task<ActionResult<OutputGood>> GetGoods(string marketId)
         {
             var list = new List<OutputGood>();
             {
                 var goods = scaleContext.ScalesGoods
                 .Where(x => x.MarketID.Equals(marketId))
-                .Include("Group")
-                .Include("Image")
+                .Where(x=>x.GroupId != null)
+                .Include(x=>x.Group)
+                .Include(x => x.Image)
                 .ToList();
+
+                var goodIds = goods.Select(x => x.GroupId);//не работает Include
+                var groups = scaleContext.Groups.Where(gr=> goodIds.Contains(gr.Id)).ToList();
+
+                var imageIds = goods.Select(x => x.ImageId);//не работает Include
+                var images = scaleContext.Images.Where(im => imageIds.Contains(im.Id)).ToList();
 
                 foreach (var good in goods)
                 {
@@ -191,7 +196,7 @@ namespace Portal.Controllers
                         Id = good.ID,
                         Name = good.Name,
                         CategoryName = categoryName,
-                        GroupPLU = good.Group.Name,
+                        GroupPLU = good.Group.SapID,
                         Thumbnail = good.Image?.Thumbnail,
                         ImageId = good.ImageId,
                         PLU = good.PLU,
@@ -201,21 +206,23 @@ namespace Portal.Controllers
                 }
             }
 
-            var output = new JsonResult(list);
-
-            return output;
+            return Ok(list);
         }
 
         [HttpGet]
-        public JsonResult GetGoodsWithoutImg(string marketId)
+        public async Task<ActionResult<OutputGood>> GetGoodsWithoutImg(string marketId)
         {
             var list = new List<OutputGood>();
 
             var goods = scaleContext.ScalesGoods
                 .Where(x => x.MarketID.Equals(marketId))
+                .Where(x => x.GroupId != null)
                 .Where(x => x.ImageId == null)
-                .Include("Group")
+                .Include(x=>x.Group)
                 .ToList();
+
+            var goodIds = goods.Select(x => x.GroupId);//не работает Include
+            var groups = scaleContext.Groups.Where(gr => goodIds.Contains(gr.Id)).ToList();
 
             foreach (var good in goods)
             {
@@ -225,16 +232,14 @@ namespace Portal.Controllers
                     Id = good.ID,
                     Name = good.Name,
                     CategoryName = categoryName,
-                    GroupPLU = good.Group.Name,
+                    GroupPLU = good.Group.SapID,
                     PLU = good.PLU,
                     Code = good.Code,
                     Price = good.Price,
                 });
             }
 
-            var output = new JsonResult(list);
-
-            return output;
+            return Ok(list);
         }
 
         [HttpGet]
@@ -284,7 +289,7 @@ namespace Portal.Controllers
             }
             return null;
         }
-
+        
         private string ConvertImgToBase64(string path)
         {
             using (System.Drawing.Image image = System.Drawing.Image.FromFile(path))
@@ -301,6 +306,7 @@ namespace Portal.Controllers
             }
         }
 
+        //[AcceptVerbs("GET", "POST")]
         //[HttpPost]
         //public async Task<IActionResult> SetGoodsImage(string goodIds)
         //{

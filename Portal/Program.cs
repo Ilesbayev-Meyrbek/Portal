@@ -51,7 +51,6 @@ builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<ICacheManager, CacheManager>();
 
 
-
 /******************************************************************************************************/
 
 
@@ -77,8 +76,8 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
 
 var app = builder.Build();
-
 // Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

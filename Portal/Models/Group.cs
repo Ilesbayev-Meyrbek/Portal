@@ -6,9 +6,9 @@ namespace Portal.Models
     public class Group
     {
         public int Id { get; set; }
-        public int Name { get; set; }
+        public string SapID { get; set; }
 
-        public List<Good> Goods { get; set; }
+        public List<ScalesGood> Goods { get; set; }
 
         public int? CategoryId { get; set; }
         public Category Category { get; set; }

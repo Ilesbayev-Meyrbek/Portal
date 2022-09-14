@@ -20,8 +20,7 @@ namespace Portal.DB
         {
             builder.Entity<Scale>().HasKey(table => new { table.ID });
 
-            builder.Entity<MarketCategory>()
-            .HasKey(sc => new { sc.MarketId, sc.CategoryId });
+            builder.Entity<MarketCategory>().HasKey(sc => new { sc.MarketId, sc.CategoryId });
         }
     }
 }

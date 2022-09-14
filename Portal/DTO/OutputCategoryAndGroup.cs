@@ -4,6 +4,6 @@
     {
         public long Id { get; set; }
         public string Name { get; set; }
-        public IEnumerable<int> GroupsPLU { get; set; }
+        public IEnumerable<string> GroupsPLU { get; set; }
     }
 }

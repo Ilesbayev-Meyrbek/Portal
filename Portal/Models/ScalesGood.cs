@@ -21,7 +21,7 @@ namespace Portal.Models
         public bool IsSavedToBPlus { get; set; }
         public bool IsSavedToFB { get; set; }
 
-        public int GroupId { get; set; }
+        public int? GroupId { get; set; }
         public Group Group { get; set; }
 
         public int? ImageId { get; set; }

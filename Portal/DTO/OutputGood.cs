@@ -8,7 +8,7 @@
         public string Code { get; set; }
         public decimal Price { get; set; }
         public string CategoryName { get; set; }
-        public int? GroupPLU { get; set; } = 0;
+        public string GroupPLU { get; set; } = String.Empty;
         public int? ImageId { get; set; }
         public string Thumbnail { get; set; }
     }
