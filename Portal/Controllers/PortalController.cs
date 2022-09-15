@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Portal.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class PortalController : ControllerBase
     {
         private ScaleContext scaleContext;
@@ -243,6 +243,26 @@ namespace Portal.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult<OutputGroupAndCategory>> GetGroupCategories()
+        {
+            var list = new List<OutputGroupAndCategory>();
+            var groups = scaleContext.Groups.ToList();
+            var categories = dataContext.Categories.ToList();
+
+            foreach (var group in groups)
+            {
+                list.Add(new OutputGroupAndCategory
+                {
+                    Id = group.Id,
+                    GroupSAP = group.SapID,
+                    CategoryRuName = categories.FirstOrDefault(x => x.Id.Equals(group.CategoryId))?.RuName ?? "Нет категории"
+                });
+            }
+
+            return Ok(list);
+        }
+
+        [HttpGet]
         public JsonResult GetRole(string login)
         {
             var admin = dataContext.Admins.FirstOrDefault(x => x.Login == login);
@@ -306,64 +326,64 @@ namespace Portal.Controllers
             }
         }
 
-        //[AcceptVerbs("GET", "POST")]
-        //[HttpPost]
-        //public async Task<IActionResult> SetGoodsImage(string goodIds)
-        //{
-        //    var file = HttpContext.Request.Files.Count > 0 ?
-        //    HttpContext.Request.Files[0] : null;
+        [AcceptVerbs("GET", "POST")]
+        [HttpPost]
+        public async Task<IActionResult> SetGoodsImage(string goodIds)
+        {
+            var file = HttpContext.Request.Form.Files.Count > 0 ?
+            HttpContext.Request.Form.Files[0] : null;
 
-        //    if (file == null)
-        //        return BadRequest();
+            if (file == null)
+                return BadRequest();
 
-        //    var listGoodIds = goodIds.Split(',').Select(x => long.Parse(x)).ToList();
-        //    var goods = (scaleContext.ScalesGoods.Where(x => listGoodIds.Contains(x.ID))).ToList();
+            var listGoodIds = goodIds.Split(',').Select(x => long.Parse(x)).ToList();
+            var goods = (scaleContext.ScalesGoods.Where(x => listGoodIds.Contains(x.ID))).ToList();
 
-        //    string bDate;
-        //    string bThumb;
-        //    System.Drawing.Image thumbnail;
-        //    System.Drawing.Image sourceimage;
+            string bDate;
+            string bThumb;
+            System.Drawing.Image thumbnail;
+            System.Drawing.Image sourceimage;
 
-        //    try
-        //    {
-        //        sourceimage = System.Drawing.Image.FromStream(file.InputStream);
+            try
+            {
+                sourceimage = System.Drawing.Image.FromStream(file.OpenReadStream());
 
-        //        Image temp = new Image();
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            sourceimage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //            bDate = Convert.ToBase64String(ms.ToArray());
-        //        }
+                Image temp = new Image();
+                using (var ms = new MemoryStream())
+                {
+                    sourceimage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    bDate = Convert.ToBase64String(ms.ToArray());
+                }
 
-        //        temp.Data = bDate;
-        //        thumbnail = sourceimage.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
+                temp.Data = bDate;
+                thumbnail = sourceimage.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
 
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //            bThumb = Convert.ToBase64String(ms.ToArray());
-        //        }
-        //        temp.Thumbnail = bThumb;
-        //        temp.UpdateTime = DateTime.Now;
-        //        var newImage = scaleContext.Images.Add(temp);
-        //        await scaleContext.SaveChangesAsync();
+                using (var ms = new MemoryStream())
+                {
+                    thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+                    bThumb = Convert.ToBase64String(ms.ToArray());
+                }
+                temp.Thumbnail = bThumb;
+                temp.UpdateTime = DateTime.Now;
+                var newImage = scaleContext.Images.Add(temp);
+                await scaleContext.SaveChangesAsync();
 
-        //        foreach (var good in goods)
-        //        {
-        //            var goodInDB = await scaleContext.ScalesGoods.FirstOrDefaultAsync(x => x.ID == good.ID);
-        //            goodInDB.Image = newImage;
-        //            goodInDB.ImageId = newImage.Id;
-        //            goodInDB.ReceiptGoodDate = DateTime.Now;
-        //        }
-        //        await scaleContext.SaveChangesAsync();
+                foreach (var good in goods)
+                {
+                    var goodInDB = await scaleContext.ScalesGoods.FirstOrDefaultAsync(x => x.ID == good.ID);
+                    goodInDB.Image = temp;
+                    goodInDB.ImageId = temp.Id;
+                    goodInDB.ReceiptGoodDate = DateTime.Now;
+                }
+                await scaleContext.SaveChangesAsync();
 
-        //        return Ok();
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return BadRequest();
-        //    }
-        //}
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
 
         //    #region Not needed
         //    [HttpGet]
