@@ -1,4 +1,5 @@
-﻿using Portal.DB;
+﻿using Microsoft.AspNetCore.Mvc;
+using Portal.DB;
 using Portal.DTO;
 using Portal.Services;
 using System.Globalization;
@@ -18,22 +19,20 @@ namespace Portal.Controllers
         }
 
         // GET api/<controller>
-        public HttpResponseMessage Post([System.Web.Http.FromBody] ReportDto dto)
+        public IActionResult Post([System.Web.Http.FromBody] ReportDto dto)
         {
-            if (dto == null)
-            {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest);
-            }
+            //if (dto == null)
+            //    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+
             int DateBegin = int.Parse(dto.DateBegin.ToString("yyyyMMdd"));
             int DateEnd = int.Parse(dto.DateEnd.ToString("yyyyMMdd"));
             string MarketID = dto.MarketID;
             int? POSNum = dto.PosNum;
             string TerminalID = dto.TerminalID;
 
-            if (DateEnd - DateBegin > 100)
-            {
-                return new HttpResponseMessage(HttpStatusCode.BadRequest);
-            }
+            //if (DateEnd - DateBegin > 100)
+            //    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            
             var preList = _ctx.Chequeses.Where(s => s.Date >= DateBegin && s.Date <= DateEnd);
             var newPreList = _ctx.NewCheques.Where(s => s.Date >= DateBegin && s.Date <= DateEnd);
 
@@ -42,35 +41,37 @@ namespace Portal.Controllers
                 preList = preList.Where(m => m.MarketId == MarketID);
                 newPreList = newPreList.Where(m => m.MarketId == MarketID);
             }
+            
             if (!string.IsNullOrEmpty(TerminalID))
             {
                 preList = preList.Where(s => s.TerminalId == TerminalID);
                 newPreList = newPreList.Where(s => s.TerminalId == TerminalID);
             }
+            
             if (POSNum != null && POSNum != 0)
             {
                 preList = preList.Where(p => p.Posnum == POSNum);
                 newPreList = newPreList.Where(p => p.Posnum == POSNum); ;
             }
 
-            var NewCheque = (from f in newPreList
+            var NewCheque = (from f in newPreList.AsEnumerable()
                              where f.TypeChar.Contains("+")
                              orderby f.Date ascending
                              group f by f.Date).ToList();
 
-            var NewReturnCheque = (from f in newPreList
+            var NewReturnCheque = (from f in newPreList.AsEnumerable()
                                    where f.TypeChar.Contains("-")
                                    orderby f.Date ascending
                                    group f by f.Date).ToList();
 
 
 
-            var Cheque = (from f in preList
+            var Cheque = (from f in preList.AsEnumerable()
                           where f.TypeChar.Contains("+")
                           orderby f.Date ascending
                           group f by f.Date).ToList();
 
-            var ReturnCheque = (from f in preList
+            var ReturnCheque = (from f in preList.AsEnumerable()
                                 where f.TypeChar.Contains("-")
                                 orderby f.Date ascending
                                 group f by f.Date).ToList();
@@ -100,49 +101,37 @@ namespace Portal.Controllers
             {
                 int ParsedDate = int.Parse(l.Date.ToString("yyyyMMdd"));
 
-                l.Discount = ((decimal?)(from d in _ctx.ChequeGoodDiscounts
-                                         let ChequeGoodIds = (from c in _ctx.ChequeGoods
-                                                              let Ids = from f in newPreList
-                                                                        where f.TypeChar.Contains("+")
-                                                                        && f.Date == ParsedDate
-                                                                        select f.Id
-                                                              where Ids.Contains(c.ChequeId)
-                                                              select c.Id)
-                                         where !d.TypeDiscount.Contains("LOYALTY")
-                                         && ChequeGoodIds.Contains(d.ChequeGoodId)
-                                         select d.Value).DefaultIfEmpty().Sum() ?? 0);
+                var Ids = from f in newPreList.AsEnumerable()
+                          where f.TypeChar.Contains("+")
+                          && f.Date == ParsedDate
+                          select f.Id;
+
+                var ChequeGoodIds =  (from c in _ctx.ChequeGoods where Ids.Contains(c.ChequeId) select c.Id);
+
+                var IdsMinus = from f in newPreList.AsEnumerable()
+                               where f.TypeChar.Contains("-")
+                               && f.Date == ParsedDate
+                               select f.Id;
+                var ChequeGoodIdsMinus = (from c in _ctx.ChequeGoods where IdsMinus.Contains(c.ChequeId) select c.Id);
+
+                l.Discount = ((decimal?)
+                    (from d in _ctx.ChequeGoodDiscounts
+                     where !d.TypeDiscount.Contains("LOYALTY")  && ChequeGoodIds.Contains(d.ChequeGoodId)
+                     select d.Value).DefaultIfEmpty().Sum() ?? 0);
+
                 l.DiscountLoyal = ((decimal?)(from d in _ctx.ChequeGoodDiscounts
-                                              let ChequeGoodIds = (from c in _ctx.ChequeGoods
-                                                                   let Ids = from f in newPreList
-                                                                             where f.TypeChar.Contains("+")
-                                                                             && f.Date == ParsedDate
-                                                                             select f.Id
-                                                                   where Ids.Contains(c.ChequeId)
-                                                                   select c.Id)
                                               where d.TypeDiscount.Contains("LOYALTY")
                                               && ChequeGoodIds.Contains(d.ChequeGoodId)
                                               select d.Value).DefaultIfEmpty().Sum() ?? 0);
+
                 l.DiscountLoyalReturn = -1 * ((decimal?)(from d in _ctx.ChequeGoodDiscounts
-                                                         let ChequeGoodIds = (from c in _ctx.ChequeGoods
-                                                                              let Ids = from f in newPreList
-                                                                                        where f.TypeChar.Contains("-")
-                                                                                        && f.Date == ParsedDate
-                                                                                        select f.Id
-                                                                              where Ids.Contains(c.ChequeId)
-                                                                              select c.Id)
                                                          where d.TypeDiscount.Contains("LOYALTY")
                                                          && ChequeGoodIds.Contains(d.ChequeGoodId)
                                                          select d.Value).DefaultIfEmpty().Sum() ?? 0) * -1;
+
                 l.DiscountReturn = -1 * ((decimal?)(from d in _ctx.ChequeGoodDiscounts
-                                                    let ChequeGoodIds = (from c in _ctx.ChequeGoods
-                                                                         let Ids = from f in newPreList
-                                                                                   where f.TypeChar.Contains("-")
-                                                                                   && f.Date == ParsedDate
-                                                                                   select f.Id
-                                                                         where Ids.Contains(c.ChequeId)
-                                                                         select c.Id)
                                                     where !d.TypeDiscount.Contains("LOYALTY")
-                                                    && ChequeGoodIds.Contains(d.ChequeGoodId)
+                                                    && ChequeGoodIdsMinus.Contains(d.ChequeGoodId)
                                                     select d.Value).DefaultIfEmpty().Sum() ?? 0);
             }
 
@@ -197,27 +186,20 @@ namespace Portal.Controllers
 
             var finallist = unionList.Distinct().OrderBy(f => f.Date).ToList();
 
-
             string[] header = new[] { "№", "Дата", "Сумма(нал)", "Сумма(безнал)", "Итого с НДС", "НДС",
             "Сумма скидки", "Скидка по картам лояльности", "Чеки",
             "Сумма возврата с НДС", "НДС возврата", "Возврат по скидкам", "Возврат по картам лояльности",
             "Чеки возврата", "НДС итоговый"};
-
-
-
 
             var csv = new ListToCSV<ChequesDto>(finallist, header);
 
             var file = csv.CreateCSV();
             var ms = new MemoryStream(file);
 
-            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new StreamContent(ms);
-            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
-            response.Content.Headers.ContentDisposition.FileName = "Отчёт_" + DateBegin + "-" + DateEnd + ".csv";
-            response.Content.Headers.ContentType = new MediaTypeHeaderValue("text/csv");
+            var fsr = new FileStreamResult(ms, "text/csv");
+            fsr.FileDownloadName = "Отчёт_" + DateBegin + "-" + DateEnd + ".csv";
 
-            return response;
+            return fsr;
 
             ms.Dispose();
         }

@@ -34,5 +34,6 @@ namespace Portal.Models
 
         public bool Scales { get; set; }
         public bool POSs { get; set; }
+        public bool Reports { get; set; }
     }
 }

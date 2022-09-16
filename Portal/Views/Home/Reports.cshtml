@@ -7,7 +7,7 @@
 
 <div class="bodyContent">
     <div class="form-horizontal" style="overflow-x:hidden">
-        <form method="post" action="/Reports" class="form-group">
+        <form asp-action="Post" asp-controller="/Reports" class="form-group">
 
             <div class="form-group">
                 @Html.Label("Дата начала", "Дата начала", htmlAttributes: new { @class = "control-label col-md-2" })

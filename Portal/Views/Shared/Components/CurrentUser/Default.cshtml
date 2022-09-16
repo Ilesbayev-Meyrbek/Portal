@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    @*    <div class="mynav_dropdownMenu">
+    <div class="mynav_dropdownMenu">
         <button class="mynav_dropbtnMenu">
             Отчеты
             <i class="fa fa-caret-down"></i>
@@ -35,7 +35,7 @@
         <div class="mynav_dropdownMenu-content">
             @Html.ActionLink(" Отчет", "Reports", "Home")
         </div>
-    </div>*@
+    </div>
 
     <div class="mynav_dropdownMenu">
         <button class="mynav_dropbtnMenu">
@@ -50,7 +50,7 @@
 }
 else if (!Model.IsAdmin)
 {
-    if (Model.Role.CreateLogo || Model.Role.EditLogo || Model.Role.CreateCashiers || Model.Role.EditCashiers || Model.Role.CreateKeyboard || Model.Role.EditKeyboard || Model.Role.Scales || Model.Role.POSs)
+    if (Model.Role.CreateLogo || Model.Role.EditLogo || Model.Role.CreateCashiers || Model.Role.EditCashiers || Model.Role.CreateKeyboard || Model.Role.EditKeyboard || Model.Role.Scales || Model.Role.POSs || Model.Role.Reports)
     {
         @if (Model.Role.CreateLogo || Model.Role.EditLogo || Model.Role.CreateCashiers || Model.Role.EditCashiers || Model.Role.CreateKeyboard || Model.Role.EditKeyboard || Model.Role.POSs)
         {
@@ -61,23 +61,21 @@ else if (!Model.IsAdmin)
                     <i class="fa fa-caret-down"></i>
                 </button>
                 <div class="mynav_dropdownMenu-content">
+                    
                     @if (Model.Role.CreateLogo || Model.Role.EditLogo)
-                    @Html.ActionLink(" Логотипы", "Logos", "Home")
-
+                        @Html.ActionLink(" Логотипы", "Logos", "Home")
 
                     @if (Model.Role.CreateCashiers || Model.Role.EditCashiers)
-                    @Html.ActionLink(" Кассиры", "Cashiers", "Home")
-
+                        @Html.ActionLink(" Кассиры", "Cashiers", "Home")
 
                     @if (Model.Role.CreateKeyboard || Model.Role.EditKeyboard)
-                    @Html.ActionLink(" Клавиатура", "Keyboards", "Home")
-
+                        @Html.ActionLink(" Клавиатура", "Keyboards", "Home")
 
                     @if (Model.Role.POSs)
-                    @Html.ActionLink(" POS статусы", "POSs", "Home")
+                        @Html.ActionLink(" POS статусы", "POSs", "Home")
 
+                    </div>
                 </div>
-            </div>
         }
 
         if (Model.Role.Scales)
@@ -89,6 +87,19 @@ else if (!Model.IsAdmin)
                 </button>
                 <div class="mynav_dropdownMenu-content">
                     @Html.ActionLink(" Статусы весов", "Scales", "Home")
+                </div>
+            </div>
+        }
+
+        if (Model.Role.Reports)
+        {
+            <div class="mynav_dropdownMenu">
+                <button class="mynav_dropbtnMenu">
+                    Отчеты
+                    <i class="fa fa-caret-down"></i>
+                </button>
+                <div class="mynav_dropdownMenu-content">
+                    @Html.ActionLink(" Отчет", "Reports", "Home")
                 </div>
             </div>
         }

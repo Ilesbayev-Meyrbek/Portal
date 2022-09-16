@@ -1,0 +1,102 @@
+/* Navbar container */
+.mynav_navbarMenu {
+    overflow: hidden;
+    background-color: #333;
+    font-family: Arial;
+}
+
+    /* Links inside the navbar */
+    .mynav_navbarMenu a {
+        float: left;
+        font-size: 16px;
+        color: white;
+        text-align: center;
+        padding: 14px 16px;
+        text-decoration: none;
+    }
+
+/* The dropdown container */
+.mynav_dropdownMenu {
+    float: left;
+    overflow: hidden;
+}
+
+    /* Dropdown button */
+    .mynav_dropdownMenu .mynav_dropbtnMenu {
+        font-size: 16px;
+        border: none;
+        outline: none;
+        color: white;
+        padding: 14px 16px;
+        background-color: inherit;
+        font-family: inherit; /* Important for vertical align on mobile phones */
+        margin: 0; /* Important for vertical align on mobile phones */
+    }
+
+    /* Add a red background color to navbar links on hover */
+    .mynav_navbarMenu a:hover, .mynav_dropdownMenu:hover .mynav_dropbtnMenu {
+        background-color: red;
+    }
+
+/* Dropdown content (hidden by default) */
+.mynav_dropdownMenu-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+    /* Links inside the dropdown */
+    .mynav_dropdownMenu-content a {
+        float: none;
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        text-align: left;
+    }
+
+        /* Add a grey background color to dropdown links on hover */
+        .mynav_dropdownMenu-content a:hover {
+            background-color: #ddd;
+        }
+
+/* Show the dropdown menu on hover */
+.mynav_dropdownMenu:hover .mynav_dropdownMenu-content {
+    display: block;
+}
+
+/************************************** My Btn **************************************/
+
+.my_btn {
+    border: none; /* Remove borders */
+    color: white; /* Add a text color */
+    padding: 14px 28px; /* Add some padding */
+    cursor: pointer; /* Add a pointer cursor on mouse-over */
+    width: 115px;
+    height: 50px;
+}
+
+.my_btn_success {
+    background-color: #04AA6D;
+}
+/* Green */
+    .my_btn_success:hover {
+        background-color: #46a049;
+        color: white;
+    }
+
+.my_btn_danger {
+    background-color: #f44336;
+}
+    /* Red */
+    .my_btn_danger:hover {
+        background: #da190b;
+        color:white;
+    }
+
+a {
+    text-decoration: none; /* Убираем подчёркивание */
+}

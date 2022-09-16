@@ -120,6 +120,11 @@
                             @Html.LabelFor(model => model.POSs, "POS", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
                         </div>
 
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.Reports)
+                            @Html.LabelFor(model => model.Reports, "Отчеты", htmlAttributes: new { @class = "control-label col-md-2", @style = "width:400px" })
+                        </div>
+
                     </div>
                 </div>
 

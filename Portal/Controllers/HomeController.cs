@@ -130,8 +130,9 @@ namespace Portal.Controllers
                 data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                 data = data + "Scales = " + role.Scales + ";\n";
                 data = data + "POSs = " + role.POSs + ";\n";
+                data = data + "Reports = " + role.Reports + ";\n";
 
-                
+
                 new Logs.Logs(currentUser, "CreateRole", data, "Создан!").WriteInfoLogs();
 
                 #endregion
@@ -194,7 +195,8 @@ namespace Portal.Controllers
                     data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                     data = data + "Scales = " + role.Scales + ";\n";
                     data = data + "POSs = " + role.POSs + ";\n";
-                    
+                    data = data + "Reports = " + role.Reports + ";\n";
+
                     new Logs.Logs(currentUser, "CreateRole", data, "Изменен!").WriteInfoLogs();
 
                     #endregion
@@ -223,6 +225,7 @@ namespace Portal.Controllers
                     data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                     data = data + "Scales = " + role.Scales + ";\n";
                     data = data + "POSs = " + role.POSs + ";\n";
+                    data = data + "Reports = " + role.Reports + ";\n";
 
                     currentUser = await _userService.GetCurrentUser();
                     new Logs.Logs(currentUser, "CreateRole", data, "Не изменено!").WriteInfoLogs();
