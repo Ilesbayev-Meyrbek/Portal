@@ -21,8 +21,8 @@ namespace Portal.Controllers
         // GET api/<controller>
         public IActionResult Post([System.Web.Http.FromBody] ReportDto dto)
         {
-            //if (dto == null)
-            //    return new HttpResponseMessage(HttpStatusCode.BadRequest);
+            if (dto == null)
+                return (IActionResult)BadRequest(HttpStatusCode.BadRequest.ToString()); //new HttpResponseMessage(HttpStatusCode.BadRequest);
 
             int DateBegin = int.Parse(dto.DateBegin.ToString("yyyyMMdd"));
             int DateEnd = int.Parse(dto.DateEnd.ToString("yyyyMMdd"));
@@ -30,9 +30,9 @@ namespace Portal.Controllers
             int? POSNum = dto.PosNum;
             string TerminalID = dto.TerminalID;
 
-            //if (DateEnd - DateBegin > 100)
-            //    return new HttpResponseMessage(HttpStatusCode.BadRequest);
-            
+            if (DateEnd - DateBegin > 100)
+                return (IActionResult)BadRequest(HttpStatusCode.BadRequest.ToString());//new HttpResponseMessage(HttpStatusCode.BadRequest);
+
             var preList = _ctx.Chequeses.Where(s => s.Date >= DateBegin && s.Date <= DateEnd);
             var newPreList = _ctx.NewCheques.Where(s => s.Date >= DateBegin && s.Date <= DateEnd);
 
