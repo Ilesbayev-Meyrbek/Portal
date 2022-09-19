@@ -9,7 +9,7 @@ namespace Portal.Models
     {
         public int Id { get; set; }
         [Required]
-        [ForeignKey("Scale_ID")]
+        public long Scale_ID { get; set; }
         public Scale Scale { get; set; }
         public DateTime LastSyncTime { get; set; }
     }

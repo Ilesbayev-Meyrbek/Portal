@@ -21,6 +21,11 @@ namespace Portal.DB
             builder.Entity<Scale>().HasKey(table => new { table.ID });
 
             builder.Entity<MarketCategory>().HasKey(sc => new { sc.MarketId, sc.CategoryId });
+
+            builder.Entity<Scale>()
+             .HasOne(a => a.ScalesSyncStatus)
+             .WithOne(b => b.Scale)
+             .HasForeignKey<ScalesSyncStatus>(b => b.Scale_ID);
         }
     }
 }

@@ -370,7 +370,7 @@ namespace Portal.Controllers
 
                 foreach (var good in goods)
                 {
-                    var goodInDB = await scaleContext.ScalesGoods.FirstOrDefaultAsync(x => x.ID == good.ID);
+                    var goodInDB = scaleContext.ScalesGoods.FirstOrDefault(x => x.ID == good.ID);
                     goodInDB.Image = temp;
                     goodInDB.ImageId = temp.Id;
                     goodInDB.ReceiptGoodDate = DateTime.Now;
