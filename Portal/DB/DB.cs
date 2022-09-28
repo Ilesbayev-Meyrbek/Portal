@@ -538,18 +538,18 @@ namespace Portal.DB
                 if (string.IsNullOrEmpty(marketID))
                     marketID = _ctx.Markets.ToList()[0].MarketID;
 
+                var roleID = currentUser.RoleID;
+                var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
+
                 if (currentUser.IsAdmin)
                 {
                     keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                     keyboardView.IsAdmin = true;
-                    keyboardView.UserRole = null;
+                    keyboardView.UserRole = role;
                     keyboardView.Markets = _ctx.Markets.ToList();
                 }
                 else
                 {
-                    var roleID = currentUser.RoleID;
-                    var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
-
                     if (role.AllMarkets)
                     {
                         keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();

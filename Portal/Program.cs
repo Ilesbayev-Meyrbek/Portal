@@ -31,6 +31,11 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddDbContext<ScaleContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ScaleContext")));
 
+//builder.WebHost.ConfigureKestrel(options => { options.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(45); });
+
+//builder.Services.AddDbContextPool<DataContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultContext")));
+
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
