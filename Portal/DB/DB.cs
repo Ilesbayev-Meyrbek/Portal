@@ -1,9 +1,7 @@
 ﻿using NLog;
-using Portal.Models;
-using Microsoft.Graph;
-using Admin = Portal.Models.Admin;
-using User = Portal.Models.User;
-using Portal.Classes;
+using UZ.STS.POS2K.DataAccess;
+using UZ.STS.POS2K.DataAccess.Models;
+using Portal.DTO;
 
 namespace Portal.DB
 {
@@ -13,7 +11,7 @@ namespace Portal.DB
 
         private readonly DataContext _ctx;
         private readonly ScaleContext _sctx;
-
+        
         public DB()
         {
 
@@ -25,7 +23,7 @@ namespace Portal.DB
             this._sctx = sctx;
         }
 
-        public string GetMarketForUser(string user, User currentUser)
+        public string GetMarketForUser(string user, Users currentUser)
         {
             try
             {
@@ -44,11 +42,11 @@ namespace Portal.DB
             }
         }
 
-        public List<MarketsName> GetMarkets(User currentUser)
+        public List<MarketsName> GetMarkets(Users currentUser)
         {
             try
             {
-                List<MarketsName> markets = _ctx.Markets.ToList();
+                List<MarketsName> markets = _ctx.MarketsName.ToList();
 
                 return markets;
             }
@@ -59,11 +57,11 @@ namespace Portal.DB
             }
         }
 
-        public MarketsName GetMarkets(string id, User currentUser)
+        public MarketsName GetMarkets(string id, Users currentUser)
         {
             try
             {
-                MarketsName markets = _ctx.Markets.Where(w => w.MarketID == id).FirstOrDefault();
+                MarketsName markets = _ctx.MarketsName.Where(w => w.MarketID == id).FirstOrDefault();
 
                 return markets;
             }
@@ -75,7 +73,7 @@ namespace Portal.DB
             }
         }
 
-        public List<MarketsName> GetMarketsForPrivileges(User user)
+        public List<MarketsName> GetMarketsForPrivileges(Users user)
         {
             try
             {
@@ -83,7 +81,7 @@ namespace Portal.DB
 
                 if (user.IsAdmin)
                 {
-                    markets = _ctx.Markets.ToList();
+                    markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
@@ -93,11 +91,11 @@ namespace Portal.DB
 
                     if (role.AllMarkets)
                     {
-                        markets = _ctx.Markets.ToList();
+                        markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
-                        markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
@@ -113,7 +111,7 @@ namespace Portal.DB
 
         #region Roles
 
-        public List<Role> GetRoles(User currentUser)
+        public List<Roles> GetRoles(Users currentUser)
         {
             try
             {
@@ -128,7 +126,7 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveNewRole(Role role, User currentUser)
+        public bool SaveNewRole(Roles role, Users currentUser)
         {
             try
             {
@@ -144,11 +142,11 @@ namespace Portal.DB
             }
         }
 
-        public Role GetRoleForEdit(int? id, User currentUser)
+        public Roles GetRoleForEdit(int? id, Users currentUser)
         {
             try
             {
-                Role role = _ctx.Roles.Find(id);
+                Roles role = _ctx.Roles.Find(id);
 
                 return role;
             }
@@ -160,7 +158,7 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveEditRole(Role role, User currentUser)
+        public bool SaveEditRole(Roles role, Users currentUser)
         {
             try
             {
@@ -176,11 +174,11 @@ namespace Portal.DB
             }
         }
 
-        public Role GetRoleForDelete(int? id, User currentUser)
+        public Roles GetRoleForDelete(int? id, Users currentUser)
         {
             try
             {
-                Role role = _ctx.Roles.Find(id);
+                Roles role = _ctx.Roles.Find(id);
 
                 return role;
             }
@@ -191,11 +189,11 @@ namespace Portal.DB
             }
         }
 
-        public bool DeleteRole(int? id, User currentUser)
+        public bool DeleteRole(int? id, Users currentUser)
         {
             try
             {
-                Role role = _ctx.Roles.Find(id);
+                Roles role = _ctx.Roles.Find(id);
                 _ctx.Roles.Remove(role);
                 _ctx.SaveChanges();
 
@@ -212,11 +210,11 @@ namespace Portal.DB
 
         #region Users
 
-        public User GetUser(int? id, User currentUser)
+        public Users GetUser(int? id, Users currentUser)
         {
             try
             {
-                User user = _ctx.Users.Find(id);
+                Users user = _ctx.Users.Find(id);
 
                 return user;
             }
@@ -227,11 +225,11 @@ namespace Portal.DB
             }
         }
 
-        public bool DeleteUser(int? id, User currentUser)
+        public bool DeleteUser(int? id, Users currentUser)
         {
             try
             {
-                User user = _ctx.Users.Find(id);
+                Users user = _ctx.Users.Find(id);
                 _ctx.Users.Remove(user);
                 _ctx.SaveChangesAsync();
 
@@ -248,7 +246,7 @@ namespace Portal.DB
 
         #region Logo
 
-        public LogoView GetLogos(User currentUser, string marketID)
+        public LogoView GetLogos(Users currentUser, string marketID)
         {
             try
             {
@@ -257,12 +255,12 @@ namespace Portal.DB
                 if (currentUser.IsAdmin)
                 {
                     if (string.IsNullOrEmpty(marketID))
-                        marketID = _ctx.Markets.ToList()[0].MarketID;
+                        marketID = _ctx.MarketsName.ToList()[0].MarketID;
 
-                    logosView.Logos = _ctx.Logos.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    logosView.Logos = _ctx.Logo.Where(w => w.MarketID == marketID).OrderByDescending(o => o.Id).ToList();
                     logosView.IsAdmin = true;
                     logosView.UserRole = null;
-                    logosView.Markets = _ctx.Markets.ToList();
+                    logosView.Markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
@@ -272,17 +270,17 @@ namespace Portal.DB
 
                     if (role.AllMarkets)
                     {
-                        logosView.Logos = _ctx.Logos.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        logosView.Logos = _ctx.Logo.Where(w => w.MarketID == marketID).OrderByDescending(o => o.Id).ToList();
                         logosView.IsAdmin = false;
                         logosView.UserRole = role;
-                        logosView.Markets = _ctx.Markets.ToList();
+                        logosView.Markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
-                        logosView.Logos = _ctx.Logos.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
+                        logosView.Logos = _ctx.Logo.Where(w => w.MarketID == market).OrderByDescending(o => o.Id).ToList();
                         logosView.IsAdmin = false;
                         logosView.UserRole = role;
-                        logosView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        logosView.Markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
@@ -295,21 +293,21 @@ namespace Portal.DB
             }
         }
 
-        public bool DeleteOldLogos(string MarketID, LogoViewModel lvm, User currentUser)
+        public bool DeleteOldLogos(string MarketID, LogoViewModel lvm, Users currentUser)
         {
             try
             {
                 var datenow = Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
                 var yearNow = DateTime.Now.AddYears(-1);
 
-                var deleteOldLogo = _ctx.Logos.Where(w => w.MarketID == MarketID && w.DateE < yearNow).ToList();
+                var deleteOldLogo = _ctx.Logo.Where(w => w.MarketID == MarketID && w.DateE < yearNow).ToList();
                 for (int i = 0; i < deleteOldLogo.Count; i++)
                 {
-                    _ctx.Logos.Remove(deleteOldLogo[i]);
+                    _ctx.Logo.Remove(deleteOldLogo[i]);
                     _ctx.SaveChangesAsync();
                 }
 
-                var _logo = _ctx.Logos.Where(w => w.MarketID == MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
+                var _logo = _ctx.Logo.Where(w => w.MarketID == MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
                 for (int i = 0; i < _logo.Count; i++)
                 {
                     if (_logo[i] != null)
@@ -331,7 +329,7 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveNewLogo(string market, LogoViewModel lvm, string ds, string de, byte[] imageData, User currentUser)
+        public bool SaveNewLogo(string market, LogoViewModel lvm, string ds, string de, byte[] imageData, Users currentUser)
         {
             try
             {
@@ -346,7 +344,7 @@ namespace Portal.DB
                 logo.IsSaved = false;
                 logo.IsSavedToPOS = 0;
 
-                _ctx.Logos.Add(logo);
+                _ctx.Logo.Add(logo);
                 _ctx.SaveChanges();
 
                 return true;
@@ -358,13 +356,13 @@ namespace Portal.DB
             }
         }
 
-        public bool EditOldLogos(Logo logo, User currentUser)
+        public bool EditOldLogos(Logo logo, Users currentUser)
         {
             try
             {
                 var datenow = Convert.ToInt32(DateTime.Now.ToString("yyyyMMdd"));
 
-                var _logo = _ctx.Logos.Where(w => w.MarketID == logo.MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
+                var _logo = _ctx.Logo.Where(w => w.MarketID == logo.MarketID && w.DateBegin < datenow && w.DateEnd > datenow).ToList();
                 for (int i = 0; i < _logo.Count; i++)
                 {
                     if (_logo[i] != null)
@@ -377,7 +375,7 @@ namespace Portal.DB
                     }
                 }
 
-                _ctx.Logos.Add(logo);
+                _ctx.Logo.Add(logo);
                 _ctx.SaveChanges();
 
                 return true;
@@ -389,11 +387,11 @@ namespace Portal.DB
             }
         }
 
-        public Logo GetLogo(int? id, User currentUser)
+        public Logo GetLogo(int? id, Users currentUser)
         {
             try
             {
-                Logo user = _ctx.Logos.Find(id);
+                Logo user = _ctx.Logo.Find(id);
 
                 return user;
             }
@@ -404,11 +402,11 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveEditLogo(Logo logo, User currentUser)
+        public bool SaveEditLogo(Logo logo, Users currentUser)
         {
             try
             {
-                _ctx.Logos.Update(logo);
+                _ctx.Logo.Update(logo);
                 _ctx.SaveChanges();
 
                 return true;
@@ -424,7 +422,7 @@ namespace Portal.DB
 
         #region Cashiers
 
-        public CashierView GetCashiers(User currentUser, string marketID)
+        public CashierView GetCashiers(Users currentUser, string marketID)
         {
             try
             {
@@ -433,12 +431,12 @@ namespace Portal.DB
                 if (currentUser.IsAdmin)
                 {
                     if (string.IsNullOrEmpty(marketID))
-                        marketID = _ctx.Markets.ToList()[0].MarketID;
+                        marketID = _ctx.MarketsName.ToList()[0].MarketID;
 
                     cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                     cashierView.IsAdmin = true;
                     cashierView.UserRole = null;
-                    cashierView.Markets = _ctx.Markets.ToList();
+                    cashierView.Markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
@@ -451,14 +449,14 @@ namespace Portal.DB
                         cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
                         cashierView.IsAdmin = false;
                         cashierView.UserRole = role;
-                        cashierView.Markets = _ctx.Markets.ToList();
+                        cashierView.Markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
                         cashierView.Cashiers = _ctx.Cashiers.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
                         cashierView.IsAdmin = false;
                         cashierView.UserRole = role;
-                        cashierView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        cashierView.Markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
@@ -471,7 +469,7 @@ namespace Portal.DB
             }
         }
 
-        public Cashier GetCashier(string id, string market, User currentUser)
+        public Cashiers GetCashier(string id, string market, Users currentUser)
         {
             try
             {
@@ -486,7 +484,7 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveNewCashier(string market, Cashier cashier, User currentUser)
+        public bool SaveNewCashier(string market, Cashiers cashier, Users currentUser)
         {
             try
             {
@@ -503,7 +501,7 @@ namespace Portal.DB
             }
         }
 
-        public bool EditCashier(Cashier _cashier, User currentUser)
+        public bool EditCashier(Cashiers _cashier, Users currentUser)
         {
             try
             {
@@ -529,41 +527,41 @@ namespace Portal.DB
 
         #region Keyboards
 
-        public KeyboardView GetKeyboards(User currentUser, string marketID)
+        public KeyboardView GetKeyboards(Users currentUser, string marketID)
         {
             try
             {
                 KeyboardView keyboardView = new KeyboardView();
 
                 if (string.IsNullOrEmpty(marketID))
-                    marketID = _ctx.Markets.ToList()[0].MarketID;
+                    marketID = _ctx.MarketsName.ToList()[0].MarketID;
 
                 var roleID = currentUser.RoleID;
                 var role = _ctx.Roles.Where(w => w.ID == roleID).FirstOrDefault();
 
                 if (currentUser.IsAdmin)
                 {
-                    keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                    keyboardView.Keyboards = _ctx.POS_SettingsKeyboard.Where(w => w.MarketID == marketID).OrderByDescending(o => o.Id).ToList();
                     keyboardView.IsAdmin = true;
                     keyboardView.UserRole = role;
-                    keyboardView.Markets = _ctx.Markets.ToList();
+                    keyboardView.Markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
                     if (role.AllMarkets)
                     {
-                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == marketID).OrderByDescending(o => o.ID).ToList();
+                        keyboardView.Keyboards = _ctx.POS_SettingsKeyboard.Where(w => w.MarketID == marketID).OrderByDescending(o => o.Id).ToList();
                         keyboardView.IsAdmin = false;
                         keyboardView.UserRole = role;
-                        keyboardView.Markets = _ctx.Markets.ToList();
+                        keyboardView.Markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
                         var market = currentUser.MarketID;
-                        keyboardView.Keyboards = _ctx.Keyboards.Where(w => w.MarketID == market).OrderByDescending(o => o.ID).ToList();
+                        keyboardView.Keyboards = _ctx.POS_SettingsKeyboard.Where(w => w.MarketID == market).OrderByDescending(o => o.Id).ToList();
                         keyboardView.IsAdmin = false;
                         keyboardView.UserRole = role;
-                        keyboardView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        keyboardView.Markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
@@ -576,7 +574,7 @@ namespace Portal.DB
             }
         }
 
-        public List<SettingsKey> GetKeys(User currentUser)
+        public List<SettingsKeys> GetKeys(Users currentUser)
         {
             try
             {
@@ -591,7 +589,7 @@ namespace Portal.DB
             }
         }
 
-        public List<SettingsKey> GetKeyCode(string _value, User currentUser)
+        public List<SettingsKeys> GetKeyCode(string _value, Users currentUser)
         {
             try
             {
@@ -605,11 +603,11 @@ namespace Portal.DB
             }
         }
 
-        public bool SaveNewKeyboard(Keyboard keyboard, User currentUser)
+        public bool SaveNewKeyboard(POSSettingsKeyboard keyboard, Users currentUser)
         {
             try
             {
-                _ctx.Keyboards.Add(keyboard);
+                _ctx.POS_SettingsKeyboard.Add(keyboard);
                 _ctx.SaveChanges();
 
                 return true;
@@ -621,11 +619,11 @@ namespace Portal.DB
             }
         }
 
-        public Keyboard GetKeyboard(int? id, User currentUser)
+        public POSSettingsKeyboard GetKeyboard(int? id, Users currentUser)
         {
             try
             {
-                var checkKeyboard = _ctx.Keyboards.Where(w => w.ID == id).FirstOrDefault();
+                var checkKeyboard = _ctx.POS_SettingsKeyboard.Where(w => w.Id == id).FirstOrDefault();
 
                 return checkKeyboard;
             }
@@ -636,11 +634,11 @@ namespace Portal.DB
             }
         }
 
-        public bool EditKeyboard(Keyboard keyboard, User currentUser)
+        public bool EditKeyboard(POSSettingsKeyboard keyboard, Users currentUser)
         {
             try
             {
-                _ctx.Keyboards.Update(keyboard);
+                _ctx.POS_SettingsKeyboard.Update(keyboard);
                 _ctx.SaveChanges();
 
                 return true;
@@ -656,12 +654,12 @@ namespace Portal.DB
 
         #region POS
 
-        public POSView GetUserForPOS(User currentUser, string marketID)
+        public POSView GetUserForPOS(Users currentUser, string marketID)
         {
             try
             {
                 if (string.IsNullOrEmpty(marketID))
-                    marketID = _ctx.Markets.ToList()[0].MarketID;
+                    marketID = _ctx.MarketsName.ToList()[0].MarketID;
 
                 POSView posView = new POSView();
 
@@ -670,7 +668,7 @@ namespace Portal.DB
                     posView.IsAdmin = true;
                     posView.UserRole = null;
                     posView.Market = marketID;
-                    posView.Markets = _ctx.Markets.ToList();
+                    posView.Markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
@@ -683,14 +681,14 @@ namespace Portal.DB
                         posView.IsAdmin = false;
                         posView.UserRole = role;
                         posView.Market = marketID;
-                        posView.Markets = _ctx.Markets.ToList();
+                        posView.Markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
                         posView.IsAdmin = false;
                         posView.UserRole = role;
                         posView.Market = market;
-                        posView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        posView.Markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 
@@ -702,7 +700,7 @@ namespace Portal.DB
             }
         }
 
-        public POSView GetPOSes(POSView posView, User currentUser)
+        public POSView GetPOSes(POSView posView, Users currentUser)
         {
             try
             {
@@ -819,12 +817,12 @@ namespace Portal.DB
 
         #region Scales
 
-        public ScaleView GetUserForScales(User currentUser, string marketID)
+        public ScaleView GetUserForScales(Users currentUser, string marketID)
         {
             try
             {
                 if (string.IsNullOrEmpty(marketID))
-                    marketID = _ctx.Markets.ToList()[0].MarketID;
+                    marketID = _ctx.MarketsName.ToList()[0].MarketID;
 
                 ScaleView scalesView = new ScaleView();
 
@@ -833,7 +831,7 @@ namespace Portal.DB
                     scalesView.IsAdmin = true;
                     scalesView.UserRole = null;
                     scalesView.Market = marketID;
-                    scalesView.Markets = _ctx.Markets.ToList();
+                    scalesView.Markets = _ctx.MarketsName.ToList();
                 }
                 else
                 {
@@ -846,14 +844,14 @@ namespace Portal.DB
                         scalesView.IsAdmin = false;
                         scalesView.UserRole = role;
                         scalesView.Market = marketID;
-                        scalesView.Markets = _ctx.Markets.ToList();
+                        scalesView.Markets = _ctx.MarketsName.ToList();
                     }
                     else
                     {
                         scalesView.IsAdmin = false;
                         scalesView.UserRole = role;
                         scalesView.Market = market;
-                        scalesView.Markets = _ctx.Markets.Where(w => w.MarketID == market).ToList();
+                        scalesView.Markets = _ctx.MarketsName.Where(w => w.MarketID == market).ToList();
                     }
                 }
 

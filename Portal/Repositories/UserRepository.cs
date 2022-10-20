@@ -1,11 +1,10 @@
-using Portal.DB;
-using Portal.Models;
+using UZ.STS.POS2K.DataAccess;
 using Portal.Repositories.Interfaces;
-
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Repositories
 {
-    public class UserRepository : BaseRepository<User>,IUserRepository
+    public class UserRepository : BaseRepository<Users>,IUserRepository
     {
         private readonly DataContext _context;
 

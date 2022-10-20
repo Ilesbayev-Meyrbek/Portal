@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Portal.Models
 {
     [Table("Logo")]
-    public class Logo
+    public class Logoddd
     {
         public int ID { get; set; }
         public string MarketID { get; set; }

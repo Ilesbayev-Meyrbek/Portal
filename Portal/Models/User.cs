@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Portal.Models
 {
     [Table("Users")]
-    public class User
+    public class Userggg
     {
         [Key]
         public int ID { get; set; }

@@ -1,20 +1,40 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace Portal.Models
 {
-    [Table("ChequeGoodDiscount")]
-    public class ChequeGoodDiscount
+    public partial class ChequeGoodDiscount
     {
-        public long Id { get; set; }
-        public long ChequeGoodId { get; set; }
+        [Key]   
+        public long ID { get; set; }
+
+        public long ChequeGoodID { get; set; }
+
         public decimal Quantity { get; set; }
+
         public decimal Value { get; set; }
-        [Column("Type")]
-        public string TypeDiscount { get; set; }
-        public string ActionId { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Type { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string ActionID { get; set; }
+
+        [Required]
+        [StringLength(20)]
         public string VouchType { get; set; }
+
+        [Required]
+        [StringLength(20)]
         public string VoucherCode { get; set; }
+
+        [Required]
+        [StringLength(20)]
         public string BonusBuyType { get; set; }
-        public int BonusBuyId { get; set; }
+
+        public int BonusBuyID { get; set; }
+
+        public virtual ChequeGood ChequeGood { get; set; }
     }
 }

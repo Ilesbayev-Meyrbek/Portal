@@ -1,6 +1,6 @@
-using Portal.Models;
-using Portal.Repositories.Interfaces;
 using Portal.Services.Interfaces;
+using Portal.Repositories.Interfaces;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Services;
 
@@ -19,7 +19,7 @@ public class MarketService : IMarketService
     {
         try
         {
-            var market = await _unitOfWork.Markets.GetAsync(m => m.MarketID == marketId);
+            var market = await _unitOfWork.Markets.GetAsync(m => m.MarketID == marketId, include: p => p.Poses);
 
             return market != null ?
                 Result<MarketsName>.Ok(market) :
@@ -27,10 +27,6 @@ public class MarketService : IMarketService
         }
         catch (Exception ex)
         {
-            //#region Log
-            //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-            //#endregion
             return Result<MarketsName>.Failed(ex.Message);
         }
     }
@@ -38,16 +34,12 @@ public class MarketService : IMarketService
     {
         try
         {
-            var markets = await _unitOfWork.Markets.GetAllAsync(w => true, m => m.Name, false);
+            var markets = await _unitOfWork.Markets.GetAllAsync(w => true, m => m.Name, orderByDescending: false, include: p => p.Poses);
 
             return Result<List<MarketsName>>.Ok(markets);
         }
         catch (Exception ex)
         {
-            //#region Log
-            //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
-            //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
-            //#endregion
             return Result<List<MarketsName>>.Failed(ex.Message);
         }
     }

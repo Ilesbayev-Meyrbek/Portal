@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Portal.Models;
+using Portal.ScaleModels;
 
 namespace Portal.DB
 {

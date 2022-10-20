@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
-using Portal.DB;
+using UZ.STS.POS2K.DataAccess;
 using Portal.Repositories.Interfaces;
 using Portal.Extensions;
 using QueryableExtensions = System.Data.Entity.QueryableExtensions;
@@ -44,22 +44,45 @@ namespace Portal.Repositories
         /// <param name="count">Count elements</param>
         /// <param name="include">Example: p => p.AccountChart, p => p.Currency</param>
         /// <returns></returns>
+
+        public async Task<List<T>> GetAllAsync(Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] include)
+        {
+            IQueryable<T> query = _db.Set<T>();
+
+            if (include.Any())
+                query = include.Aggregate(query, (current, inc) => current.Include(inc));
+
+            return await query.Where(predicate).ToListAsync();
+        }
+
         public async Task<List<T>> GetAllAsync(
             Expression<Func<T, bool>> predicate,
-            Expression<Func<T, object>>? orderByProperty = null, 
+            Expression<Func<T, object>>? orderByProperty = null,
             bool orderByDescending = true,
             int page = 1,
             int count = 1000,
-            params Expression<Func<T, object>>[] include
-            )
+            params Expression<Func<T, object>>[] include)
         {
             IQueryable<T> query = _db.Set<T>();
-            
-            if (include.Any()) 
+
+            if (include.Any())
                 query = include.Aggregate(query, (current, inc) => current.Include(inc));
 
             return await query.Where(predicate).OrderBy(orderByProperty, orderByDescending).Skip(((page <= 0 ? 1 : page) - 1) * count).Take(count).ToListAsync();
-            }
+        }
+
+        public Task<List<T>> GetAllWithStringIncludeAsync(
+            Expression<Func<T, bool>> predicate,
+            params string[] include)
+        {
+            IQueryable<T> query = _db.Set<T>();
+
+            if (include != null && include.Any())
+                query = include.Aggregate(query, (current, inc) => current.Include(inc));
+
+            return query.Where(predicate).ToListAsync();
+        }
 
         public virtual void Add(T entity) => _db.Set<T>().Add(entity);
         public virtual void Update(T entity) => _db.Set<T>().Update(entity);

@@ -2,29 +2,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Portal.Classes;
-using Portal.Models;
 using Portal.Services.Interfaces;
-using User = Portal.Models.User;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Controllers;
 
 public class UserController : Controller
 {
     private readonly IUserService _userService;
-    private readonly IAdminService _adminService;
     private readonly IMarketService _marketService;
     private readonly IRoleService _roleService;
 
-    public UserController(IUserService userService,
-        IAdminService adminService,
-        IMarketService marketService,
-        IRoleService roleService)
+    public UserController(IUserService userService, IMarketService marketService, IRoleService roleService)
     {
         _userService = userService;
-        _adminService = adminService;
         _marketService = marketService;
         _roleService = roleService;
     }
+
     public async Task<ActionResult> Users()
     {
         var currentUser = await _userService.GetCurrentUser();
@@ -61,7 +56,7 @@ public class UserController : Controller
         }
         else
         {
-            if (currentUser.Role is { AdminForScale: true })
+            if (currentUser.Roles is { AdminForScale: true })
             {
                 var marketsResult = await _marketService.GetAllAsync();
                 if (marketsResult.Success)
@@ -85,12 +80,12 @@ public class UserController : Controller
 
         #endregion
 
-        return View(new User());
+        return View(new Users());
     }
 
     // POST: Role/Create
     [HttpPost]
-    public async Task<ActionResult> CreateUser(User user)
+    public async Task<ActionResult> CreateUser(Users user)
     {
         var currentUser = await _userService.GetCurrentUser();
 
@@ -154,7 +149,7 @@ public class UserController : Controller
         }
         else
         {
-            if (currentUser.Role is { AdminForScale: true })
+            if (currentUser.Roles is { AdminForScale: true })
             {
                 var marketsResult = await _marketService.GetAllAsync();
                 if (marketsResult.Success)
@@ -185,10 +180,10 @@ public class UserController : Controller
 
     // POST: Users/EditUser
     [HttpPost]
-    public async Task<ActionResult> EditUser(User user)
+    public async Task<ActionResult> EditUser(Users user)
     {
         Result<MarketsName>? marketResult;
-        Result<List<Role>>? rolesResult;
+        Result<List<Roles>>? rolesResult;
 
         if (user.IsAdmin)
             user.MarketID = "OFCE";

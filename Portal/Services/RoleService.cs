@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
-using Portal.Models;
 using Portal.Repositories.Interfaces;
 using Portal.Services.Interfaces;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Services;
 
@@ -16,13 +16,13 @@ public class RoleService : IRoleService
         _logger = logger;
     }
 
-    public async Task<Result<List<Role>>> GetAllAsync(Expression<Func<Role, bool>> predicate)
+    public async Task<Result<List<Roles>>> GetAllAsync(Expression<Func<Roles, bool>> predicate)
     {
         try
         {
             var roles = await _unitOfWork.Roles.GetAllAsync(predicate, r => r.Name, false);
 
-            return Result<List<Role>>.Ok(roles);
+            return Result<List<Roles>>.Ok(roles);
         }
         catch (Exception ex)
         {
@@ -30,11 +30,11 @@ public class RoleService : IRoleService
             //CurrentUser _currentUser = (CurrentUser)HttpContext.Current.Session["CurrentUser"];
             //logger.WithProperty("MarketID", _currentUser.MarketID).WithProperty("IdentityUser", _currentUser.Login).WithProperty("Data", "").Error(ex, ex.Message);
             //#endregion
-            return Result<List<Role>>.Failed(ex.Message);
+            return Result<List<Roles>>.Failed(ex.Message);
         }
     }
 
-    Task<Result<Role>> IRoleService.GetAsync(string userLogin)
+    Task<Result<Roles>> IRoleService.GetAsync(string userLogin)
     {
         throw new NotImplementedException();
     }

@@ -1,4 +1,4 @@
-namespace Portal.Models
+namespace Portal.DTO
 {
     public class ErrorViewModel
     {

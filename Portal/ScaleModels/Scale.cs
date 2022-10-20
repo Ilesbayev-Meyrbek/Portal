@@ -1,12 +1,12 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Portal.Models
+namespace Portal.ScaleModels
 {
     [Table("Scales")]
     public class Scale
     {
-        public Int64 ID { get; set; }
+        public long ID { get; set; }
         public string MarketID { get; set; }
         public string ScaleType { get; set; }
         public string ScaleName { get; set; }

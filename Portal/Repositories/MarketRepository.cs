@@ -1,7 +1,6 @@
-using Portal.DB;
-using Portal.Models;
+using UZ.STS.POS2K.DataAccess;
 using Portal.Repositories.Interfaces;
-
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Repositories
 {

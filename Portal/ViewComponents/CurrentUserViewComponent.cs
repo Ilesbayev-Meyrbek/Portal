@@ -1,19 +1,17 @@
-﻿using Portal.Models;
-using Portal.CacheManager;
+﻿using Portal.CacheManager;
 using Microsoft.AspNetCore.Mvc;
 using Portal.Services.Interfaces;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.ViewComponents
 {
     public class CurrentUserViewComponent : ViewComponent
     {
-        private readonly IAdminService _adminService;
         private readonly IUserService _userService;
         private readonly ICacheManager _cacheManager;
 
-        public CurrentUserViewComponent(IAdminService adminService, IUserService userService, ICacheManager cacheManager)
+        public CurrentUserViewComponent(IUserService userService, ICacheManager cacheManager)
         {
-            _adminService = adminService;
             _userService = userService;
             _cacheManager = cacheManager;
         }
@@ -26,7 +24,7 @@ namespace Portal.ViewComponents
 
             string keyCache = GetCacheKey(userLogin);
 
-            if (_cacheManager.Get(keyCache) is User _currentUser)
+            if (_cacheManager.Get(keyCache) is Users _currentUser)
             {
                 return View("Default", _currentUser);
             }

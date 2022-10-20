@@ -1,4 +1,5 @@
-using Portal.Models;
+
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Services.Interfaces;
 

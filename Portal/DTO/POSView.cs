@@ -1,10 +1,13 @@
-﻿namespace Portal.Models
+﻿
+using UZ.STS.POS2K.DataAccess.Models;
+
+namespace Portal.DTO
 {
     public class POSView
     {
         public List<GoodStatus> Items { get; set; }
         public bool IsAdmin { get; set; }
-        public Role UserRole { get; set; }
+        public Roles UserRole { get; set; }
         public string Market { get; set; }
         public List<MarketsName> Markets { get; set; }
     }

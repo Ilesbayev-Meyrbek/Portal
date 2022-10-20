@@ -1,0 +1,197 @@
+﻿@model Portal.DTO.ReportDatalistDto
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Отчёты";
+}
+
+<div class="bodyContent">
+
+    @Html.Raw(TempData["msg"])
+
+    <div class="form-horizontal" style="overflow-x:hidden">
+        <form asp-action="Reports" asp-controller="/Reports" class="form-group">
+
+            <div class="form-group">
+                @Html.Label("Дата начала", "Дата начала", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="date" name="DateBegin" class="form-control" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                @Html.Label("Дата окончания", "Дата окончания", htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    <input type="date" name="DateEnd" class="form-control" />
+                </div>
+            </div>
+
+            <br />
+
+            <div class="form-group">
+                <div id="group" class="row">
+
+                    <div class="col-lg-6 col-md-6" style="width: 50%">
+
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                <input id="MarketsIDCheckbox" type="checkbox" name="MarketsCheckboxName" class="form-check-input" value="" />
+                                <label>Поиск по магазину</label>
+                            </div>
+                        </div>
+
+                        <br />
+
+                        <div class="form-group">
+                            @Html.Label("Код магазина", "Код магазина", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                <select disabled="disabled" id="marketID" name="selectMarketID" class="form-control" onchange="SelectedMarketChaged(this.value)">
+                                    <option value="books">Выбрать магазин</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <br />
+
+                        <div class="form-group">
+                            @Html.Label("Номер кассы", "Номер кассы", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                <select disabled="disabled" id="posNumber" name="selectPos" class="form-control">
+                                    <option value="0">Выбрать номер кассы</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <br />
+
+                    </div>
+
+                    <div class="col-lg-6 col-md-6" style="width: 50%">
+
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                <input id="TerminalsCheckbox" type="checkbox" name="TerminalsCheckboxName" class="form-check-input" value="" />
+                                <label>Поиск по терминалу</label>
+                            </div>
+                        </div>
+
+                        <br />
+
+                        <div class="form-group">
+                            @Html.Label("Код терминала", "Код терминала", htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-10">
+                                <input type="text" disabled="disabled" id="terminalID" name="terminalID" class="form-control" />
+                                @*<select disabled="disabled" id="terminalID" name="selectTerminal" class="form-control">
+                                <option value="0">Все терминалы</option>
+                                </select>*@
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-actions no-color">
+                <p>
+                    <input type="submit" value="Загрузить" class="my_btn my_btn_success" />
+                </p>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script src="https://snipp.ru/cdn/jquery/2.1.1/jquery.min.js"></script>
+
+<script>
+
+    var markets = [];
+    var terminals = [];
+
+    window.onload = async function () {
+        const response = await fetch("/api/ReportsAPI/GetMarketsByPOS");
+        const data = await response.json();
+
+        let datalist = document.getElementById("marketID");
+
+        data.forEach(market => {
+
+            markets[market.marketID] = market;
+
+            let option = document.createElement("option");
+            option.innerText = market.marketID;
+            datalist.appendChild(option);
+        })
+
+
+        //const responseTerminalIDs = await fetch("/api/ReportsAPI/GetTerminals");
+        //const dataTIDs = await responseTerminalIDs.json();
+
+        //let datalistTIDs = document.getElementById("terminalID");
+
+        //dataTIDs.forEach(terminal => {
+
+        //    terminals[terminal] = terminal;
+
+        //    let option = document.createElement("option");
+        //    option.innerText = terminal;
+        //    datalistTIDs.appendChild(option);
+        //})
+    }
+
+    function SelectedMarketChaged(val) {
+        var selectMarket = markets[val];
+
+        let datalist = document.getElementById("posNumber");
+        datalist.innerHTML = "";
+
+        let option = document.createElement("option");
+        option.innerText = "Все кассы";
+        datalist.appendChild(option);
+
+        selectMarket.poses.forEach(pos => {
+            let option = document.createElement("option");
+            option.innerText = pos.number;
+            datalist.appendChild(option);
+        })
+    }
+
+    $('#group input:checkbox').click(function () {
+        if ($(this).is(':checked')) {
+            $('#group input:checkbox').not(this).prop('checked', false);
+        }
+    });
+
+    $('#MarketsIDCheckbox').click(function () {
+        if ($(this).is(':checked')) {
+            $('#marketID').removeAttr('disabled');
+            $('#posNumber').removeAttr('disabled');
+            $('#terminalID').attr('disabled', 'disabled');
+
+            $('#MarketsIDCheckbox').val(true);
+        } else {
+            $('#marketID').attr('disabled', 'disabled');
+            $('#posNumber').attr('disabled', 'disabled');
+            $('#terminalID').removeAttr('disabled');
+
+            $('#MarketsIDCheckbox').val(false);
+        }
+    });
+
+    $('#TerminalsCheckbox').click(function () {
+        if ($(this).is(':checked')) {
+            $('#terminalID').removeAttr('disabled');
+            $('#marketID').attr('disabled', 'disabled');
+            $('#posNumber').attr('disabled', 'disabled');
+
+            $('#TerminalsCheckbox').val(true);
+        } else {
+            $('#terminalID').attr('disabled', 'disabled');
+            $('#marketID').removeAttr('disabled');
+            $('#posNumber').removeAttr('disabled');
+
+            $('#TerminalsCheckbox').val(false);
+        }
+    });
+
+</script>

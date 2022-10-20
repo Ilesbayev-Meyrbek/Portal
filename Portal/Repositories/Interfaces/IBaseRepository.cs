@@ -4,15 +4,23 @@ namespace Portal.Repositories.Interfaces
 {
     public interface IBaseRepository<T>
     {
-        Task<T?> GetAsync(Expression<Func<T, bool>> predicate,
-            params Expression<Func<T, object>>[] include);
+        Task<T?> GetAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] include);
 
         Task<List<T>> GetAllAsync(
             Expression<Func<T, bool>> predicate,
+            params Expression<Func<T, object>>[] include);
+
+        Task<List<T>> GetAllAsync(
+            Expression<Func<T, bool>> predicate, 
             Expression<Func<T, object>>? orderByProperty = null,
-            bool orderByDescending = true, int page = 1, int count = 1000,
-            params Expression<Func<T, object>>[] include
-            );
+            bool orderByDescending = true,
+            int page = 1,
+            int count = 1000,
+            params Expression<Func<T, object>>[] include);
+
+        Task<List<T>> GetAllWithStringIncludeAsync(
+            Expression<Func<T, bool>> predicate,
+            params string[] include);
 
         void Add(T entity);
         void Update(T entity);

@@ -1,11 +1,11 @@
 ﻿using NLog;
-using Portal.Models;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Logs
 {
     public class Logs
     {
-        private readonly User _currentUser;
+        private readonly Users _currentUser;
         private readonly string _currentUserForStr;
         private readonly string _callsite;
         private readonly string _data;
@@ -13,7 +13,7 @@ namespace Portal.Logs
 
         Logger logger = LogManager.GetCurrentClassLogger();
 
-        public Logs(User currentUser, string callsite, string data, string message)
+        public Logs(Users currentUser, string callsite, string data, string message)
         {
             _currentUser = currentUser;
             _callsite = callsite;

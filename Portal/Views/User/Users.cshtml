@@ -1,4 +1,5 @@
-﻿@model List<Portal.Models.User>
+﻿@using UZ.STS.POS2K.DataAccess.Models
+@model List<Users>
 @{
     ViewBag.Title = "Пользователи";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -44,7 +45,7 @@
                             </td>
                         }
                         <td>
-                            @Html.DisplayFor(m => item.Role.Name)
+                            @Html.DisplayFor(m => item.Roles.Name)
                         </td>
                         <td>
                             @Html.DisplayFor(m => item.MarketID)

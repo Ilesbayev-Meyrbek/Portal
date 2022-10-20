@@ -1,19 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.IdentityModel.Tokens;
 using NLog;
-using NLog.Fluent;
-using NuGet.Packaging.Core;
-using Portal.Classes;
-using Portal.DB;
-using Portal.Logs;
-using Portal.Models;
+using UZ.STS.POS2K.DataAccess;
 using Portal.Services.Interfaces;
 using System.Diagnostics;
 using System.Drawing;
-using System.Net;
-using System.Net.Http.Headers;
+using ScaleContext = Portal.DB.ScaleContext;
+using Portal.DTO;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Controllers
 {
@@ -23,7 +18,7 @@ namespace Portal.Controllers
         Logger logger = LogManager.GetCurrentClassLogger();
 
         private readonly ILogger<HomeController> _logger;
-
+        
         private readonly DataContext _ctx;
         private readonly ScaleContext _sctx;
 
@@ -64,7 +59,7 @@ namespace Portal.Controllers
         {
             #region Log
 
-            User currentUser = await _userService.GetCurrentUser();
+            Users currentUser = await _userService.GetCurrentUser();
             new Logs.Logs(currentUser, "Error", "", HttpContext.TraceIdentifier.ToString()).WriteErrorLogs();
 
             #endregion
@@ -75,7 +70,7 @@ namespace Portal.Controllers
 
         public async Task<ActionResult> Roles()
         {
-            User currentUser = await _userService.GetCurrentUser();
+            Users currentUser = await _userService.GetCurrentUser();
 
             var roles = new Portal.DB.DB(_ctx, _sctx).GetRoles(currentUser);
 
@@ -89,11 +84,11 @@ namespace Portal.Controllers
         // GET: Role/Create
         public async Task<ActionResult> CreateRole()
         {
-            Role role = new Role();
+            Roles role = new Roles();
 
             #region Log
 
-            User currentUser = await _userService.GetCurrentUser();
+            Users currentUser = await _userService.GetCurrentUser();
             new Logs.Logs(currentUser, "CreateRole", "", "").WriteInfoLogs();
 
             #endregion
@@ -103,11 +98,11 @@ namespace Portal.Controllers
 
         // POST: Role/Create
         [HttpPost]
-        public async Task<ActionResult> CreateRole(Role role)
+        public async Task<ActionResult> CreateRole(Roles role)
         {
             if (ModelState.IsValid)
             {
-                User currentUser = await _userService.GetCurrentUser();
+                Users currentUser = await _userService.GetCurrentUser();
 
                 var isCreated = new Portal.DB.DB(_ctx, _sctx).SaveNewRole(role, currentUser);
 
@@ -130,7 +125,7 @@ namespace Portal.Controllers
                 data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                 data = data + "Scales = " + role.Scales + ";\n";
                 data = data + "POSs = " + role.POSs + ";\n";
-                data = data + "Reports = " + role.Reports + ";\n";
+                //data = data + "Reports = " + role.Reports + ";\n";
 
 
                 new Logs.Logs(currentUser, "CreateRole", data, "Создан!").WriteInfoLogs();
@@ -150,7 +145,7 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                User currentUser = await _userService.GetCurrentUser();
+                Users currentUser = await _userService.GetCurrentUser();
 
                 var role = new Portal.DB.DB(_ctx, _sctx).GetRoleForEdit(id, currentUser);
 
@@ -166,11 +161,11 @@ namespace Portal.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> EditRole(Role role)
+        public async Task<ActionResult> EditRole(Roles role)
         {
             if (ModelState.IsValid)
             {
-                User currentUser = await _userService.GetCurrentUser();
+                Users currentUser = await _userService.GetCurrentUser();
 
                 var isEdited = new Portal.DB.DB(_ctx, _sctx).SaveEditRole(role, currentUser);
 
@@ -195,7 +190,7 @@ namespace Portal.Controllers
                     data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                     data = data + "Scales = " + role.Scales + ";\n";
                     data = data + "POSs = " + role.POSs + ";\n";
-                    data = data + "Reports = " + role.Reports + ";\n";
+                    //data = data + "Reports = " + role.Reports + ";\n";
 
                     new Logs.Logs(currentUser, "CreateRole", data, "Изменен!").WriteInfoLogs();
 
@@ -225,7 +220,7 @@ namespace Portal.Controllers
                     data = data + "AdminForScale = " + role.AdminForScale + ";\n";
                     data = data + "Scales = " + role.Scales + ";\n";
                     data = data + "POSs = " + role.POSs + ";\n";
-                    data = data + "Reports = " + role.Reports + ";\n";
+                    //data = data + "Reports = " + role.Reports + ";\n";
 
                     currentUser = await _userService.GetCurrentUser();
                     new Logs.Logs(currentUser, "CreateRole", data, "Не изменено!").WriteInfoLogs();
@@ -245,8 +240,8 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                User currentUser = await _userService.GetCurrentUser();
-                Role role = new Portal.DB.DB(_ctx, _sctx).GetRoleForDelete(id, currentUser);
+                Users currentUser = await _userService.GetCurrentUser();
+                Roles role = new Portal.DB.DB(_ctx, _sctx).GetRoleForDelete(id, currentUser);
                 if (role != null)
                     return View(role);
             }
@@ -258,7 +253,7 @@ namespace Portal.Controllers
         {
             if (id != null)
             {
-                User currentUser = await _userService.GetCurrentUser();
+                Users currentUser = await _userService.GetCurrentUser();
 
                 var isDeleted = new Portal.DB.DB(_ctx, _sctx).DeleteRole(id, currentUser);
 
@@ -661,7 +656,7 @@ namespace Portal.Controllers
             if (id == null)
                 return NotFound();
 
-            User currentUser = await _userService.GetCurrentUser();
+            Users currentUser = await _userService.GetCurrentUser();
 
             Logo logo = new Portal.DB.DB(_ctx, _sctx).GetLogo(id, currentUser);
             
@@ -695,7 +690,7 @@ namespace Portal.Controllers
 
             byte[] imageData = new byte[0];
 
-            User currentUser = await _userService.GetCurrentUser();
+            Users currentUser = await _userService.GetCurrentUser();
 
             if (lvm.BMP != null)
             {
@@ -924,7 +919,7 @@ namespace Portal.Controllers
         {
             var currentUser = _userService.GetCurrentUser().Result;
 
-            Cashier cashier = new Cashier();
+            Cashiers cashier = new Cashiers();
 
             var markets = new Portal.DB.DB(_ctx, _sctx).GetMarketsForPrivileges(currentUser);
             ViewBag.Markets = markets;
@@ -941,7 +936,7 @@ namespace Portal.Controllers
 
         // POST: Cashiers/CreateCashier
         [HttpPost]
-        public async Task<ActionResult> CreateCashier(Cashier cashier, string[] SelectedMarkets)
+        public async Task<ActionResult> CreateCashier(Cashiers cashier, string[] SelectedMarkets)
         {
             var currentUser = _userService.GetCurrentUser().Result;
 
@@ -967,7 +962,7 @@ namespace Portal.Controllers
                                     {
                                         if (SelectedMarkets[i] != "All")
                                         {
-                                            Cashier _cashier = new Cashier();
+                                            Cashiers _cashier = new Cashiers();
                                             _cashier.ID = cashier.ID;
                                             _cashier.CashierName = cashier.CashierName;
                                             _cashier.IsAdmin = cashier.IsAdmin;
@@ -1321,7 +1316,7 @@ namespace Portal.Controllers
         {
             var currentUser = _userService.GetCurrentUser();
 
-            Cashier cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID, currentUser.Result);
+            Cashiers cashier = new Portal.DB.DB(_ctx, _sctx).GetCashier(id, marketID, currentUser.Result);
 
             if (cashier == null)
                 return NotFound();
@@ -1341,7 +1336,7 @@ namespace Portal.Controllers
 
         // POST: Cashiers/EditCashier
         [HttpPost]
-        public async Task<ActionResult> EditCashier(Cashier cashier)
+        public async Task<ActionResult> EditCashier(Cashiers cashier)
         {
             List<MarketsName> markets;
             var currentUser = _userService.GetCurrentUser().Result;
@@ -1482,7 +1477,7 @@ namespace Portal.Controllers
             if (id != null)
             {
                 var currentUser = _userService.GetCurrentUser().Result;
-                User user = new Portal.DB.DB(_ctx, _sctx).GetUser(id, currentUser);
+                Users user = new Portal.DB.DB(_ctx, _sctx).GetUser(id, currentUser);
 
                 ViewBag.CurrentMarket = new Portal.DB.DB(_ctx, _sctx).GetMarkets(user.MarketID, currentUser).Name;
 
@@ -1543,7 +1538,7 @@ namespace Portal.Controllers
         {
             var currentUser = _userService.GetCurrentUser().Result;
 
-            Keyboard keyboard = new Keyboard();
+            POSSettingsKeyboard keyboard = new POSSettingsKeyboard();
 
             ViewBag.MarketID = TempData.Peek("CurrentMarketID");
 
@@ -1560,7 +1555,7 @@ namespace Portal.Controllers
 
         // POST: Keyboards/CreateKeyboard
         [HttpPost]
-        public async Task<ActionResult> CreateKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
+        public async Task<ActionResult> CreateKeyboard(POSSettingsKeyboard keyboard, string[] btnkeyH, string MarketForUser)
         {
             string _data = string.Empty;
             var currentUser = _userService.GetCurrentUser().Result;
@@ -1654,7 +1649,7 @@ namespace Portal.Controllers
                     if (!string.IsNullOrEmpty(strID) && strID == "btn67H") keyboard.Key_67 = strValue;
                 }
 
-                if (!currentUser.IsAdmin && !currentUser.Role.AllMarkets)
+                if (!currentUser.IsAdmin && !currentUser.Roles.AllMarkets)
                     keyboard.MarketID = currentUser.MarketID;
                 else
                     keyboard.MarketID = MarketForUser;
@@ -1667,7 +1662,7 @@ namespace Portal.Controllers
 
                 #region Log
 
-                _data = "ID = " + keyboard.ID + ";\n";
+                _data = "ID = " + keyboard.Id + ";\n";
                 _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
                 _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
                 _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
@@ -1741,7 +1736,7 @@ namespace Portal.Controllers
 
             #region Log
 
-            _data = "ID = " + keyboard.ID + ";\n";
+            _data = "ID = " + keyboard.Id + ";\n";
             _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
             _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
             _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
@@ -1815,7 +1810,7 @@ namespace Portal.Controllers
             var currentUser = _userService.GetCurrentUser().Result;
 
             var sk = new Portal.DB.DB(_ctx, _sctx).GetKeys(currentUser);
-            Keyboard keyboard = new Portal.DB.DB(_ctx, _sctx).GetKeyboard(id, currentUser);
+            POSSettingsKeyboard keyboard = new Portal.DB.DB(_ctx, _sctx).GetKeyboard(id, currentUser);
             keyboard = ReplaceKeysValue(keyboard, sk);
 
             if (keyboard == null)
@@ -1835,7 +1830,7 @@ namespace Portal.Controllers
 
         // POST: Keyboards/EditKeyboard
         [HttpPost]
-        public async Task<ActionResult> EditKeyboard(Keyboard keyboard, string[] btnkeyH, string MarketForUser)
+        public async Task<ActionResult> EditKeyboard(POSSettingsKeyboard keyboard, string[] btnkeyH, string MarketForUser)
         {
             string _data = string.Empty;
 
@@ -1939,7 +1934,7 @@ namespace Portal.Controllers
 
                 #region Log
 
-                _data = "ID = " + keyboard.ID + ";\n";
+                _data = "ID = " + keyboard.Id + ";\n";
                 _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
                 _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
                 _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
@@ -2013,7 +2008,7 @@ namespace Portal.Controllers
 
             #region Log
 
-            _data = "ID = " + keyboard.ID + ";\n";
+            _data = "ID = " + keyboard.Id + ";\n";
             _data = _data + "MarketID = " + keyboard.MarketID + ";\n";
             _data = _data + "Pos_num  = " + keyboard.Pos_num + ";\n";
             _data = _data + "Key_1 = " + keyboard.Key_1 + ";\n";
@@ -2078,7 +2073,7 @@ namespace Portal.Controllers
             return View(keyboard);
         }
 
-        public Keyboard ReplaceKeysValue(Keyboard sk, List<SettingsKey> settingsKeys)
+        public POSSettingsKeyboard ReplaceKeysValue(POSSettingsKeyboard sk, List<SettingsKeys> settingsKeys)
         {
             var sk1 = settingsKeys.Where(w => w.KeyCode == sk.Key_1).ToList();
             if (sk1.Count > 0) sk.Key_1 = sk1[0].Value;
@@ -2241,28 +2236,5 @@ namespace Portal.Controllers
 
         #endregion
 
-        #region Reports
-
-        public ActionResult Reports()
-        {
-            var marketList = (_ctx.Chequeses.Select(x => x.MarketId)).Union(_ctx.NewCheques.Select(x => x.MarketId)).Distinct().ToArray();
-            var posList = (_ctx.Chequeses.Select(x => x.Posnum)).Union(_ctx.NewCheques.Select(x => x.Posnum)).Distinct().ToArray();
-            var termimalListList = (_ctx.Chequeses.Select(x => x.TerminalId)).Union(_ctx.NewCheques.Select(x => x.TerminalId)).Distinct().ToArray();
-
-            Array.Sort(marketList);
-            Array.Sort(posList);
-            Array.Sort(termimalListList);
-
-            ReportDatalistDto rdd = new ReportDatalistDto()
-            {
-                TerminalId = termimalListList,
-                MarketId = marketList,
-                Posnum = posList
-            };
-
-            return View(rdd);
-        }
-
-        #endregion
     }
 }

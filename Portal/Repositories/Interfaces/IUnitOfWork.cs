@@ -1,4 +1,3 @@
-using Portal.Repositories.Interfaces;
 
 namespace Portal.Repositories.Interfaces
 {
@@ -7,8 +6,10 @@ namespace Portal.Repositories.Interfaces
         Task<int> SaveChangesAsync();
         
         IUserRepository Users { get; }
-        IAdminRepository Admins { get; }
         IRoleRepository Roles { get; }
         IMarketRepository Markets { get; }
+        IChequeRepository Cheques { get; }
+        IChequeGoodRepository ChequeGoods { get; }
+        IChequeGoodDiscountRepository ChequeGoodDiscounts { get; }
     }
 }

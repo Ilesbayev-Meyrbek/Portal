@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace Portal.Models
+namespace Portal.DTO
 {
     public class LogoViewModel
     {

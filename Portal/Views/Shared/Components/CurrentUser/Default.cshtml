@@ -1,4 +1,5 @@
-﻿@model Portal.Models.User
+﻿@using UZ.STS.POS2K.DataAccess.Models
+@model Users
 
 @Html.ActionLink(" Главная", "Index", "Home")
 
@@ -33,7 +34,7 @@
             <i class="fa fa-caret-down"></i>
         </button>
         <div class="mynav_dropdownMenu-content">
-            @Html.ActionLink(" Отчет", "Reports", "Home")
+            @Html.ActionLink(" Отчет", "Reports", "Reports")
         </div>
     </div>
 
@@ -50,9 +51,9 @@
 }
 else if (!Model.IsAdmin)
 {
-    if (Model.Role.CreateLogo || Model.Role.EditLogo || Model.Role.CreateCashiers || Model.Role.EditCashiers || Model.Role.CreateKeyboard || Model.Role.EditKeyboard || Model.Role.Scales || Model.Role.POSs || Model.Role.Reports)
+    if (Model.Roles.CreateLogo || Model.Roles.EditLogo || Model.Roles.CreateCashiers || Model.Roles.EditCashiers || Model.Roles.CreateKeyboard || Model.Roles.EditKeyboard || Model.Roles.Scales || Model.Roles.POSs || Model.Roles.Reports)
     {
-        @if (Model.Role.CreateLogo || Model.Role.EditLogo || Model.Role.CreateCashiers || Model.Role.EditCashiers || Model.Role.CreateKeyboard || Model.Role.EditKeyboard || Model.Role.POSs)
+        @if (Model.Roles.CreateLogo || Model.Roles.EditLogo || Model.Roles.CreateCashiers || Model.Roles.EditCashiers || Model.Roles.CreateKeyboard || Model.Roles.EditKeyboard || Model.Roles.POSs)
         {
             <div class="mynav_dropdownMenu">
 
@@ -62,23 +63,23 @@ else if (!Model.IsAdmin)
                 </button>
                 <div class="mynav_dropdownMenu-content">
                     
-                    @if (Model.Role.CreateLogo || Model.Role.EditLogo)
+                    @if (Model.Roles.CreateLogo || Model.Roles.EditLogo)
                         @Html.ActionLink(" Логотипы", "Logos", "Home")
 
-                    @if (Model.Role.CreateCashiers || Model.Role.EditCashiers)
+                    @if (Model.Roles.CreateCashiers || Model.Roles.EditCashiers)
                         @Html.ActionLink(" Кассиры", "Cashiers", "Home")
 
-                    @if (Model.Role.CreateKeyboard || Model.Role.EditKeyboard)
+                    @if (Model.Roles.CreateKeyboard || Model.Roles.EditKeyboard)
                         @Html.ActionLink(" Клавиатура", "Keyboards", "Home")
 
-                    @if (Model.Role.POSs)
+                    @if (Model.Roles.POSs)
                         @Html.ActionLink(" POS статусы", "POSs", "Home")
 
                     </div>
                 </div>
         }
 
-        if (Model.Role.Scales)
+        if (Model.Roles.Scales)
         {
             <div class="mynav_dropdownMenu">
                 <button class="mynav_dropbtnMenu">
@@ -91,7 +92,7 @@ else if (!Model.IsAdmin)
             </div>
         }
 
-        if (Model.Role.Reports)
+        if (Model.Roles.Reports)
         {
             <div class="mynav_dropdownMenu">
                 <button class="mynav_dropbtnMenu">
@@ -104,7 +105,7 @@ else if (!Model.IsAdmin)
             </div>
         }
 
-        if (Model.Role.AdminForScale)
+        if (Model.Roles.AdminForScale)
         {
             <div class="mynav_dropdownMenu">
                 <button class="mynav_dropbtnMenu">

@@ -1,10 +1,10 @@
 using System.Linq.Expressions;
-using Portal.Models;
+using UZ.STS.POS2K.DataAccess.Models;
 
 namespace Portal.Services.Interfaces;
 
 public interface IRoleService
 {
-    public Task<Result<Role>> GetAsync(string userLogin);
-    public Task<Result<List<Role>>> GetAllAsync(Expression<Func<Role, bool>> predicate);
+    public Task<Result<Roles>> GetAsync(string userLogin);
+    public Task<Result<List<Roles>>> GetAllAsync(Expression<Func<Roles, bool>> predicate);
 }

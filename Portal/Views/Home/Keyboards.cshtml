@@ -1,4 +1,6 @@
-﻿@model Portal.Models.KeyboardView
+﻿@using Portal.DTO
+
+@model KeyboardView
 
 @{
     ViewBag.Title = "Клавиатуры";
@@ -52,7 +54,7 @@
 
                     if (Model.IsAdmin || Model.UserRole.EditKeyboard)
                     {
-                        <tr class="Search clickable-row" data-href="@Url.Action("EditKeyboard", "Home", new { ID = item.ID })">
+                        <tr class="Search clickable-row" data-href="@Url.Action("EditKeyboard", "Home", new { ID = item.Id })">
 
                             <td>
                                 @Html.DisplayFor(modelItem => item.MarketID)

@@ -1,17 +1,19 @@
-﻿@model Portal.Models.Logo
+﻿@using UZ.STS.POS2K.DataAccess.Models;
+
+@model Logo
 
 @{
     ViewBag.Title = "Редактирование логотипа";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<form asp-action="EditLogo" asp-controller="Home" asp-route-id="@Model.ID" method="post" enctype="multipart/form-data">
+<form asp-action="EditLogo" asp-controller="Home" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
 
     @*<div class="bodyContent" style="height: 100%">*@
 
         @Html.Raw(TempData["msg"])
 
-        @Html.HiddenFor(model => model.ID)
+        @Html.HiddenFor(model => model.Id)
 
         @Html.HiddenFor(model => model.MarketID)
         @Html.HiddenFor(model => model.BMP)
