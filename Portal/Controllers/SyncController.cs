@@ -183,7 +183,11 @@ namespace Portal.Controllers
             var scale = scaleContext.Scales.FirstOrDefault(x => x.IP == IP);
             if (scale is null)
                 return null;
+
             var scaleSyncStatus = scaleContext.ScalesSyncStatuses.FirstOrDefault(x => x.Scale_ID.Equals(scale.ID));
+            if(scaleSyncStatus is null)
+                return null;
+
             return scale;
         }
     }

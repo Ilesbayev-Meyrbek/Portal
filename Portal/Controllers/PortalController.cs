@@ -6,10 +6,13 @@ using System.Data.Entity;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Portal.Controllers
 {
-    [Authorize]
+    [AllowAnonymous]
+    //[Authorize]
     public class PortalController : ControllerBase
     {
         private ScaleContext scaleContext;
@@ -20,15 +23,24 @@ namespace Portal.Controllers
             this.scaleContext = scaleContext;
             this.dataContext = dataContext;
         }
-
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> Login(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized();
+            this.HttpContext.Session.Set("access_token", Encoding.ASCII.GetBytes(token));
+            return Ok(token);
+        }
+        //[Authorize]
         [HttpGet]
         public async Task<ActionResult<OutputMarket>> GetMarkets()
         {//Portal/GetMarkets
-
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized();
             var markets = dataContext.Markets.ToList();
             var categories = dataContext.Categories.ToList();
             var scales = scaleContext.Scales.ToList();
-
 
             foreach (var market in markets)
             {
@@ -384,184 +396,46 @@ namespace Portal.Controllers
                 return BadRequest();
             }
         }
+        [HttpGet]
+        public async Task<Token> GetElibilityToken()
+        {
+            //https://localhost:7158/Portal/GetElibilityToken
 
-        //    #region Not needed
-        //    [HttpGet]
-        //    public JsonResult<List<OutputGood>> GetGoods(string marketId)
-        //    {
-        //        var list = dataContext.ScalesGoods
-        //            .Include("Image")
-        //            .Where(x => x.MarketID == marketId)
-        //            .Select(x => new OutputGood { Id = x.ID, Name = x.Name, PLU = x.PLU, Price = x.Price, CategoryName = x.Group.Category.RuName, GroupPLU = x.Group.Name, ImageId = x.ImageId, Image = x.Image }).ToList();
+            var client = new HttpClient();
+            string baseAddress = @"https://graph.microsoft.com/v1.10/token";
 
-        //        var output = new JsonResult<List<OutputGood>>(list, new JsonSerializerSettings(), Encoding.UTF8, this);
+            string grant_type = "client_credentials";
+            string client_id = "16330d2e-f85f-4d88-b595-e251c7e2683d";
+            string client_secret = "PY_8Q~3Btq1Fgmtu.4jMHz1YblQ1VDop7F9YEdee";
 
-        //        return output;
-        //    }
+            var form = new Dictionary<string, string>
+                {
+                    {"grant_type", grant_type},
+                    {"client_id", client_id},
+                    {"client_secret", client_secret},
+                };
 
-
-        //    [HttpPost]
-        //    public IHttpActionResult UpdateImage(int id)
-        //    {
-        //        var file = HttpContext.Current.Request.Files.Count > 0 ?
-        //             HttpContext.Current.Request.Files[0] : null;
-        //        System.Drawing.Image sourceimage = System.Drawing.Image.FromStream(file.InputStream);
-        //        if (file != null && file.ContentLength > 0)
-        //        {
-        //            string bDate;
-        //            string bThumb;
-        //            System.Drawing.Image thumbnail;
-        //            var temp = dataContext.Images.Where(x => x.Id == id).FirstOrDefault();
-        //            if (temp == null)
-        //                return BadRequest();
-
-        //            using (var ms = new MemoryStream())
-        //            {
-        //                sourceimage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //                bDate = Convert.ToBase64String(ms.ToArray());
-        //            }
-
-        //            temp.Data = bDate;
-        //            thumbnail = sourceimage.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
+            HttpResponseMessage tokenResponse = await client.PostAsync(baseAddress, new FormUrlEncodedContent(form));
+            var jsonContent = await tokenResponse.Content.ReadAsStringAsync();
+            Token tok = JsonConvert.DeserializeObject<Token>(jsonContent);
+            return tok;
+        }
 
 
-        //            using (var ms = new MemoryStream())
-        //            {
-        //                thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //                bThumb = Convert.ToBase64String(ms.ToArray());
-        //            }
-        //            temp.Thumbnail = bThumb;
-        //            temp.UpdateTime = DateTime.Now;
-        //            dataContext.Entry(temp).State = System.Data.Entity.EntityState.Modified;
-        //            dataContext.SaveChanges();
-        //            return Ok();
-        //        }
-        //        else
-        //            return BadRequest();
-        //    }
+        public class Token
+        {
+            [JsonProperty("access_token")]
+            public string AccessToken { get; set; }
 
-        //[HttpPost]
-        //public IHttpActionResult AddImage()
-        //{
-        //    var file = HttpContext.Current.Request.Files.Count > 0 ?
-        //         HttpContext.Current.Request.Files[0] : null;
-        //    string bDate;
-        //    string bThumb;
-        //    System.Drawing.Image thumbnail;
+            [JsonProperty("token_type")]
+            public string TokenType { get; set; }
 
-        //    if (file != null && file.ContentLength > 0)
-        //    {
-        //        try
-        //        {
-        //            System.Drawing.Image sourceimage = System.Drawing.Image.FromStream(file.InputStream);
-        //            Image temp = new Image();
-        //            using (var ms = new MemoryStream())
-        //            {
-        //                sourceimage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //                bDate = Convert.ToBase64String(ms.ToArray());
-        //            }
+            [JsonProperty("expires_in")]
+            public int ExpiresIn { get; set; }
 
-        //            temp.Data = bDate;
-        //            thumbnail = sourceimage.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
-
-        //            using (var ms = new MemoryStream())
-        //            {
-        //                thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-        //                bThumb = Convert.ToBase64String(ms.ToArray());
-        //            }
-        //            temp.Thumbnail = bThumb;
-        //            temp.UpdateTime = DateTime.Now;
-        //            dataContext.Images.Add(temp);
-        //            dataContext.SaveChanges();
-        //        }
-        //        catch (Exception)
-        //        {
-        //            return BadRequest();
-        //        }
-        //        return Ok();
-        //    }
-        //    return BadRequest();
-        //}
-
-
-
-        //    [Route("{id:int")]
-        //    [HttpGet]
-        //    public string GetImage(int id)
-        //    {//api/Portal/AddImage
-        //        var image = dataContext.Images.Where(x => x.Id == id).FirstOrDefault();
-
-        //        if (image == null)
-        //            return String.Empty;
-
-
-        //        return image.Data;
-
-        //    }
-
-        //    [Route("{id:int")]
-        //    [HttpGet]
-        //    public string GetThumbnail(int id)
-        //    {
-        //        var image = dataContext.Images.Where(x => x.Id == id).FirstOrDefault();
-
-        //        if (image == null)
-        //            return String.Empty;
-
-
-        //        return image.Thumbnail;
-        //    }
-
-        //        return image.Thumbnail;
-        //    }
-
-        //    private int GetCategoryId(string categories, int index)
-        //    {
-        //        if (categories is null)
-        //            return -1;
-        //        var splitCategories = categories.Split(',');
-        //        if (index < 0 || index >= categories.Length)
-        //        {
-        //            throw new IndexOutOfRangeException();
-        //        }
-        //        bool parseResult = int.TryParse(splitCategories[index], out int id);
-        //        if (!parseResult)
-        //        {
-        //            throw new InvalidCastException($"categories[{index}] содержало тип, отличный от Int32");
-        //        }
-        //        return id;
-        //    }
-        //    private byte[] ImgToByte64(string path)
-        //    {
-        //        using (System.Drawing.Image image = System.Drawing.Image.FromFile(path))
-        //        {
-        //            using (MemoryStream m = new MemoryStream())
-        //            {
-        //                image.Save(m, image.RawFormat);
-        //                byte[] imageBytes = m.ToArray();
-
-        //                // Convert byte[] to Base64 String
-        //                string base64String = Convert.ToBase64String(imageBytes);
-        //                return imageBytes;
-        //            }
-        //        }
-        //    }
-
-        //    private System.Drawing.Image Byte64ToImg(byte[] img)
-        //    {
-
-        //        System.Drawing.Image image;
-        //        using (MemoryStream ms = new MemoryStream(img))
-        //        {
-        //            image = System.Drawing.Image.FromStream(ms);
-        //        }
-
-        //        return image;
-        //    }
-        //}
-
-        //#endregion
-
+            [JsonProperty("refresh_token")]
+            public string RefreshToken { get; set; }
+        }
 
     }
 }

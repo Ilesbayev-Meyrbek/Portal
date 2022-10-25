@@ -13,6 +13,9 @@ using Portal.Repositories;
 using Portal.Repositories.Interfaces;
 using Portal.Services.Interfaces;
 using Portal.Services;
+using System.Security.Cryptography.X509Certificates;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +23,7 @@ var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ') ??
 
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdd"))
         .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
             .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
             .AddInMemoryTokenCaches();
@@ -87,6 +90,25 @@ if (!app.Environment.IsDevelopment())
 
 app.UseSession();
 
+app.Use(async (context, next) =>
+{
+    if (!context.Session.Keys.Any(x => x == "access_token"))
+    {
+        context.Session.Set("access_token", new byte[0]);
+    }
+    string token = context.Session.GetString("access_token");
+
+    if (!string.IsNullOrEmpty(token))
+    {
+        var jwttoken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+        var userIdentity = new ClaimsIdentity(jwttoken.Claims, "access_token");
+        context.User = new ClaimsPrincipal(userIdentity);
+    }
+
+    await next();
+
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
@@ -95,6 +117,7 @@ app.UseCors(options =>
 {
     options.AllowAnyOrigin();
     options.AllowAnyHeader();
+    options.AllowAnyMethod();
 });
 app.UseAuthentication();
 app.UseAuthorization();
