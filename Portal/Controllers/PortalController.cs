@@ -1,18 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Data.Entity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Portal.DB;
 using Portal.DTO;
 using Portal.Models;
-using System.Data.Entity;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Portal.Controllers
 {
-    [AllowAnonymous]
-    //[Authorize]
+    [Authorize]
     public class PortalController : ControllerBase
     {
         private ScaleContext scaleContext;
@@ -23,20 +19,11 @@ namespace Portal.Controllers
             this.scaleContext = scaleContext;
             this.dataContext = dataContext;
         }
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> Login(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-            this.HttpContext.Session.Set("access_token", Encoding.ASCII.GetBytes(token));
-            return Ok(token);
-        }
-        //[Authorize]
+
         [HttpGet]
-        public async Task<ActionResult<OutputMarket>> GetMarkets()
-        {//Portal/GetMarkets
-            if (!User.Identity.IsAuthenticated)
+        public async Task<ActionResult<OutputMarket>> GetMarkets() //Portal/GetMarkets
+        {
+            if (!User.Identity?.IsAuthenticated == true)
                 return Unauthorized();
             var markets = dataContext.Markets.ToList();
             var categories = dataContext.Categories.ToList();
