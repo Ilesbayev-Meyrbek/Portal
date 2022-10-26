@@ -505,16 +505,31 @@ namespace Portal.DB
         {
             try
             {
-                _cashier.DateBegin = DateTime.Now;
-                _cashier.DateEnd = DateTime.Now;
-                _cashier.IsSavedToMarket = "0";
-                _cashier.Password = "";
-                _cashier.TabelNumber = "";
+                var cashierInDB = _ctx.Cashiers.Where(w => w.ID == _cashier.ID && w.MarketID == _cashier.MarketID).FirstOrDefault();
 
-                _ctx.Cashiers.Update(_cashier);
-                _ctx.SaveChanges();
+                if(cashierInDB != null)
+                {
+                    cashierInDB.TabelNumber = "";
+                    cashierInDB.CashierName = _cashier.CashierName;
+                    cashierInDB.Password = "";
+                    cashierInDB.DateBegin = DateTime.Now;
+                    cashierInDB.DateEnd = DateTime.Now;
+                    cashierInDB.IsAdmin = _cashier.IsAdmin;
+                    cashierInDB.IsDiscounter = _cashier.IsDiscounter;
+                    cashierInDB.IsGoodDisco = _cashier.IsGoodDisco;
+                    cashierInDB.IsInvoicer = _cashier.IsInvoicer;
+                    cashierInDB.IsSaved = _cashier.IsSaved;
+                    cashierInDB.IsSavedToPOS = _cashier.IsSavedToPOS;
+                    cashierInDB.IsSavedToMarket = "0";
+                    cashierInDB.MarketID = _cashier.MarketID;
 
-                return true;
+                    _ctx.Cashiers.Update(cashierInDB);
+                    _ctx.SaveChanges();
+
+                    return true;
+                }
+
+                return false;
             }
             catch (Exception ex)
             {
