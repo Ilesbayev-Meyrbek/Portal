@@ -1,0 +1,40 @@
+﻿@model List<Portal.Models.ChequeBottomMessage>
+@{
+    ViewBag.Title = "Сообщения";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="margin-top:25px">
+
+    <a asp-action="CreateChequeBottomMessage" class="my_btn my_btn_success">Добавить Сообщение</a>
+
+    <br />
+
+    <div style="height:100%; width:1500px; overflow-x: auto;margin:auto;margin-top:25px">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>сообщение</th>
+                    <th style="width:200px"></th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr class="Search clickable-row" data-href="@Url.Action("EditChequeBottomMessage", "ChequeBottomMessage", new { id = item.ID })">
+                        <td>
+                            @Html.DisplayFor(m => item.Message)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Удалить", "ConfirmDeleteChequeBottomMessage", new { id = item.ID }, new { @class = "glyphicon glyphicon-trash" })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+
+    </div>
+
+</div>

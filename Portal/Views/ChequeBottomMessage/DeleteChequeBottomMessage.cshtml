@@ -1,0 +1,39 @@
+﻿@model Portal.Models.ChequeBottomMessage
+
+@{
+    ViewBag.Title = "Удаление сообщения";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3>Вы уверены, что хотите удалить?</h3>
+
+@using (Html.BeginForm())
+{
+    <form asp-action="DeleteChequeBottomMessage" asp-controller="ChequeBottomMessage">
+        <div class="form-group">
+            <dl class="dl-horizontal">
+               
+                <dt>
+                    @Html.DisplayNameFor(model => model.Message)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.Message)
+                </dd>
+               
+            </dl>
+        </div>
+
+        <div class="form-actions no-color">
+            <p>
+                <div class="btnPosition">
+                    <input type="submit" value="Удалить" class="my_btn my_btn_success" />
+                </div>
+
+                <div class="btnPositionCancel">
+                    @Html.ActionLink("Отмена","ChequeBottomMessages","ChequeBottomMessage",null, new { @class="my_btn my_btn_danger"})
+                </div>
+            </p>
+        </div>
+    </form>
+}

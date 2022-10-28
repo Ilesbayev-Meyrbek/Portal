@@ -27,6 +27,7 @@ namespace Portal.DB
         public DbSet<Category> Categories { get; set; }
         public DbSet<MarketCategory> MarketCategories { get; set; }
 
+        public DbSet<ChequeBottomMessage> ChequeBottomMessages { get; set; }
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }

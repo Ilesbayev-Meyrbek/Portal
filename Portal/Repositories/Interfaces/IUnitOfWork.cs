@@ -10,5 +10,6 @@ namespace Portal.Repositories.Interfaces
         IAdminRepository Admins { get; }
         IRoleRepository Roles { get; }
         IMarketRepository Markets { get; }
+        IChequeBottomMessageRepository ChequeBottomMessage { get; }
     }
 }

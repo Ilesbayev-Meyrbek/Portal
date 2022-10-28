@@ -43,13 +43,14 @@ builder.Services.AddTransient<IAdminService, AdminService>();
 builder.Services.AddTransient<IMarketService, MarketService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
 builder.Services.AddTransient<IUserService, UserService>();
+builder.Services.AddTransient<IChequeBottomMessageServices, ChequeBottomMessageServices>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
 builder.Services.AddTransient<IAdminRepository, AdminRepository>();
 builder.Services.AddTransient<IMarketRepository, MarketRepository>();
 builder.Services.AddTransient<IRoleRepository, RoleRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
+builder.Services.AddTransient<IChequeBottomMessageRepository,ChequeBottomMessageRepository>();
 builder.Services.AddTransient<ICacheManager, CacheManager>();
-
 
 /******************************************************************************************************/
 

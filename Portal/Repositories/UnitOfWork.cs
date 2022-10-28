@@ -10,6 +10,7 @@ namespace Portal.Repositories
         private readonly Lazy<IAdminRepository> _admin;
         private readonly Lazy<IRoleRepository> _role;
         private readonly Lazy<IMarketRepository> _market;
+        private readonly Lazy<IChequeBottomMessageRepository> _ChequeBottomMessage;
 
         public UnitOfWork(DataContext db)
         {
@@ -18,6 +19,7 @@ namespace Portal.Repositories
             _admin = new Lazy<IAdminRepository>(() => new AdminRepository(db));
             _role = new Lazy<IRoleRepository>(() => new RoleRepository(db));
             _market = new Lazy<IMarketRepository>(() => new MarketRepository(db));
+            _ChequeBottomMessage = new Lazy<IChequeBottomMessageRepository>(() => new ChequeBottomMessageRepository(db));
         }
 
         public Task<int> SaveChangesAsync() =>
@@ -28,5 +30,6 @@ namespace Portal.Repositories
         public IAdminRepository Admins => _admin.Value;
         public IRoleRepository Roles => _role.Value;
         public IMarketRepository Markets => _market.Value;
+        public IChequeBottomMessageRepository ChequeBottomMessage => _ChequeBottomMessage.Value;
     }
 }
