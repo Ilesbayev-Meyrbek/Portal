@@ -13,9 +13,12 @@ using Portal.Repositories;
 using Portal.Repositories.Interfaces;
 using Portal.Services.Interfaces;
 using Portal.Services;
-using System.Security.Cryptography.X509Certificates;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
+using Portal.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Portal.Configuration;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +26,13 @@ var initialScopes = builder.Configuration["DownstreamApi:Scopes"]?.Split(' ') ??
 
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAdd"))
+    .AddJwtBearerConfiguration
+    (
+        builder.Configuration["Jwt:Issuer"],
+        builder.Configuration["Jwt:Audience"],
+        builder.Configuration["AzureAd:ClientSecret"]
+    )
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
         .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
             .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
             .AddInMemoryTokenCaches();
@@ -44,11 +53,22 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddTransient<IAdminService, AdminService>();
 builder.Services.AddTransient<IMarketService, MarketService>();
+builder.Services.AddTransient<ICategoryService, CategoryService>();
+builder.Services.AddTransient<IMarketCategoryService, MarketCategoryService>();
+builder.Services.AddTransient<IGroupService, GroupService>();
+builder.Services.AddTransient<IScaleService, ScaleService>();
+builder.Services.AddTransient<IScalesGoodService, ScalesGoodService>();
 builder.Services.AddTransient<IRoleService, RoleService>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddTransient<IAdminRepository, AdminRepository>();
 builder.Services.AddTransient<IMarketRepository, MarketRepository>();
+builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
+builder.Services.AddTransient<IMarketCategoryRepository, MarketCategoryRepository>();
+builder.Services.AddTransient<IGroupRepository, GroupRepository>();
+builder.Services.AddTransient<IScaleRepository, ScaleRepository>();
+builder.Services.AddTransient<IScalesGoodRepository, ScalesGoodRepository>();
 builder.Services.AddTransient<IRoleRepository, RoleRepository>();
 builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<ICacheManager, CacheManager>();
@@ -66,6 +86,13 @@ builder.Services.AddTransient<ICacheManager, CacheManager>();
 
 builder.Services.AddAuthorization(options =>
 {
+    var defaultAuthorizationPolicyBuilder = new AuthorizationPolicyBuilder(
+        OpenIdConnectDefaults.AuthenticationScheme,
+        JwtBearerDefaults.AuthenticationScheme
+    );
+    defaultAuthorizationPolicyBuilder =
+        defaultAuthorizationPolicyBuilder.RequireAuthenticatedUser();
+    options.DefaultPolicy = defaultAuthorizationPolicyBuilder.Build();
     options.FallbackPolicy = options.DefaultPolicy;
 });
 
@@ -75,7 +102,9 @@ builder.Services.AddControllersWithViews(options =>
         .RequireAuthenticatedUser()
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
-});
+})
+    .AddJsonOptions(x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
 builder.Services.AddRazorPages().AddMicrosoftIdentityUI();
 
 var app = builder.Build();
@@ -89,25 +118,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseSession();
-
-app.Use(async (context, next) =>
-{
-    if (!context.Session.Keys.Any(x => x == "access_token"))
-    {
-        context.Session.Set("access_token", new byte[0]);
-    }
-    string token = context.Session.GetString("access_token");
-
-    if (!string.IsNullOrEmpty(token))
-    {
-        var jwttoken = new JwtSecurityTokenHandler().ReadJwtToken(token);
-        var userIdentity = new ClaimsIdentity(jwttoken.Claims, "access_token");
-        context.User = new ClaimsPrincipal(userIdentity);
-    }
-
-    await next();
-
-});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

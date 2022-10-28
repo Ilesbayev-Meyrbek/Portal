@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="1.25.1" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="1.25.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="6.0.7" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NLog" Version="5.0.1" />
     <PackageReference Include="NLog.Database" Version="5.0.1" />
     <PackageReference Include="NLog.WindowsIdentity" Version="5.0.0" />
@@ -34,5 +35,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="6.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.4.0" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>
