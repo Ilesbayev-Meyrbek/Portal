@@ -8,39 +8,50 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Principal;
+using Portal.Services.Interfaces;
 
 namespace Portal.Controllers
 {
-    [AllowAnonymous]
-    //[Authorize]
+    //[AllowAnonymous]
+    [Authorize]
     public class PortalController : ControllerBase
     {
         private ScaleContext scaleContext;
         private DataContext dataContext;
+        private IMarketService marketService;
+        private ICategoryService categoryService;
+        private IScaleService scaleService;
+        private IGroupService groupService;
+        private IMarketCategoryService marketCategoryService;
+        private IScalesGoodService scalesGoodService;
 
-        public PortalController(DataContext dataContext, ScaleContext scaleContext)
+        public PortalController(DataContext dataContext, ScaleContext scaleContext, 
+            IMarketService marketService, 
+            ICategoryService categoryService, 
+            IScaleService scaleService, 
+            IGroupService groupService,
+            IMarketCategoryService marketCategoryService,
+            IScalesGoodService scalesGoodService)
         {
             this.scaleContext = scaleContext;
             this.dataContext = dataContext;
+            this.marketService = marketService;
+            this.categoryService = categoryService;
+            this.scaleService = scaleService;
+            this.groupService = groupService;
+            this.marketCategoryService = marketCategoryService;
+            this.scalesGoodService = scalesGoodService;
         }
-        [AllowAnonymous]
-        [HttpPost]
-        public async Task<IActionResult> Login(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-                return Unauthorized();
-            this.HttpContext.Session.Set("access_token", Encoding.ASCII.GetBytes(token));
-            return Ok(token);
-        }
-        //[Authorize]
+
         [HttpGet]
         public async Task<ActionResult<OutputMarket>> GetMarkets()
         {//Portal/GetMarkets
-            if (!User.Identity.IsAuthenticated)
-                return Unauthorized();
-            var markets = dataContext.Markets.ToList();
-            var categories = dataContext.Categories.ToList();
-            var scales = scaleContext.Scales.ToList();
+            
+            var markets = (await marketService.GetAllAsync()).Data;
+            var categories = (await categoryService.GetAllAsync()).Data;
+            var scales = (await scaleService.GetAllAsync()).Data;
 
             foreach (var market in markets)
             {
@@ -52,7 +63,7 @@ namespace Portal.Controllers
 
             foreach (var scale in scales)
             {
-                var categoryName = dataContext.MarketCategories.Where(x => x.MarketId == scale.MarketID && x.CategoryOrder == scale.DefaultCategoryIndex).Select(x => x.Category.RuName).FirstOrDefault();
+                var categoryName = (await marketCategoryService.GetForMarketAsync(scale.MarketID)).Data.Where(x=> x.CategoryOrder == scale.DefaultCategoryIndex).Select(x => x.Category.RuName).FirstOrDefault();
 
                 outputScales.Add(new OutputScaleForMarket
                 {
@@ -86,43 +97,47 @@ namespace Portal.Controllers
             if (categoryIndex < 0 || categoryIndex > 4)
                 return BadRequest();
 
-            var scale = scaleContext.Scales.FirstOrDefault(x => x.ID.Equals(scaleId));
+            var scale = (await scaleService.GetAsync(scaleId)).Data;
 
-            if (scale != null)
-            {
-                scale.DefaultCategoryIndex = categoryIndex;
-                scale.UpdateTime = DateTime.Now;
-                scaleContext.SaveChanges();
-                return Ok();
-            }
-            return NotFound();
+            if (scale is null)
+                return NotFound();
+
+            await scaleService.ChangeCategory(scale, categoryIndex);
+
+            return Ok();
         }
 
         [HttpGet]
         public async Task<ActionResult<OutputCategoryAndGroup>> GetCategoriesAndGroups()
         {
-            var categories = dataContext.Categories.Select(x => new OutputCategoryAndGroup { Id = x.Id, Name = x.RuName }).ToList();
+            var categories = (await categoryService.GetAllAsync()).Data;
+            var groups = (await groupService.GetAllAsync()).Data;
 
-            foreach (var category in categories)
+            if (categories.Count == 0 || groups.Count == 0)
+                return NotFound();
+
+            var outputCategories = categories.Select(x => new OutputCategoryAndGroup { Id = x.Id, Name = x.RuName }).ToList();
+
+            foreach (var category in outputCategories)
             {
-                category.GroupsPLU = scaleContext.Groups.Where(x => x.CategoryId == category.Id).Select(x => x.SapID);
+                category.GroupsPLU = groups.Where(x => x.CategoryId == category.Id).Select(x => x.SapID);
             }
 
-            var groupWithoutCategories = scaleContext.Groups.Where(x => x.CategoryId == null).ToList();
-            categories.Add(new OutputCategoryAndGroup { Id = categories.Last().Id + 1, Name = "Группы без категорий", GroupsPLU = groupWithoutCategories.Select(x => x.SapID) });
+            var groupWithoutCategories = groups.Where(x => x.CategoryId == null).ToList();
+            outputCategories.Add(new OutputCategoryAndGroup { Id = outputCategories.Last().Id + 1, Name = "Группы без категорий", GroupsPLU = groupWithoutCategories.Select(x => x.SapID) });
 
-            return Ok(categories);
+            return Ok(outputCategories);
         }
 
         [AcceptVerbs("GET", "POST")]
         [HttpPost]
         public async Task<IActionResult> SetGroupCategory(string groupPlu, int categoryId)
-        {//api/Portal/SetGroupCategory?groupId=1&categoryId=1
-            var group = scaleContext.Groups.FirstOrDefault(x => x.SapID == groupPlu);
+        {//api/Portal/SetGroupCategory?groupPlu=1&categoryId=1
+            var group = (await groupService.GetAsync(groupPlu)).Data;
             if (group is null)
                 return NotFound();
 
-            var category = dataContext.Categories.FirstOrDefault(x => x.Id == categoryId);
+            var category = (await categoryService.GetAsync(categoryId)).Data;
             if (category is null)
                 return NotFound();
 
@@ -142,15 +157,25 @@ namespace Portal.Controllers
         [HttpGet]
         public async Task<ActionResult<Category>> GetMarketCategories(string marketId)
         {
-            var categories = dataContext.MarketCategories.Where(x => x.MarketId == marketId).OrderBy(x => x.CategoryOrder).Select(x => x.Category).ToList();
-            
-            return Ok(categories);
+            var categories = (await marketCategoryService.GetForMarketAsync(marketId)).Data
+                .OrderBy(x => x.CategoryOrder)
+                .Select(x => x.Category)
+                .ToList();
+
+            var output = categories.Select(x => new Category
+            {
+                Id = x.Id,
+                RuName = x.RuName,
+                EnName = x.EnName,
+                UzName = x.UzName,
+            });
+            return Ok(output);
         }
 
         [HttpGet]
         public async Task<ActionResult<Category>> GetCategories()
         {
-            var categories = dataContext.Categories.ToList();
+            var categories = (await categoryService.GetAllAsync()).Data;
 
             return Ok(categories);
         }
@@ -159,27 +184,13 @@ namespace Portal.Controllers
         [HttpPatch]
         public async Task<IActionResult> ChangeCategoriesOrder(string marketId, string categoryIdsOrder)
         {
-            var categoriesOrder = dataContext.MarketCategories.Where(x => x.MarketId.Equals(marketId)).OrderByDescending(x => x.CategoryOrder).ToList();
-            if (categoriesOrder.Count() != 0)
-            {
-                var listString = categoryIdsOrder.Split(',');
-                var listInt = new List<int>();
+            var categoriesOrder = (await marketCategoryService.GetForMarketAsync(marketId)).Data.OrderByDescending(x => x.CategoryOrder).ToList();
 
-                for (int i = 0; i < listString.Length; i++)
-                    listInt.Add(int.Parse(listString[i]));
+            if (categoriesOrder.Count() == 0)
+                return NotFound();
 
-                for (int i = 0; i < listInt.Count(); i++)
-                    foreach (var category in categoriesOrder)
-                        if (category.CategoryId == listInt[i])
-                        {
-                            category.CategoryOrder = i;
-                            category.UpdateTime = DateTime.Now;
-                        }
-
-                dataContext.SaveChanges();
-                return Ok();
-            }
-            return NotFound();
+            await marketCategoryService.ChangeCategoriesOrderAsync(categoriesOrder, categoryIdsOrder);
+            return Ok();
         }
 
         [HttpGet]
@@ -187,22 +198,14 @@ namespace Portal.Controllers
         {
             var list = new List<OutputGood>();
             {
-                var goods = scaleContext.ScalesGoods
-                .Where(x => x.MarketID.Equals(marketId))
-                .Where(x=>x.GroupId != null)
-                .Include(x=>x.Group)
-                .Include(x => x.Image)
-                .ToList();
-
-                var goodIds = goods.Select(x => x.GroupId);//не работает Include
-                var groups = scaleContext.Groups.Where(gr=> goodIds.Contains(gr.Id)).ToList();
+                var goods = (await scalesGoodService.GetGoodsAsync(marketId)).Data;
 
                 var imageIds = goods.Select(x => x.ImageId);//не работает Include
                 var images = scaleContext.Images.Where(im => imageIds.Contains(im.Id)).ToList();
 
                 foreach (var good in goods)
                 {
-                    var categoryName = dataContext.Categories.FirstOrDefault(x => x.Id == good.Group.CategoryId).RuName;
+                    var categoryName = (await categoryService.GetAsync(good.Group.CategoryId??-1)).Data.RuName;
                     list.Add(new OutputGood
                     {
                         Id = good.ID,
@@ -226,19 +229,11 @@ namespace Portal.Controllers
         {
             var list = new List<OutputGood>();
 
-            var goods = scaleContext.ScalesGoods
-                .Where(x => x.MarketID.Equals(marketId))
-                .Where(x => x.GroupId != null)
-                .Where(x => x.ImageId == null)
-                .Include(x=>x.Group)
-                .ToList();
-
-            var goodIds = goods.Select(x => x.GroupId);//не работает Include
-            var groups = scaleContext.Groups.Where(gr => goodIds.Contains(gr.Id)).ToList();
+            var goods = (await scalesGoodService.GetGoodsWithoutImgAsync(marketId)).Data;
 
             foreach (var good in goods)
             {
-                var categoryName = dataContext.Categories.FirstOrDefault(x => x.Id == good.Group.CategoryId).RuName;
+                var categoryName = (await categoryService.GetAsync(good.Group.CategoryId ?? -1)).Data.RuName;
                 list.Add(new OutputGood
                 {
                     Id = good.ID,
@@ -258,8 +253,8 @@ namespace Portal.Controllers
         public async Task<ActionResult<OutputGroupAndCategory>> GetGroupCategories()
         {
             var list = new List<OutputGroupAndCategory>();
-            var groups = scaleContext.Groups.ToList();
-            var categories = dataContext.Categories.ToList();
+            var groups = (await groupService.GetAllAsync()).Data;
+            var categories = (await categoryService.GetAllAsync()).Data;
 
             foreach (var group in groups)
             {
@@ -348,94 +343,11 @@ namespace Portal.Controllers
             if (file == null)
                 return BadRequest();
 
-            var listGoodIds = goodIds.Split(',').Select(x => long.Parse(x)).ToList();
-            var goods = (scaleContext.ScalesGoods.Where(x => listGoodIds.Contains(x.ID))).ToList();
+            var result = await scalesGoodService.SetGoodImage(file, goodIds);
 
-            string bDate;
-            string bThumb;
-            System.Drawing.Image thumbnail;
-            System.Drawing.Image sourceimage;
-
-            try
-            {
-                sourceimage = System.Drawing.Image.FromStream(file.OpenReadStream());
-
-                Image temp = new Image();
-                using (var ms = new MemoryStream())
-                {
-                    sourceimage.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                    bDate = Convert.ToBase64String(ms.ToArray());
-                }
-
-                temp.Data = bDate;
-                thumbnail = sourceimage.GetThumbnailImage(120, 120, () => false, IntPtr.Zero);
-
-                using (var ms = new MemoryStream())
-                {
-                    thumbnail.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
-                    bThumb = Convert.ToBase64String(ms.ToArray());
-                }
-                temp.Thumbnail = bThumb;
-                temp.UpdateTime = DateTime.Now;
-                var newImage = scaleContext.Images.Add(temp);
-                await scaleContext.SaveChangesAsync();
-
-                foreach (var good in goods)
-                {
-                    var goodInDB = scaleContext.ScalesGoods.FirstOrDefault(x => x.ID == good.ID);
-                    goodInDB.Image = temp;
-                    goodInDB.ImageId = temp.Id;
-                    goodInDB.ReceiptGoodDate = DateTime.Now;
-                }
-                await scaleContext.SaveChangesAsync();
-
-                return Ok();
-            }
-            catch (Exception)
-            {
+            if (result.Success)
                 return BadRequest();
-            }
+            return Ok();
         }
-        [HttpGet]
-        public async Task<Token> GetElibilityToken()
-        {
-            //https://localhost:7158/Portal/GetElibilityToken
-
-            var client = new HttpClient();
-            string baseAddress = @"https://graph.microsoft.com/v1.10/token";
-
-            string grant_type = "client_credentials";
-            string client_id = "16330d2e-f85f-4d88-b595-e251c7e2683d";
-            string client_secret = "PY_8Q~3Btq1Fgmtu.4jMHz1YblQ1VDop7F9YEdee";
-
-            var form = new Dictionary<string, string>
-                {
-                    {"grant_type", grant_type},
-                    {"client_id", client_id},
-                    {"client_secret", client_secret},
-                };
-
-            HttpResponseMessage tokenResponse = await client.PostAsync(baseAddress, new FormUrlEncodedContent(form));
-            var jsonContent = await tokenResponse.Content.ReadAsStringAsync();
-            Token tok = JsonConvert.DeserializeObject<Token>(jsonContent);
-            return tok;
-        }
-
-
-        public class Token
-        {
-            [JsonProperty("access_token")]
-            public string AccessToken { get; set; }
-
-            [JsonProperty("token_type")]
-            public string TokenType { get; set; }
-
-            [JsonProperty("expires_in")]
-            public int ExpiresIn { get; set; }
-
-            [JsonProperty("refresh_token")]
-            public string RefreshToken { get; set; }
-        }
-
     }
 }
