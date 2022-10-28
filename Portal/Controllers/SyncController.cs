@@ -13,6 +13,7 @@ using System.Text;
 using System.Web.Http.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Portal.Services.Interfaces;
 
 namespace Portal.Controllers
 {
@@ -21,27 +22,32 @@ namespace Portal.Controllers
     {
         private ScaleContext scaleContext;
         private DataContext dataContext;
+        private IScaleService scaleService;
 
-        public SyncController(DataContext dataContext, ScaleContext scaleContext)
+        public SyncController(DataContext dataContext, ScaleContext scaleContext, IScaleService scaleService)
         {
             this.scaleContext = scaleContext;
             this.dataContext = dataContext;
+            this.scaleService = scaleService;
         }
 
         [HttpGet]
         public async Task<ActionResult<bool>> isUpdated(string IP)
         {//https://localhost:7158/Sync/isUpdated?IP=172.16.80.6
 
-            var scale = GetScale(IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             if (scale is null)
                 return NotFound();
 
-            var scaleLastSyncTime = scale.ScalesSyncStatus.LastSyncTime;
+            var scaleLastSyncTime = scale.LastSyncTime;
+            if (scaleLastSyncTime is null)
+                return Ok(false);
+
             var goodsUpdateTime = scaleContext.ScalesGoods.Where(x => x.MarketID == scale.MarketID).Select(x => x.ReceiptGoodDate).ToList();
             var categoriesUpdateTime = dataContext.Categories.Select(x => x.UpdateTime).ToList();
             var categoriesScaleUpdateTime = dataContext.MarketCategories.Where(x => x.MarketId == scale.MarketID).Select(x => x.UpdateTime).ToList();
 
-            if (scaleLastSyncTime < scale.UpdateTime) return Ok(false);
+            if (scaleLastSyncTime < scale.DataUpdateTime) return Ok(false);
 
             foreach (var categoryUT in categoriesUpdateTime)
                 if (scaleLastSyncTime < categoryUT) return Ok(false);
@@ -59,8 +65,8 @@ namespace Portal.Controllers
         [HttpPatch]
         public async Task<ActionResult> UpdateLastSyncTime(string IP, DateTime startUpdateTime)
         {
-            var scaleLastSyncTime = GetScale(IP);
-            scaleLastSyncTime.ScalesSyncStatus.LastSyncTime = startUpdateTime;
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
+            scale.LastSyncTime = startUpdateTime;
 
             scaleContext.SaveChanges();
             return Ok();
@@ -70,12 +76,12 @@ namespace Portal.Controllers
         //https://localhost:7158/Sync/GetUpdatedGoods?IP=172.16.80.6
         public async Task<ActionResult<GoodsForScale>> GetUpdatedGoods(string IP)
         {
-            var scale = GetScale(IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             var listCategoriesId = GetCategoriesId(IP);
 
             var updatedGoods = scaleContext.ScalesGoods.Include(x => x.Group)
                 .Where(x=>x.MarketID == scale.MarketID)
-                .Where(x => x.ReceiptGoodDate > scale.ScalesSyncStatus.LastSyncTime)
+                .Where(x => x.ReceiptGoodDate > scale.LastSyncTime)
                 .Where(x => listCategoriesId.Contains(x.Group.CategoryId ?? -1))
                 .ToList();
 
@@ -101,11 +107,11 @@ namespace Portal.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Category>>> GetUpdatedCategory(string IP)
         {
-            var scaleLastSyncTime = GetScale(IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             var listCategoriesId = GetCategoriesId(IP);
 
             var updatedCategory = dataContext.Categories
-                .Where(x => x.UpdateTime > scaleLastSyncTime.ScalesSyncStatus.LastSyncTime)
+                .Where(x => x.UpdateTime > scale.LastSyncTime)
                 .Where(x => listCategoriesId.Contains(x.Id)).ToList();
 
             return Ok(updatedCategory);
@@ -113,7 +119,7 @@ namespace Portal.Controllers
         [HttpGet]
         public async Task<ActionResult<List<CategoriesForScale>>> GetCategoriesScale(string IP)
         {
-            var scale = scaleContext.Scales.FirstOrDefault(x => x.IP == IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             var market = dataContext.Markets.FirstOrDefault(x => x.MarketID == scale.MarketID);
             var list = dataContext.MarketCategories.Where(x => x.MarketId == market.MarketID)
                 .Select(x => new CategoriesForScale { CategoryId = x.CategoryId, CategoryRuName = x.Category.RuName, CategoryUzName = x.Category.UzName, CategoryEnName = x.Category.EnName, CategoryOrder = x.CategoryOrder, isDefault = false })
@@ -138,7 +144,7 @@ namespace Portal.Controllers
         [HttpGet]
         public async Task<ActionResult<List<long>>> GetGoodsId(string IP)
         {
-            var scale = scaleContext.Scales.FirstOrDefault(x => x.IP == IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             var listCategoriesId = GetCategoriesId(IP);
 
             var goodsId = scaleContext.ScalesGoods
@@ -151,11 +157,11 @@ namespace Portal.Controllers
         [HttpGet]
         public async Task<ActionResult<List<ImageForScale>>> GetUpdatedImages(string IP)
         {
-            var scaleLastSyncTime = GetScale(IP);
+            var scale = (await scaleService.GetByIPAsync(IP)).Data;
             var listCategoriesId = GetCategoriesId(IP);
             var listGoodId = scaleContext.ScalesGoods.Where(x => listCategoriesId.Contains(x.Group.CategoryId ?? -1)).Select(x => x.ImageId).ToList();
             var updatedImages = scaleContext.Images
-                .Where(x => x.UpdateTime > scaleLastSyncTime.ScalesSyncStatus.LastSyncTime)
+                .Where(x => x.UpdateTime > scale.LastSyncTime)
                 .Where(x => listGoodId.Contains(x.Id))
                 .Select(x => new ImageForScale { Id = x.Id, Data = x.Data })
                 .ToList();
@@ -177,18 +183,6 @@ namespace Portal.Controllers
             var market = dataContext.Markets.FirstOrDefault(x => x.MarketID == scale.MarketID);
             var listCategoriesId = dataContext.MarketCategories.Where(x => x.MarketId == market.MarketID).Select(x => x.CategoryId).ToList();
             return listCategoriesId;
-        }
-        private Scale GetScale(string IP)
-        {
-            var scale = scaleContext.Scales.FirstOrDefault(x => x.IP == IP);
-            if (scale is null)
-                return null;
-
-            var scaleSyncStatus = scaleContext.ScalesSyncStatuses.FirstOrDefault(x => x.Scale_ID.Equals(scale.ID));
-            if(scaleSyncStatus is null)
-                return null;
-
-            return scale;
         }
     }
 }

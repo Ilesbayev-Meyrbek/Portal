@@ -9,7 +9,6 @@ namespace Portal.DB
         public DbSet<Group> Groups { get; set; }
         public DbSet<ScalesGood> ScalesGoods { get; set; }
         public DbSet<Image> Images { get; set; }
-        public DbSet<ScalesSyncStatus> ScalesSyncStatuses { get; set; }
 
         public ScaleContext(DbContextOptions<ScaleContext> options)
            : base(options)
@@ -21,11 +20,6 @@ namespace Portal.DB
             builder.Entity<Scale>().HasKey(table => new { table.ID });
 
             builder.Entity<MarketCategory>().HasKey(sc => new { sc.MarketId, sc.CategoryId });
-
-            builder.Entity<Scale>()
-             .HasOne(a => a.ScalesSyncStatus)
-             .WithOne(b => b.Scale)
-             .HasForeignKey<ScalesSyncStatus>(b => b.Scale_ID);
         }
     }
 }

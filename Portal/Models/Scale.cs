@@ -21,11 +21,8 @@ namespace Portal.Models
         public bool BPlus { get; set; }
         public bool FreshBase { get; set; }
 
-        public ScalesSyncStatus ScalesSyncStatus { get; set; }
         public int DefaultCategoryIndex { get; set; }
-        public DateTime UpdateTime { get; set; }
-
-        //public int SettingsId { get; set; }
-
+        public DateTime DataUpdateTime { get; set; }
+        public DateTime? LastSyncTime { get; set; }
     }
 }
